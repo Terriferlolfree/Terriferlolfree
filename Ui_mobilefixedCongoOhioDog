@@ -1,4 +1,4 @@
--- ================= BASIC TOGGLE BUTTON =================
+-- =================== BLANK MODULAR BLOOD-RED MENU ===================
 
 local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
@@ -10,50 +10,48 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.ResetOnSpawn = false
 
 Frame.Parent = ScreenGui
-Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Frame.Position = UDim2.new(1, -120, 0, 0)
-Frame.Size = UDim2.new(0, 70, 0, 50)
+Frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+Frame.Position = UDim2.new(1,-120,0,0)
+Frame.Size = UDim2.new(0,70,0,50)
 
 TextButton.Parent = Frame
 TextButton.BackgroundTransparency = 1
-TextButton.Size = UDim2.new(1, 0, 1, 0)
+TextButton.Size = UDim2.new(1,0,1,0)
 TextButton.Font = Enum.Font.SourceSans
-TextButton.Text = "structure"
-TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+TextButton.Text = ""
+TextButton.TextColor3 = Color3.fromRGB(0,0,0)
 TextButton.TextScaled = true
-TextButton.TextStrokeColor3 = Color3.fromRGB(100, 100, 100)
+TextButton.TextStrokeColor3 = Color3.fromRGB(100,100,100)
 TextButton.TextStrokeTransparency = 0
 TextButton.TextWrapped = true
 
 UITextSizeConstraint.Parent = TextButton
 UITextSizeConstraint.MaxTextSize = 30
 
--- ================= SETTINGS =================
+-- =================== SETTINGS ===================
 
 local Settings = {
-	Accent = Color3.fromRGB(138, 3, 3), -- dark blood red
-	BorderColor = Color3.fromRGB(30, 30, 30),
-	Font = Enum.Font.SourceSans
+    Accent = Color3.fromRGB(138,3,3), -- blood-red
+    BorderColor = Color3.fromRGB(30,30,30),
+    Font = Enum.Font.SourceSans
 }
 
--- ================= MENU CORE =================
+-- =================== CORE MENU ===================
 
-local Menu = {}
 local CoreGui = game:GetService("CoreGui")
-
+local Menu = {}
 Menu.Screen = Instance.new("ScreenGui")
-Menu.Screen.Name = "StructureMenu"
-Menu.Screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Menu.Screen.Name = "BlankMenu"
 Menu.Screen.Parent = CoreGui
 Menu.Screen.ResetOnSpawn = false
 
 local Menu_Frame = Instance.new("Frame")
 Menu_Frame.Name = "Menu"
-Menu_Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+Menu_Frame.BackgroundColor3 = Color3.fromRGB(10,10,10)
 Menu_Frame.BorderColor3 = Settings.BorderColor
 Menu_Frame.BorderMode = Enum.BorderMode.Inset
-Menu_Frame.Position = UDim2.new(0.5, -200, 0.5, -185)
-Menu_Frame.Size = UDim2.new(0, 400, 0, 370)
+Menu_Frame.Position = UDim2.new(0.5,-200,0.5,-185)
+Menu_Frame.Size = UDim2.new(0,400,0,370)
 Menu_Frame.Visible = false
 Menu_Frame.Parent = Menu.Screen
 
@@ -64,43 +62,272 @@ UIStroke.Color = Settings.BorderColor
 UIStroke.Thickness = 2
 UIStroke.Parent = Menu_Frame
 
--- ================= TITLE =================
+-- =================== TITLE ===================
 
 local Title_Label = Instance.new("TextLabel")
 Title_Label.Name = "Title"
 Title_Label.BackgroundTransparency = 1
-Title_Label.Position = UDim2.new(0, 10, 0, 5)
-Title_Label.Size = UDim2.new(1, -20, 0, 25)
+Title_Label.Position = UDim2.new(0,10,0,5)
+Title_Label.Size = UDim2.new(1,-20,0,25)
 Title_Label.Font = Enum.Font.SourceSansBold
-Title_Label.Text = "structure wtf"
+Title_Label.Text = ""
 Title_Label.TextColor3 = Settings.Accent
 Title_Label.TextSize = 18
 Title_Label.TextXAlignment = Enum.TextXAlignment.Center
 Title_Label.Parent = Menu_Frame
 
--- ================= SEPARATOR =================
+-- =================== LINE ===================
 
 local Line = Instance.new("Frame")
 Line.Name = "Line"
 Line.BackgroundColor3 = Settings.Accent
 Line.BorderSizePixel = 0
-Line.Size = UDim2.new(1, -20, 0, 1)
-Line.Position = UDim2.new(0, 10, 0, 35)
+Line.Size = UDim2.new(1,-20,0,1)
+Line.Position = UDim2.new(0,10,0,35)
 Line.Parent = Menu_Frame
 
--- ================= CONTENT FRAME =================
+-- =================== CONTENT ===================
 
 local Content_Frame = Instance.new("Frame")
 Content_Frame.Name = "Content"
 Content_Frame.BackgroundTransparency = 1
-Content_Frame.Position = UDim2.new(0, 10, 0, 45)
-Content_Frame.Size = UDim2.new(1, -20, 1, -55)
+Content_Frame.Position = UDim2.new(0,10,0,45)
+Content_Frame.Size = UDim2.new(1,-20,1,-55)
 Content_Frame.Parent = Menu_Frame
 
--- ================= TAB BAR =================
+-- =================== TAB BAR ===================
 
 local TabBar = Instance.new("Frame")
 TabBar.BackgroundTransparency = 1
+TabBar.Size = UDim2.new(1,0,0,28)
+TabBar.Parent = Content_Frame
+
+local TabLayout = Instance.new("UIListLayout")
+TabLayout.FillDirection = Enum.FillDirection.Horizontal
+TabLayout.Padding = UDim.new(0,6)
+TabLayout.Parent = TabBar
+
+-- =================== PAGE HOLDER ===================
+
+local Pages = Instance.new("Frame")
+Pages.BackgroundTransparency = 1
+Pages.Position = UDim2.new(0,0,0,34)
+Pages.Size = UDim2.new(1,0,1,-34)
+Pages.Parent = Content_Frame
+
+-- =================== TAB SYSTEM ===================
+
+local Tabs = {}
+local ActiveTab
+
+local function createTab(name)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0,90,1,0)
+    btn.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    btn.Text = name
+    btn.Font = Settings.Font
+    btn.TextSize = 14
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Parent = TabBar
+
+    local page = Instance.new("Frame")
+    page.Size = UDim2.new(1,0,1,0)
+    page.BackgroundTransparency = 1
+    page.Visible = false
+    page.Parent = Pages
+
+    -- ==================== HELPER FUNCTIONS ====================
+    function page:AddLabel(text)
+        local lbl = Instance.new("TextLabel")
+        lbl.Text = text
+        lbl.Size = UDim2.new(1,0,0,25)
+        lbl.Position = UDim2.new(0,0,#page:GetChildren()*30)
+        lbl.BackgroundTransparency = 1
+        lbl.TextColor3 = Color3.new(1,1,1)
+        lbl.Parent = page
+    end
+
+    function page:AddButton(text,callback)
+        local btn = Instance.new("TextButton")
+        btn.Text = text
+        btn.Size = UDim2.new(0,120,0,25)
+        btn.Position = UDim2.new(0,0,#page:GetChildren()*30)
+        btn.Parent = page
+        btn.MouseButton1Click:Connect(callback)
+    end
+
+    function page:AddToggle(text,default,callback)
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(1,0,0,25)
+        frame.BackgroundTransparency = 1
+        frame.Position = UDim2.new(0,0,#page:GetChildren()*30)
+        frame.Parent = page
+
+        local label = Instance.new("TextLabel")
+        label.Text = text
+        label.Size = UDim2.new(0.7,0,1,0)
+        label.BackgroundTransparency = 1
+        label.TextColor3 = Color3.new(1,1,1)
+        label.Parent = frame
+
+        local toggle = Instance.new("TextButton")
+        toggle.Text = default and "ON" or "OFF"
+        toggle.Size = UDim2.new(0.3,0,1,0)
+        toggle.Position = UDim2.new(0.7,0,0,0)
+        toggle.Parent = frame
+
+        local state = default
+        toggle.MouseButton1Click:Connect(function()
+            state = not state
+            toggle.Text = state and "ON" or "OFF"
+            callback(state)
+        end)
+    end
+
+    function page:AddSlider(name,min,max,default,callback)
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(1,0,0,25)
+        frame.BackgroundTransparency = 1
+        frame.Position = UDim2.new(0,0,#page:GetChildren()*30)
+        frame.Parent = page
+
+        local label = Instance.new("TextLabel")
+        label.Text = name.." : "..default
+        label.Size = UDim2.new(1,0,1,0)
+        label.BackgroundTransparency = 1
+        label.TextColor3 = Color3.new(1,1,1)
+        label.Parent = frame
+
+        local slider = Instance.new("TextButton")
+        slider.Size = UDim2.new(1,0,1,0)
+        slider.BackgroundTransparency = 1
+        slider.Text = ""
+        slider.Parent = frame
+
+        local mouse = game:GetService("UserInputService")
+        local value = default
+
+        slider.MouseButton1Down:Connect(function()
+            local conn
+            conn = mouse.InputChanged:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseMovement then
+                    local x = math.clamp(input.Position.X - slider.AbsolutePosition.X,0,slider.AbsoluteSize.X)
+                    value = min + ((x/slider.AbsoluteSize.X)*(max-min))
+                    label.Text = name.." : "..math.floor(value)
+                    callback(value)
+                end
+            end)
+            mouse.InputEnded:Wait()
+            conn:Disconnect()
+        end)
+    end
+
+    function page:AddDropdown(name,options,callback)
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(1,0,0,25)
+        frame.BackgroundTransparency = 1
+        frame.Position = UDim2.new(0,0,#page:GetChildren()*30)
+        frame.Parent = page
+
+        local label = Instance.new("TextLabel")
+        label.Text = name
+        label.Size = UDim2.new(1,0,1,0)
+        label.BackgroundTransparency = 1
+        label.TextColor3 = Color3.new(1,1,1)
+        label.Parent = frame
+
+        local dropdown = Instance.new("TextButton")
+        dropdown.Text = "Select"
+        dropdown.Size = UDim2.new(0.3,0,1,0)
+        dropdown.Position = UDim2.new(0.7,0,0,0)
+        dropdown.Parent = frame
+
+        local open = false
+        local optionsFrame = Instance.new("Frame")
+        optionsFrame.Size = UDim2.new(1,0,0,#options*25)
+        optionsFrame.Position = UDim2.new(0,0,1,0)
+        optionsFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        optionsFrame.Visible = false
+        optionsFrame.Parent = frame
+
+        for i,opt in ipairs(options) do
+            local btn = Instance.new("TextButton")
+            btn.Text = opt
+            btn.Size = UDim2.new(1,0,0,25)
+            btn.Position = UDim2.new(0,0,0,(i-1)*25)
+            btn.Parent = optionsFrame
+            btn.MouseButton1Click:Connect(function()
+                dropdown.Text = opt
+                optionsFrame.Visible = false
+                callback(opt)
+            end)
+        end
+
+        dropdown.MouseButton1Click:Connect(function()
+            optionsFrame.Visible = not optionsFrame.Visible
+        end)
+    end
+
+    function page:AddColorPicker(name,default,callback)
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(1,0,0,25)
+        frame.BackgroundTransparency = 1
+        frame.Position = UDim2.new(0,0,#page:GetChildren()*30)
+        frame.Parent = page
+
+        local label = Instance.new("TextLabel")
+        label.Text = name
+        label.Size = UDim2.new(0.7,0,1,0)
+        label.BackgroundTransparency = 1
+        label.TextColor3 = Color3.new(1,1,1)
+        label.Parent = frame
+
+        local button = Instance.new("TextButton")
+        button.Text = ""
+        button.Size = UDim2.new(0.3,0,1,0)
+        button.Position = UDim2.new(0.7,0,0,0)
+        button.BackgroundColor3 = default
+        button.Parent = frame
+
+        button.MouseButton1Click:Connect(function()
+            local color = Color3.new(math.random(),math.random(),math.random())
+            button.BackgroundColor3 = color
+            callback(color)
+        end)
+    end
+
+    Tabs[name] = {Button=btn,Page=page}
+
+    btn.MouseButton1Click:Connect(function()
+        if ActiveTab then
+            Tabs[ActiveTab].Page.Visible = false
+            Tabs[ActiveTab].Button.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        end
+        ActiveTab = name
+        page.Visible = true
+        btn.BackgroundColor3 = Settings.Accent
+    end)
+end
+
+-- =================== MENU API ===================
+
+function Menu:AddTab(name,callback)
+    createTab(name)
+    callback(Tabs[name].Page)
+end
+
+function Menu:SetTitle(title)
+    Title_Label.Text = title
+end
+
+-- =================== TOGGLE MENU ===================
+
+TextButton.MouseButton1Click:Connect(function()
+    Menu_Frame.Visible = not Menu_Frame.Visible
+    TextButton.TextStrokeColor3 = Menu_Frame.Visible and Settings.Accent or Color3.fromRGB(100,100,100)
+end)
+
+return Menu
 TabBar.Size = UDim2.new(1, 0, 0, 28)
 TabBar.Parent = Content_Frame
 
