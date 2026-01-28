@@ -1,0 +1,3335 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/khenn791/script/refs/heads/main/notify", true))()
+
+local GameInformation = loadstring(game:HttpGet("https://pastefy.app/SOGHIpff/raw", true))()
+
+
+if GameInformation.Name:find("Dan FFA") then
+    local Namecall; Namecall = hookmetamethod(game, "__namecall", function(...)
+        if checkcaller() then return Namecall(...) end
+        local Arguments = {...}
+        local Method = getnamecallmethod()
+        if Method == "FireServer" and Arguments[2] == "CheatGuard" then
+            return coroutine.yield()
+        end
+        return Namecall(...)
+    end)
+    
+    local TaskWait; TaskWait = hookfunction(task.wait, function(Duration)
+        if checkcaller() then return TaskWait(Duration) end
+        local CallingScript = getcallingscript()
+        if CallingScript and CallingScript.Name ~= "Animate" and CallingScript.Parent and not CallingScript.Parent:IsA("Tool") and CallingScript.Parent:IsDescendantOf(workspace) then
+            Duration = 2e9
+        end
+        return TaskWait(Duration)
+    end)
+    
+    print("Bypass Dan FFA Done")
+
+
+elseif GameInformation.Name:find("Zee Hood") then
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/TheRealXORA/Roblox/refs/heads/Main/Scripts%20/Anti-Cheats%20Bypassers%20/Adonis.luau", true))()
+    
+    local Namecall; Namecall = hookmetamethod(game, "__namecall", function(...)
+        if checkcaller() then return Namecall(...) end
+        local Arguments = {...}
+        local Self = Arguments[1]
+        local Method = getnamecallmethod()
+        local CallingScript = getcallingscript()
+        
+        if Method == "FireServer" and Self.Name == "MainRemoteEvent" then
+            if Arguments[2] == "Detection" then
+                return coroutine.yield()
+            elseif Arguments[2] == "StompXD" then
+                Arguments[3] = true
+                return Namecall(unpack(Arguments))
+            end
+        end
+        
+        return Namecall(...)
+    end)
+    
+    print("Bypass Zee Hood Done")
+
+
+else
+    loadstring(game:HttpGet("https://pastefy.app/H6qkV2jn/raw"))()
+    print("Bypass", GameInformation.Name, "Done")
+end
+
+
+
+setfpscap(1500);
+local function a(b)
+	if b then
+		if (getgenv()).executed then
+			return;
+		end;
+		(getgenv()).executed = true;
+		local c = os.clock();
+		repeat
+			wait();
+		until game:IsLoaded();
+		if not LPH_OBFUSCATED then
+			LPH_JIT = function(...)
+					return ...;
+				end;
+			LPH_NO_VIRTUALIZE = function(...)
+					return ...;
+				end;
+		end;
+		
+		local d;
+		local e = string.find(identifyexecutor(), "Wave") or string.find(identifyexecutor(), "Seliware") or string.find(identifyexecutor(), "AWP") or string.find(identifyexecutor(), "Argon") or string.find(identifyexecutor(), "Swift") or string.find(identifyexecutor(), "Xeno");
+		if e then
+			d = (loadstring(game:HttpGet("https://raw.githubusercontent.com/khenn791/library/refs/heads/main/LixdnWjB.txt", true)))();
+		else
+			d = (loadstring(game:HttpGet("https://raw.githubusercontent.com/khenn791/library/refs/heads/lon/pslam.lua", true)))();
+		end;
+		local f = string.find(identifyexecutor(), "Delta") or string.find(identifyexecutor(), "Krnl") or string.find(identifyexecutor(), "Vegax") or string.find(identifyexecutor(), "Vega x") or string.find(identifyexecutor(), "KRNL") or string.find(identifyexecutor(), "Codex") or string.find(identifyexecutor(), "Trigon") or string.find(identifyexecutor(), "Ronix") or string.find(identifyexecutor(), "Arceus X") or string.find(identifyexecutor(), "Frostware") or string.find(identifyexecutor(), "Appleware") or string.find(identifyexecutor(), "AppleWare");
+		local function g(h)
+			if f then
+				return getcustomasset(string.format("khen_day_ne/%s", h));
+			else
+				return "rbxassetid://0";
+			end;
+		end;
+		downloadSound = LPH_NO_VIRTUALIZE(function(i, j)
+				local k = string.format("khen_day_ne/%s", i);
+				if not isfile(k) then
+					writefile(k, game:HttpGet(j));
+				end;
+				return k;
+			end);
+		local l = {
+				BlackPencil = "https://github.com/Shatapmatehabibi/Hitsounds/raw/main/bananapencil.mp3.mp3",
+				UWU = "https://github.com/CongoOhioDog/SoundS/blob/main/Uwu.mp3?raw=true",
+				Plooh = "https://github.com/CongoOhioDog/SoundS/blob/main/plooh.mp3?raw=true",
+				Hentai = "https://github.com/CongoOhioDog/SoundS/blob/main/Hrntai.wav?raw=true",
+				Moan = "https://github.com/CongoOhioDog/SoundS/blob/main/henta01.wav?raw=true",
+				Bruh = "https://github.com/CongoOhioDog/SoundS/blob/main/psalms%20bruh%20sample.mp3?raw=true",
+				BoneBreakage = "https://github.com/CongoOhioDog/SoundS/blob/main/psalms%20bone%20breakage.mp3?raw=true",
+				Fein = "https://github.com/CongoOhioDog/SoundS/blob/main/psalms%20highly%20defined%20fein.mp3?raw=true",
+				Unicorn = "https://github.com/CongoOhioDog/SoundS/blob/main/shiny%20unicorn%20for%20dh%20_%20psalms.mp3?raw=true",
+				Kitty = "https://github.com/CongoOhioDog/SoundS/blob/main/Kitty.mp3?raw=true",
+				Bird = "https://github.com/CongoOhioDog/SoundS/blob/main/bird%20chirping%20for%20DH%20_%20psalms%20audio.mp3?raw=true",
+				BirthdayCake = "https://github.com/CongoOhioDog/SoundS/blob/main/Birthday%20cake%20for%20dh%20_%20psalms.mp3?raw=true",
+				KenCarson = "https://github.com/CongoOhioDog/SoundS/blob/main/ken_carson_-_jennifer_s_body_offici(2).mp3?raw=true",
+			};
+		for m, n in pairs(l) do
+			_G[m .. "Path"] = downloadSound(m .. ".mp3", n);
+		end;
+		local o = {
+				RIFK7 = "rbxassetid://9102080552",
+				Bubble = "rbxassetid://9102092728",
+				Minecraft = "rbxassetid://5869422451",
+				Cod = "rbxassetid://160432334",
+				Bameware = "rbxassetid://6565367558",
+				Neverlose = "rbxassetid://6565370984",
+				Gamesense = "rbxassetid://4817809188",
+				Rust = "rbxassetid://6565371338",
+				BlackPencil = g("BlackPencil.mp3"),
+				UWU = g("Uwu.mp3"),
+				Plooh = g("plooh.mp3"),
+				Moan = g("Moan.mp3"),
+				Hentai = g("Hentai.mp3"),
+				Bruh = g("Bruh.mp3"),
+				BoneBreakage = g("BoneBreakage.mp3"),
+				Fein = g("Fein.mp3"),
+				Unicorn = g("Unicorn.mp3"),
+				Kitty = g("Kitty.mp3"),
+				Bird = g("Bird.mp3"),
+				BirthdayCake = g("BirthdayCake.mp3"),
+				KenCarson = g("KenCarson.mp3"),
+			};
+		(getgenv()).khen = {
+				Enabled = true,
+				HorizontalPrediction = .1,
+				VerticalPrediction = .1,
+				jumpoffset2 = .5,
+				jumpoffset = 0,
+				ResolverEnabled = false,
+				SelectedPart = "HumanoidRootPart",
+				AutoPrediction = false,
+				AutoPredMode = "PingBased",
+				ShootDelay = .22,
+				NoGroundShot = false,
+				AutoAir = false,
+				LookAt = false,
+				smoothness = .9,
+				TracerEnabled = false,
+				NearestPart = false,
+				UseVertical = false,
+				Camera = false,
+				easingStyle = "Sine",
+				easingDirection = "Out",
+				JumpBreak = false,
+				network = false,
+				CamPrediction1 = .1,
+				CamPrediction2 = .1,
+				HorizontalPrediction2 = .1,
+				VerticalPrediction2 = .1,
+			};
+		(getgenv()).Desync = false;
+		(getgenv()).AntiLockType = "Behind";
+		(getgenv()).Direction = Vector3.new(0, 0, -1);
+		(getgenv()).TargetAimbot = {
+				Enabled = false,
+				Keybind = Enum.KeyCode.Q,
+				Autoselect = false,
+				Prediction = .145,
+				RealPrediction = .145,
+				Resolver = false,
+				ResolverType = "Recalculate",
+				JumpOffset = .06,
+				RealJumpOffset = .09,
+				HitParts = { "HumanoidRootPart" },
+				RealHitPart = "HumanoidRootPart",
+				KoCheck = false,
+				LookAt = false,
+				CSync = {
+					Enabled = false,
+					Type = "Orbit",
+					Distance = 10,
+					Height = 2,
+					Speed = 10,
+					RandomAmount = 10,
+					Color = Color3.fromRGB(255, 255, 255),
+					Saved = nil,
+					Visualize = false,
+				},
+				ViewAt = false,
+				Tracer = false,
+				Highlight = true,
+				HighlightColor1 = Color3.fromRGB(255, 58, 58),
+				HighlightColor2 = Color3.fromRGB(255, 58, 58),
+				Stats = false,
+				UseFov = false,
+				HitEffect = false,
+				HitEffectType = "Nova",
+				HitEffectColor = Color3.fromRGB(255, 58, 58),
+				HitSounds = false,
+				HitSound = "Bameware",
+				HitChams = false,
+				HitChamsMaterial = Enum.Material.Neon,
+				HitChamsDuration = 1,
+				HitChamsColor = Color3.fromRGB(255, 58, 58),
+				HitChamColorEnabled = false,
+				HitChamsTransparency = .6,
+				HitChamsAcc = false,
+				GunTP = { Enabled = false, Anchor = false, Offset = { 2, -2, 2 } },
+			};
+		local p = false;
+		local q, r, s, t, u, v, w, x, y, z, A = game:GetService("UserInputService"), game:GetService("Players"), game:GetService("ReplicatedStorage"), game:GetService("RunService"), game:GetService("Workspace"), game:GetService("Stats"), game:GetService("CoreGui"), game:GetService("StarterGui"), game:GetService("SoundService"), game:GetService("Stats"), (game:GetService("Players")).LocalPlayer;
+		local B, C, D = true, nil, nil;
+		local E = Instance.new("Highlight");
+		E.Parent = w;
+		E.FillColor = TargetAimbot.HighlightColor1;
+		E.OutlineColor = TargetAimbot.HighlightColor2;
+		E.FillTransparency = .5;
+		E.OutlineTransparency = 0;
+		E.Enabled = false;
+		local F = Drawing.new("Line");
+		F.Visible = false;
+		F.Color = Color3.fromRGB(154, 7, 250);
+		F.Thickness = 1;
+		F.Transparency = 1;
+		local G = { Locals = { Type = {
+						Nova = nil,
+						["Crescent Slash"] = nil,
+						Coom = nil,
+						["Cosmic Explosion"] = nil,
+						Slash = nil,
+						["Atomic Slash"] = nil,
+						AuraBurst = nil,
+						Thunder = nil,
+					} }, Functions = {}, Settings = { HitEffect = { Color = TargetAimbot.HitEffectColor } } };
+		local H = Instance.new("Folder");
+		H.Name = "HitChamsFolder";
+		H.Parent = u;
+		do
+			local I = Instance.new("Attachment");
+			I.Name = "Attachment";
+			G.Locals.Type["Crescent Slash"] = I;
+			local J = Instance.new("ParticleEmitter");
+			J.Name = "Glow";
+			J.Lifetime = NumberRange.new(.16, .16);
+			J.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(.1421725, .6182796), NumberSequenceKeypoint.new(1, 1) });
+			J.Color = ColorSequence.new(Color3.fromRGB(91, 177, 252));
+			J.Speed = NumberRange.new(0, 0);
+			J.Brightness = 5;
+			J.Size = NumberSequence.new(9.1873131, 16.5032349);
+			J.Enabled = false;
+			J.ZOffset = -0.0565939;
+			J.Rate = 50;
+			J.Texture = "rbxassetid://8708637750";
+			local K = Instance.new("ParticleEmitter");
+			K.Name = "Gradient1";
+			K.Lifetime = NumberRange.new(.3, .3);
+			K.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(.15, .3), NumberSequenceKeypoint.new(1, 1) });
+			K.Color = ColorSequence.new(Color3.fromRGB(115, 201, 255));
+			K.Speed = NumberRange.new(0, 0);
+			K.Brightness = 6;
+			K.Size = NumberSequence.new(0, 11.6261358);
+			K.Enabled = false;
+			K.ZOffset = .9187313;
+			K.Rate = 50;
+			K.Texture = "rbxassetid://8196169974";
+			K.Parent = I;
+			local L = Instance.new("ParticleEmitter");
+			L.Name = "Shards";
+			L.Lifetime = NumberRange.new(.19, .7);
+			L.SpreadAngle = Vector2.new(-90, 90);
+			L.Color = ColorSequence.new(Color3.fromRGB(108, 184, 255));
+			L.Drag = 10;
+			L.VelocitySpread = -90;
+			L.Squash = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(.5705521, .4125001), NumberSequenceKeypoint.new(1, -0.9375) });
+			L.Speed = NumberRange.new(97.7530136, 146.9970093);
+			L.Brightness = 4;
+			L.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.284774, 1.2389833, .1534118), NumberSequenceKeypoint.new(1, 0) });
+			L.Enabled = false;
+			L.Acceleration = Vector3.new(0, -56.96134185791, 0);
+			L.ZOffset = .5705321;
+			L.Rate = 50;
+			L.Texture = "rbxassetid://8030734851";
+			L.Rotation = NumberRange.new(90, 90);
+			L.Orientation = Enum.ParticleOrientation.VelocityParallel;
+			L.Parent = I;
+			local M = Instance.new("ParticleEmitter");
+			M.Name = "ShardsDark";
+			M.Lifetime = NumberRange.new(.19, .35);
+			M.SpreadAngle = Vector2.new(-90, 90);
+			M.Color = ColorSequence.new(Color3.fromRGB(108, 184, 255));
+			M.Drag = 10;
+			M.VelocitySpread = -90;
+			M.Squash = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(.5705521, .4125001), NumberSequenceKeypoint.new(1, -0.9375) });
+			M.Speed = NumberRange.new(97.7530136, 146.9970093);
+			M.Brightness = 4;
+			M.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.290774, .6734411, .1534118), NumberSequenceKeypoint.new(1, 0) });
+			M.Enabled = false;
+			M.ZOffset = .5705321;
+			M.Rate = 50;
+			M.Texture = "rbxassetid://8030734851";
+			M.Rotation = NumberRange.new(90, 90);
+			M.Orientation = Enum.ParticleOrientation.VelocityParallel;
+			M.Parent = I;
+			local N = Instance.new("ParticleEmitter");
+			N.Name = "Specs";
+			N.Lifetime = NumberRange.new(.33, 1.4);
+			N.SpreadAngle = Vector2.new(360, -1000);
+			N.Color = ColorSequence.new(Color3.fromRGB(98, 174, 255));
+			N.Drag = 10;
+			N.VelocitySpread = 360;
+			N.Speed = NumberRange.new(36.7492523, 146.9970093);
+			N.Brightness = 7;
+			N.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.200774, 2.0311937, .4363973), NumberSequenceKeypoint.new(1, 0) });
+			N.Enabled = false;
+			N.Acceleration = Vector3.new(0, 36.749252319336, 0);
+			N.Rate = 50;
+			N.Texture = "rbxassetid://8030760338";
+			N.EmissionDirection = Enum.NormalId.Right;
+			N.Parent = I;
+			local O = Instance.new("ParticleEmitter");
+			O.Name = "Specs";
+			O.Lifetime = NumberRange.new(.33, 1.75);
+			O.SpreadAngle = Vector2.new(90, -90);
+			O.Color = ColorSequence.new(Color3.fromRGB(106, 171, 255));
+			O.Drag = 9;
+			O.VelocitySpread = 90;
+			O.Speed = NumberRange.new(42.2616425, 73.4985046);
+			O.Brightness = 6;
+			O.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.210774, .3978962, .1855686), NumberSequenceKeypoint.new(1, 0) });
+			O.Enabled = false;
+			O.Acceleration = Vector3.new(0, -20.212089538574, 0);
+			O.ZOffset = .5144895;
+			O.Rate = 50;
+			O.Texture = "rbxassetid://8030760338";
+			O.Parent = I;
+			local P = Instance.new("ParticleEmitter");
+			P.Name = "Specs";
+			P.Lifetime = NumberRange.new(.19, 1.2);
+			P.SpreadAngle = Vector2.new(360, -1000);
+			P.Color = ColorSequence.new(Color3.fromRGB(98, 174, 255));
+			P.Drag = 10;
+			P.VelocitySpread = 360;
+			P.Speed = NumberRange.new(36.7492523, 146.9970093);
+			P.Brightness = 7;
+			P.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.200774, 2.0311937, .4363973), NumberSequenceKeypoint.new(1, 0) });
+			P.Enabled = false;
+			P.Acceleration = Vector3.new(0, 36.749252319336, 0);
+			P.Rate = 50;
+			P.Texture = "rbxassetid://8030760338";
+			P.EmissionDirection = Enum.NormalId.Right;
+			P.Parent = I;
+			local Q = Instance.new("ParticleEmitter");
+			Q.Name = "Specs2";
+			Q.Lifetime = NumberRange.new(.19, 1.35);
+			Q.SpreadAngle = Vector2.new(90, -90);
+			Q.Color = ColorSequence.new(Color3.fromRGB(106, 171, 255));
+			Q.Drag = 12;
+			Q.VelocitySpread = 90;
+			Q.Speed = NumberRange.new(42.2616425, 73.4985046);
+			Q.Brightness = 6;
+			Q.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.216774, .5721694, .1855686), NumberSequenceKeypoint.new(1, 0) });
+			Q.Enabled = false;
+			Q.Acceleration = Vector3.new(0, -20.212089538574, 0);
+			Q.ZOffset = .5144895;
+			Q.Rate = 50;
+			Q.Texture = "rbxassetid://8030760338";
+			Q.Parent = I;
+			local R = Instance.new("ParticleEmitter");
+			R.Name = "ddddddddddddddddddd";
+			R.Lifetime = NumberRange.new(.19, .37);
+			R.SpreadAngle = Vector2.new(90, -90);
+			R.LockedToPart = true;
+			R.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.6429392, 0), NumberSequenceKeypoint.new(1, 0) });
+			R.LightEmission = 1;
+			R.Color = ColorSequence.new(Color3.fromRGB(90, 184, 255), Color3.fromRGB(165, 251, 255));
+			R.Drag = 6;
+			R.TimeScale = .7;
+			R.VelocitySpread = 90;
+			R.Speed = NumberRange.new(81.5833435, 110.2477646);
+			R.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.410774, .6711507, .3356177), NumberSequenceKeypoint.new(1, 0) });
+			R.Enabled = false;
+			R.Acceleration = Vector3.new(0, -81.583343505859, 0);
+			R.ZOffset = .8345273;
+			R.Rate = 50;
+			R.Texture = "rbxassetid://1053546634";
+			R.RotSpeed = NumberRange.new(-444, 166);
+			R.Rotation = NumberRange.new(-360, 360);
+			R.Parent = I;
+			local S = Instance.new("ParticleEmitter");
+			S.Name = "large_shard";
+			S.Lifetime = NumberRange.new(.19, .28);
+			S.SpreadAngle = Vector2.new(-90, 90);
+			S.Color = ColorSequence.new(Color3.fromRGB(108, 184, 255));
+			S.Drag = 10;
+			S.VelocitySpread = -90;
+			S.Squash = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(.5705521, .4125001), NumberSequenceKeypoint.new(1, -0.9375) });
+			S.Speed = NumberRange.new(97.7530136, 146.9970093);
+			S.Brightness = 4;
+			S.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.260774, 3.515605, .1534118), NumberSequenceKeypoint.new(1, 0) });
+			S.Enabled = false;
+			S.ZOffset = .5705321;
+			S.Rate = 50;
+			S.Texture = "rbxassetid://8030734851";
+			S.Rotation = NumberRange.new(90, 90);
+			S.Orientation = Enum.ParticleOrientation.VelocityParallel;
+			S.Parent = I;
+			local T = Instance.new("ParticleEmitter");
+			T.Name = "out_Specs";
+			T.Lifetime = NumberRange.new(.19, 1);
+			T.SpreadAngle = Vector2.new(44, -1000);
+			T.Color = ColorSequence.new(Color3.fromRGB(98, 174, 255));
+			T.Drag = 10;
+			T.VelocitySpread = 44;
+			T.Speed = NumberRange.new(36.7492523, 146.9970093);
+			T.Brightness = 7;
+			T.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.244774, .5469525, .1433053), NumberSequenceKeypoint.new(1, 0) });
+			T.Enabled = false;
+			T.Acceleration = Vector3.new(0, -3.215559720993, 0);
+			T.Rate = 50;
+			T.Texture = "rbxassetid://8030760338";
+			T.EmissionDirection = Enum.NormalId.Right;
+			T.Parent = I;
+			local U = Instance.new("ParticleEmitter");
+			U.Name = "Effect";
+			U.Lifetime = NumberRange.new(.4, .7);
+			U.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4;
+			U.SpreadAngle = Vector2.new(360, -360);
+			U.LockedToPart = true;
+			U.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(.1070999, .19375),
+					NumberSequenceKeypoint.new(.7761194, .88125),
+					NumberSequenceKeypoint.new(1, 1),
+				});
+			U.LightEmission = 1;
+			U.Color = ColorSequence.new(Color3.fromRGB(92, 161, 252));
+			U.Drag = 1;
+			U.VelocitySpread = 360;
+			U.Speed = NumberRange.new(.0036749, .0036749);
+			U.Brightness = 2.0999999;
+			U.Size = NumberSequence.new(6.9680691, 9.9213123);
+			U.Enabled = false;
+			U.ZOffset = .4777403;
+			U.Rate = 50;
+			U.Texture = "rbxassetid://9484012464";
+			U.RotSpeed = NumberRange.new(-150, -150);
+			U.FlipbookMode = Enum.ParticleFlipbookMode.OneShot;
+			U.Rotation = NumberRange.new(50, 50);
+			U.Orientation = Enum.ParticleOrientation.VelocityPerpendicular;
+			U.Parent = I;
+			local V = Instance.new("ParticleEmitter");
+			V.Name = "Crescents";
+			V.Lifetime = NumberRange.new(.19, .38);
+			V.SpreadAngle = Vector2.new(-360, 360);
+			V.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(.1932907, 0),
+					NumberSequenceKeypoint.new(.778754, 0),
+					NumberSequenceKeypoint.new(1, 1),
+				});
+			V.LightEmission = 1;
+			V.Color = ColorSequence.new(Color3.fromRGB(92, 161, 252));
+			V.VelocitySpread = -360;
+			V.Speed = NumberRange.new(.0826858, .0826858);
+			V.Brightness = 20;
+			V.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.398774, 8.8026266, 2.2834616), NumberSequenceKeypoint.new(1, 11.477972, 1.860431) });
+			V.Enabled = false;
+			V.ZOffset = .4542207;
+			V.Rate = 50;
+			V.Texture = "rbxassetid://12509373457";
+			V.RotSpeed = NumberRange.new(800, 1000);
+			V.Rotation = NumberRange.new(-360, 360);
+			V.Orientation = Enum.ParticleOrientation.VelocityPerpendicular;
+			V.Parent = I;
+		end;
+		do
+			local I = Instance.new("Attachment");
+			I.Name = "Attachment";
+			G.Locals.Type["Cosmic Explosion"] = I;
+			local J = Instance.new("ParticleEmitter");
+			J.Name = "Glow";
+			J.Lifetime = NumberRange.new(.16, .16);
+			J.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(.1421725, .6182796), NumberSequenceKeypoint.new(1, 1) });
+			J.Color = ColorSequence.new(Color3.fromRGB(173, 82, 252));
+			J.Speed = NumberRange.new(0, 0);
+			J.Brightness = 5;
+			J.Size = NumberSequence.new(9.1873131, 16.5032349);
+			J.Enabled = false;
+			J.ZOffset = -0.0565939;
+			J.Rate = 50;
+			J.Texture = "rbxassetid://8708637750";
+			J.Parent = I;
+			local U = Instance.new("ParticleEmitter");
+			U.Name = "Effect";
+			U.Lifetime = NumberRange.new(.4, .7);
+			U.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4;
+			U.SpreadAngle = Vector2.new(360, -360);
+			U.LockedToPart = true;
+			U.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(.1070999, .19375),
+					NumberSequenceKeypoint.new(.7761194, .88125),
+					NumberSequenceKeypoint.new(1, 1),
+				});
+			U.LightEmission = 1;
+			U.Color = ColorSequence.new(Color3.fromRGB(173, 82, 252));
+			U.Drag = 1;
+			U.VelocitySpread = 360;
+			U.Speed = NumberRange.new(.0036749, .0036749);
+			U.Brightness = 2.0999999;
+			U.Size = NumberSequence.new(6.9680691, 9.9213123);
+			U.Enabled = false;
+			U.ZOffset = .4777403;
+			U.Rate = 50;
+			U.Texture = "rbxassetid://9484012464";
+			U.RotSpeed = NumberRange.new(-150, -150);
+			U.FlipbookMode = Enum.ParticleFlipbookMode.OneShot;
+			U.Rotation = NumberRange.new(50, 50);
+			U.Orientation = Enum.ParticleOrientation.VelocityPerpendicular;
+			U.Parent = I;
+			local K = Instance.new("ParticleEmitter");
+			K.Name = "Gradient1";
+			K.Lifetime = NumberRange.new(.3, .3);
+			K.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(.15, .3), NumberSequenceKeypoint.new(1, 1) });
+			K.Color = ColorSequence.new(Color3.fromRGB(173, 82, 252));
+			K.Speed = NumberRange.new(0, 0);
+			K.Brightness = 6;
+			K.Size = NumberSequence.new(0, 11.6261358);
+			K.Enabled = false;
+			K.ZOffset = .9187313;
+			K.Rate = 50;
+			K.Texture = "rbxassetid://8196169974";
+			K.Parent = I;
+			local L = Instance.new("ParticleEmitter");
+			L.Name = "Shards";
+			L.Lifetime = NumberRange.new(.19, .7);
+			L.SpreadAngle = Vector2.new(-90, 90);
+			L.Color = ColorSequence.new(Color3.fromRGB(173, 82, 252));
+			L.Drag = 10;
+			L.VelocitySpread = -90;
+			L.Squash = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(.5705521, .4125001), NumberSequenceKeypoint.new(1, -0.9375) });
+			L.Speed = NumberRange.new(97.7530136, 146.9970093);
+			L.Brightness = 4;
+			L.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.284774, 1.2389833, .1534118), NumberSequenceKeypoint.new(1, 0) });
+			L.Enabled = false;
+			L.Acceleration = Vector3.new(0, -56.96134185791, 0);
+			L.ZOffset = .5705321;
+			L.Rate = 50;
+			L.Texture = "rbxassetid://8030734851";
+			L.Rotation = NumberRange.new(90, 90);
+			L.Orientation = Enum.ParticleOrientation.VelocityParallel;
+			L.Parent = I;
+			local V = Instance.new("ParticleEmitter");
+			V.Name = "Crescents";
+			V.Lifetime = NumberRange.new(.19, .38);
+			V.SpreadAngle = Vector2.new(-360, 360);
+			V.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(.1932907, 0),
+					NumberSequenceKeypoint.new(.778754, 0),
+					NumberSequenceKeypoint.new(1, 1),
+				});
+			V.LightEmission = 10;
+			V.Color = ColorSequence.new(Color3.fromRGB(160, 96, 255));
+			V.VelocitySpread = -360;
+			V.Speed = NumberRange.new(.0826858, .0826858);
+			V.Brightness = 4;
+			V.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.398774, 8.8026266, 2.2834616), NumberSequenceKeypoint.new(1, 11.477972, 1.860431) });
+			V.Enabled = false;
+			V.ZOffset = .4542207;
+			V.Rate = 50;
+			V.Texture = "rbxassetid://12509373457";
+			V.RotSpeed = NumberRange.new(800, 1000);
+			V.Rotation = NumberRange.new(-360, 360);
+			V.Orientation = Enum.ParticleOrientation.VelocityPerpendicular;
+			V.Parent = I;
+			local W = Instance.new("ParticleEmitter");
+			W.Name = "ParticleEmitter2";
+			W.FlipbookFramerate = NumberRange.new(20, 20);
+			W.Lifetime = NumberRange.new(.19, .38);
+			W.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4;
+			W.SpreadAngle = Vector2.new(360, 360);
+			W.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(.209842, .5),
+					NumberSequenceKeypoint.new(.503842, .263333),
+					NumberSequenceKeypoint.new(.799842, .5),
+					NumberSequenceKeypoint.new(1, 1),
+				});
+			W.LightEmission = 1;
+			W.Color = ColorSequence.new(Color3.fromRGB(173, 82, 252));
+			W.VelocitySpread = 360;
+			W.Speed = NumberRange.new(.0161231, .0161231);
+			W.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 4.3125), NumberSequenceKeypoint.new(.3985056, 7.9375), NumberSequenceKeypoint.new(1, 10) });
+			W.Enabled = false;
+			W.ZOffset = .15;
+			W.Rate = 100;
+			W.Texture = "http://www.roblox.com/asset/?id=12394566430";
+			W.FlipbookMode = Enum.ParticleFlipbookMode.OneShot;
+			W.Rotation = NumberRange.new(39, 999);
+			W.Orientation = Enum.ParticleOrientation.VelocityParallel;
+			W.Parent = I;
+		end;
+		do
+			local I = Instance.new("Attachment");
+			G.Locals.Type.Coom = I;
+			local X = Instance.new("ParticleEmitter");
+			X.Name = "Foam";
+			X.LightInfluence = .5;
+			X.Lifetime = NumberRange.new(1, 1);
+			X.SpreadAngle = Vector2.new(360, -360);
+			X.VelocitySpread = 360;
+			X.Squash = NumberSequence.new(1);
+			X.Speed = NumberRange.new(20, 20);
+			X.Brightness = 2.5;
+			X.Size = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 0),
+					NumberSequenceKeypoint.new(.1016692, .6508875, .6508875),
+					NumberSequenceKeypoint.new(.6494689, 1.4201183, .4127519),
+					NumberSequenceKeypoint.new(1, 0),
+				});
+			X.Enabled = false;
+			X.Acceleration = Vector3.new(0, -66.040298461914, 0);
+			X.Rate = 100;
+			X.Texture = "rbxassetid://8297030850";
+			X.Rotation = NumberRange.new(-90, -90);
+			X.Orientation = Enum.ParticleOrientation.VelocityParallel;
+			X.Parent = I;
+		end;
+		do
+			local I = Instance.new("Attachment");
+			G.Locals.Type.Slash = I;
+			local V = Instance.new("ParticleEmitter");
+			V.Name = "Crescents";
+			V.Lifetime = NumberRange.new(.19, .38);
+			V.SpreadAngle = Vector2.new(-360, 360);
+			V.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(.1932907, 0),
+					NumberSequenceKeypoint.new(.778754, 0),
+					NumberSequenceKeypoint.new(1, 1),
+				});
+			V.LightEmission = 10;
+			V.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(160, 96, 255)),
+					ColorSequenceKeypoint.new(.3160622, Color3.fromRGB(160, 96, 255)),
+					ColorSequenceKeypoint.new(.5146805, Color3.fromRGB(154, 82, 255)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(160, 96, 255)),
+				});
+			V.VelocitySpread = -360;
+			V.Speed = NumberRange.new(.0826858, .0826858);
+			V.Brightness = 4;
+			V.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.398774, 8.8026266, 2.2834616), NumberSequenceKeypoint.new(1, 11.477972, 1.860431) });
+			V.Enabled = false;
+			V.ZOffset = .4542207;
+			V.Rate = 50;
+			V.Texture = "rbxassetid://12509373457";
+			V.RotSpeed = NumberRange.new(800, 1000);
+			V.Rotation = NumberRange.new(-360, 360);
+			V.Orientation = Enum.ParticleOrientation.VelocityPerpendicular;
+			V.Parent = I;
+		end;
+		do
+			local I = Instance.new("Attachment");
+			G.Locals.Type["Atomic Slash"] = I;
+			local V = Instance.new("ParticleEmitter");
+			V.Name = "Crescents";
+			V.Lifetime = NumberRange.new(.19, .38);
+			V.SpreadAngle = Vector2.new(-360, 360);
+			V.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(.1932907, 0),
+					NumberSequenceKeypoint.new(.778754, 0),
+					NumberSequenceKeypoint.new(1, 1),
+				});
+			V.LightEmission = 10;
+			V.Color = ColorSequence.new(Color3.fromRGB(160, 96, 255));
+			V.VelocitySpread = -360;
+			V.Speed = NumberRange.new(.0826858, .0826858);
+			V.Brightness = 4;
+			V.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.398774, 8.8026266, 2.2834616), NumberSequenceKeypoint.new(1, 11.477972, 1.860431) });
+			V.Enabled = false;
+			V.ZOffset = .4542207;
+			V.Rate = 50;
+			V.Texture = "rbxassetid://12509373457";
+			V.RotSpeed = NumberRange.new(800, 1000);
+			V.Rotation = NumberRange.new(-360, 360);
+			V.Orientation = Enum.ParticleOrientation.VelocityPerpendicular;
+			V.Parent = I;
+			local J = Instance.new("ParticleEmitter");
+			J.Name = "Glow";
+			J.Lifetime = NumberRange.new(.16, .16);
+			J.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(.1421725, .6182796), NumberSequenceKeypoint.new(1, 1) });
+			J.Color = ColorSequence.new(Color3.fromRGB(173, 82, 252));
+			J.Speed = NumberRange.new(0, 0);
+			J.Brightness = 5;
+			J.Size = NumberSequence.new(9.1873131, 16.5032349);
+			J.Enabled = false;
+			J.ZOffset = -0.0565939;
+			J.Rate = 50;
+			J.Texture = "rbxassetid://8708637750";
+			J.Parent = I;
+			local U = Instance.new("ParticleEmitter");
+			U.Name = "Effect";
+			U.Lifetime = NumberRange.new(.4, .7);
+			U.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4;
+			U.SpreadAngle = Vector2.new(360, -360);
+			U.LockedToPart = true;
+			U.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(.1070999, .19375),
+					NumberSequenceKeypoint.new(.7761194, .88125),
+					NumberSequenceKeypoint.new(1, 1),
+				});
+			U.LightEmission = 1;
+			U.Color = ColorSequence.new(Color3.fromRGB(173, 82, 252));
+			U.Drag = 1;
+			U.VelocitySpread = 360;
+			U.Speed = NumberRange.new(.0036749, .0036749);
+			U.Brightness = 2.0999999;
+			U.Size = NumberSequence.new(6.9680691, 9.9213123);
+			U.Enabled = false;
+			U.ZOffset = .4777403;
+			U.Rate = 50;
+			U.Texture = "rbxassetid://9484012464";
+			U.RotSpeed = NumberRange.new(-150, -150);
+			U.FlipbookMode = Enum.ParticleFlipbookMode.OneShot;
+			U.Rotation = NumberRange.new(50, 50);
+			U.Orientation = Enum.ParticleOrientation.VelocityPerpendicular;
+			U.Parent = I;
+			local K = Instance.new("ParticleEmitter");
+			K.Name = "Gradient1";
+			K.Lifetime = NumberRange.new(.3, .3);
+			K.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(.15, .3), NumberSequenceKeypoint.new(1, 1) });
+			K.Color = ColorSequence.new(Color3.fromRGB(173, 82, 252));
+			K.Speed = NumberRange.new(0, 0);
+			K.Brightness = 6;
+			K.Size = NumberSequence.new(0, 11.6261358);
+			K.Enabled = false;
+			K.ZOffset = .9187313;
+			K.Rate = 50;
+			K.Texture = "rbxassetid://8196169974";
+			K.Parent = I;
+			local L = Instance.new("ParticleEmitter");
+			L.Name = "Shards";
+			L.Lifetime = NumberRange.new(.19, .7);
+			L.SpreadAngle = Vector2.new(-90, 90);
+			L.Color = ColorSequence.new(Color3.fromRGB(179, 145, 253));
+			L.Drag = 10;
+			L.VelocitySpread = -90;
+			L.Squash = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(.5705521, .4125001), NumberSequenceKeypoint.new(1, -0.9375) });
+			L.Speed = NumberRange.new(97.7530136, 146.9970093);
+			L.Brightness = 4;
+			L.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.284774, 1.2389833, .1534118), NumberSequenceKeypoint.new(1, 0) });
+			L.Enabled = false;
+			L.Acceleration = Vector3.new(0, -56.96134185791, 0);
+			L.ZOffset = .5705321;
+			L.Rate = 50;
+			L.Texture = "rbxassetid://8030734851";
+			L.Rotation = NumberRange.new(90, 90);
+			L.Orientation = Enum.ParticleOrientation.VelocityParallel;
+			L.Parent = I;
+		end;
+		do
+			local Y = Instance.new("Attachment");
+			Y.Name = "Attachment";
+			G.Locals.Type.AuraBurst = Y;
+			local Z = Instance.new("ParticleEmitter");
+			Z.Name = "useparticle2";
+			Z.Acceleration = Vector3.new(0, 10, 0);
+			Z.Brightness = 10;
+			Z.Color = ColorSequence.new(Color3.new(0, 1, .333333), Color3.new(0, 0, 1));
+			Z.Drag = 3;
+			Z.Enabled = false;
+			Z.Lifetime = NumberRange.new(.3, 10);
+			Z.LightEmission = 1;
+			Z.Rate = 50;
+			Z.RotSpeed = NumberRange.new(-150, 150);
+			Z.Rotation = NumberRange.new(-360, 360);
+			Z.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.19467, .819203), NumberSequenceKeypoint.new(1, 0) });
+			Z.Speed = NumberRange.new(4.49742, 34.4802);
+			Z.SpreadAngle = Vector2.new(360, 360);
+			Z.Texture = "rbxassetid://16171528032";
+			Z.Parent = Y;
+			local _ = Instance.new("ParticleEmitter");
+			_.Name = "useparticle";
+			_.Acceleration = Vector3.new(0, 10, 0);
+			_.Brightness = 10;
+			_.Color = ColorSequence.new(Color3.new(0, 1, .403922), Color3.new(.12549, 0, 1));
+			_.Drag = 3;
+			_.Enabled = false;
+			_.Lifetime = NumberRange.new(.3, 10);
+			_.LightEmission = 1;
+			_.Rate = 50;
+			_.RotSpeed = NumberRange.new(-150, 150);
+			_.Rotation = NumberRange.new(-360, 360);
+			_.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.19467, .819203), NumberSequenceKeypoint.new(1, 0) });
+			_.Speed = NumberRange.new(4.49742, 34.4802);
+			_.SpreadAngle = Vector2.new(360, 360);
+			_.Texture = "rbxassetid://16171528032";
+			_.Parent = Y;
+			local a0 = Instance.new("ParticleEmitter");
+			a0.Name = "circles2";
+			a0.Acceleration = Vector3.new(0, 0, .001);
+			a0.Brightness = 10;
+			a0.Color = ColorSequence.new(Color3.new(0, 1, .541176), Color3.new(.0784314, 0, 1));
+			a0.Enabled = false;
+			a0.Lifetime = NumberRange.new(.9, .9);
+			a0.LightInfluence = .35;
+			a0.Orientation = Enum.ParticleOrientation.VelocityPerpendicular;
+			a0.Rate = 4;
+			a0.RotSpeed = NumberRange.new(150, 150);
+			a0.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.20394, 8.79781), NumberSequenceKeypoint.new(1, 10) });
+			a0.Speed = NumberRange.new(.01, .01);
+			a0.SpreadAngle = Vector2.new(360, 360);
+			a0.Texture = "http://www.roblox.com/asset/?id=6835970470";
+			a0.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.840125, .83125), NumberSequenceKeypoint.new(1, 1) });
+			a0.Parent = Y;
+			local a1 = Instance.new("ParticleEmitter");
+			a1.Name = "circles";
+			a1.Acceleration = Vector3.new(0, 0, .001);
+			a1.Brightness = 10;
+			a1.Color = ColorSequence.new(Color3.new(0, 1, .45098), Color3.new(.133333, 0, 1));
+			a1.Enabled = false;
+			a1.Lifetime = NumberRange.new(.9, .9);
+			a1.LightInfluence = .35;
+			a1.Orientation = Enum.ParticleOrientation.VelocityPerpendicular;
+			a1.Rate = 4;
+			a1.RotSpeed = NumberRange.new(150, 150);
+			a1.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.20394, 8.79781), NumberSequenceKeypoint.new(1, 10) });
+			a1.Speed = NumberRange.new(.01, .01);
+			a1.SpreadAngle = Vector2.new(360, 360);
+			a1.Texture = "http://www.roblox.com/asset/?id=6835970470";
+			a1.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.840125, .83125), NumberSequenceKeypoint.new(1, 1) });
+			a1.Parent = Y;
+		end;
+		do
+			local Y = Instance.new("Attachment");
+			Y.Name = "Attachment";
+			G.Locals.Type.Thunder = Y;
+			local a2 = Instance.new("ParticleEmitter");
+			a2.Parent = Y;
+			a2.Name = "ELECTRIC";
+			a2.Brightness = 3;
+			a2.Color = ColorSequence.new(Color3.new(0, .52549, .780392), Color3.new(1, 0, 1));
+			a2.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid8x8;
+			a2.FlipbookMode = Enum.ParticleFlipbookMode.OneShot;
+			a2.Lifetime = NumberRange.new(1, 3);
+			a2.LightEmission = 1;
+			a2.Orientation = Enum.ParticleOrientation.FacingCameraWorldUp;
+			a2.Rate = 5;
+			a2.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 19), NumberSequenceKeypoint.new(1, 0) });
+			a2.Speed = NumberRange.new(0, 0);
+			a2.SpreadAngle = Vector2.new(-360, 360);
+			a2.Texture = "rbxassetid://10547286472";
+			a2.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(.25, 1), NumberSequenceKeypoint.new(1, 1) });
+			local a3 = Instance.new("ParticleEmitter");
+			a3.Color = ColorSequence.new(Color3.fromRGB(0, 0, 255), Color3.fromRGB(0, 0, 255), Color3.fromRGB(0, 0, 255), Color3.fromRGB(0, 0, 139));
+			a3.Drag = 5;
+			a3.Lifetime = NumberRange.new(.4, .4);
+			a3.LightEmission = .5;
+			a3.Rate = 5;
+			a3.Parent = Y;
+			a3.RotSpeed = NumberRange.new(200, 250);
+			a3.Rotation = NumberRange.new(-360, 360);
+			a3.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 7), NumberSequenceKeypoint.new(1, 0) });
+			a3.Speed = NumberRange.new(0, 0);
+			a3.Texture = "http://www.roblox.com/asset/?id=467188845";
+			a3.Transparency = NumberSequence.new(0, .43125, 0, .299656, .04375, 0, .874618, 0, 0, 1, 0, 0);
+			a3.ZOffset = 1;
+		end;
+		do
+			local a4 = Instance.new("Part");
+			a4.Parent = s;
+			local Y = Instance.new("Attachment");
+			Y.Name = "Attachment";
+			Y.Parent = a4;
+			G.Locals.Type.Nova = Y;
+			local function a5(a6)
+				local a7 = Instance.new("ParticleEmitter");
+				a7.Name = "ParticleEmitter";
+				a7.Acceleration = a6;
+				a7.Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(.495, G.Settings.HitEffect.Color), ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0)) });
+				a7.Lifetime = NumberRange.new(.5, .5);
+				a7.LightEmission = 1;
+				a7.LockedToPart = true;
+				a7.Rate = 1;
+				a7.Rotation = NumberRange.new(0, 360);
+				a7.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 10), NumberSequenceKeypoint.new(1, 1) });
+				a7.Speed = NumberRange.new(0, 0);
+				a7.Texture = "rbxassetid://1084991215";
+				a7.Transparency = NumberSequence.new({
+						NumberSequenceKeypoint.new(0, 0),
+						NumberSequenceKeypoint.new(0, .1),
+						NumberSequenceKeypoint.new(.534, .25),
+						NumberSequenceKeypoint.new(1, .5),
+						NumberSequenceKeypoint.new(1, 0),
+					});
+				a7.ZOffset = 1;
+				a7.Parent = Y;
+				return a7;
+			end;
+			a5(Vector3.new(0, 0, 1));
+			local a8 = a5(Vector3.new(0, 1, -0.001));
+			a8.Orientation = Enum.ParticleOrientation.VelocityPerpendicular;
+		end;
+		G.Functions.Effect = function(a9, aa)
+				if not a9 then
+					return;
+				end;
+				local ab = a9:FindFirstChild("HumanoidRootPart");
+				if not ab then
+					return;
+				end;
+				local ac = G.Locals.Type[TargetAimbot.HitEffectType]:Clone();
+				ac.Parent = ab;
+				for ad, a7 in pairs(ac:GetChildren()) do
+					if a7:IsA("ParticleEmitter") then
+						a7.Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(.495, TargetAimbot.HitEffectColor), ColorSequenceKeypoint.new(1, TargetAimbot.HitEffectColor) });
+						if TargetAimbot.HitEffect then
+							a7:Emit();
+						end;
+					end;
+				end;
+				task.delay(2, function()
+					ac:Destroy();
+				end);
+			end;
+		function PlayHitSound()
+			if TargetAimbot.HitSounds and o[TargetAimbot.HitSound] then
+				local ae = Instance.new("Sound");
+				ae.SoundId = o[TargetAimbot.HitSound];
+				ae.Parent = y;
+				ae:Play();
+				ae.Ended:Connect(function()
+					ae:Destroy();
+				end);
+			end;
+		end;
+		function HitChams(af)
+			if not TargetAimbot.HitChams then
+				return;
+			end;
+			if af and (af.Character and af.Character:FindFirstChild("HumanoidRootPart")) then
+				af.Character.Archivable = true;
+				local ag = af.Character:Clone();
+				ag.Name = "Player Clone";
+				for ad, ah in ipairs(ag:GetChildren()) do
+					if ah:IsA("BasePart") then
+						if ah.Name ~= "HumanoidRootPart" then
+							ah.CanCollide = false;
+							ah.Anchored = true;
+							ah.Transparency = TargetAimbot.HitChamsTransparency;
+							if TargetAimbot.HitChamColorEnabled then
+								ah.Material = TargetAimbot.HitChamsMaterial;
+								ah.Color = TargetAimbot.HitChamsColor;
+							end;
+						end;
+					elseif ah:IsA("Humanoid") then
+						ah:Destroy();
+					end;
+				end;
+				if TargetAimbot.HitChamsAcc then
+					for ad, ai in ipairs(af.Character:GetChildren()) do
+						if ai:IsA("Accessory") then
+							local aj = ai:Clone();
+							aj.Parent = ag;
+						end;
+					end;
+				else
+					for ad, ak in ipairs(ag:GetChildren()) do
+						if not ak:IsA("BasePart") or ak.Name == "HumanoidRootPart" then
+							ak:Destroy();
+						end;
+					end;
+				end;
+				if ag:FindFirstChild("Head") and ag.Head:FindFirstChild("face") then
+					ag.Head.face:Destroy();
+				end;
+				ag.Parent = game.Workspace;
+				task.delay(TargetAimbot.HitChamsDuration, function()
+					ag:Destroy();
+				end);
+			end;
+		end;
+		local al = nil;
+		function updateTargetHealth()
+			if B and (C and C.Character) then
+				local am = C.Character:FindFirstChild("Humanoid");
+				if am then
+					local an = am.Health;
+					if an < al then
+						if Hitnotify then
+							d:Notification("Hit | " .. (tostring((getgenv()).khen.SelectedPart) .. (" | " .. C.DisplayName)), 1.5);
+						end;
+						PlayHitSound();
+						G.Functions.Effect(C.Character);
+						HitChams(C);
+					end;
+					al = an;
+				end;
+			end;
+		end;
+		t.RenderStepped:Connect(function()
+			if TargetAimbot.Enabled and (B and (TargetAimbot.Highlight and (C and (C.Character and p)))) then
+				E.FillColor = TargetAimbot.HighlightColor1;
+				E.OutlineColor = TargetAimbot.HighlightColor2;
+				E.Adornee = C.Character;
+				E.Enabled = true;
+			else
+				E.Adornee = nil;
+				E.Enabled = false;
+			end;
+		end);
+		local ao, ap, aq, ar, as, at = nil, (game:GetService("Players")).LocalPlayer, workspace.CurrentCamera, {}, Instance.new("Folder", workspace), Instance.new("Part");
+		at.Name = "im a khen";
+		at.Parent = workspace;
+		at.Size = (ap.Character:WaitForChild("HumanoidRootPart")).Size;
+		at.CanCollide = false;
+		at.Anchored = true;
+		at.Transparency = 1;
+		ar.CFrameVisualize = (game:GetObjects("rbxassetid://9474737816"))[1];
+		ar.CFrameVisualize.Head.Face:Destroy();
+		for ad, au in pairs(ar.CFrameVisualize:GetChildren()) do
+			au.Transparency = au.Name == "HumanoidRootPart" and 1 or .7;
+			au.Material = "Neon";
+			au.Color = Color3.fromRGB(153, 0, 153);
+			au.CanCollide = false;
+			au.Anchored = false;
+		end;
+		(game:GetService("RunService")).Heartbeat:Connect(function()
+			if TargetAimbot.CSync.Enabled then
+				ar.CFrameVisualize.Parent = as;
+			else
+				ar.CFrameVisualize.Parent = nil;
+			end;
+			if TargetAimbot.CSync.Enabled and (C and TargetAimbot.CSync.Visualize) then
+				local ab = ap.Character:FindFirstChild("HumanoidRootPart");
+				if ab then
+					local av = ab.CFrame;
+					ao = ab.CFrame;
+					if B and TargetAimbot.CSync.Type == "Random" then
+						av = CFrame.new(C.Character.HumanoidRootPart.Position + Vector3.new(math.random(-TargetAimbot.CSync.RandomAmount, TargetAimbot.CSync.RandomAmount), math.random(0, TargetAimbot.CSync.RandomAmount), math.random(-TargetAimbot.CSync.RandomAmount, TargetAimbot.CSync.RandomAmount))) * CFrame.Angles(math.rad(math.random(0, 360)), math.rad(math.random(0, 360)), math.rad(math.random(0, 360)));
+					elseif B and TargetAimbot.CSync.Type == "Orbit" then
+						local aw = tick();
+						av = (CFrame.new(C.Character.HumanoidRootPart.Position) * CFrame.Angles(0, (((2 * math.pi) * aw) * TargetAimbot.CSync.Speed) % (2 * math.pi), 0)) * CFrame.new(0, TargetAimbot.CSync.Height, TargetAimbot.CSync.Distance);
+					end;
+					ar.CFrameVisualize:SetPrimaryPartCFrame(av);
+					for ad, ax in pairs(ar.CFrameVisualize:GetChildren()) do
+						ax.Color = TargetAimbot.CSync.Color;
+					end;
+					ab.CFrame = av;
+					(game:GetService("RunService")).RenderStepped:Wait();
+					at.Position = ao.Position + Vector3.new(0, 1.5, 0);
+					if B then
+						aq.CameraSubject = at;
+					else
+						aq.CameraSubject = ap.Character:FindFirstChild("Humanoid");
+					end;
+					ab.CFrame = ao;
+				end;
+			end;
+		end);
+		local ay = nil;
+		t.RenderStepped:Connect(function()
+			if C and (C.Character and ((game:GetService("Players")).LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and C.Character:FindFirstChild("HumanoidRootPart"))) then
+				if TargetAimbot.CSync.Enabled and not TargetAimbot.CSync.Visualize then
+					local az;
+					if TargetAimbot.CSync.Type == "Random" then
+						az = CFrame.new(C.Character.HumanoidRootPart.Position + Vector3.new(math.random(-TargetAimbot.CSync.RandomAmount, TargetAimbot.CSync.RandomAmount), math.random(0, TargetAimbot.CSync.RandomAmount), math.random(-TargetAimbot.CSync.RandomAmount, TargetAimbot.CSync.RandomAmount))) * CFrame.Angles(math.rad(math.random(0, 360)), math.rad(math.random(0, 360)), math.rad(math.random(0, 360)));
+					elseif TargetAimbot.CSync.Type == "Orbit" then
+						local aw = tick();
+						az = (CFrame.new(C.Character.HumanoidRootPart.Position) * CFrame.Angles(0, (((2 * math.pi) * aw) * TargetAimbot.CSync.Speed) % (2 * math.pi), 0)) * CFrame.new(0, TargetAimbot.CSync.Height, TargetAimbot.CSync.Distance);
+					end;
+					(game:GetService("Players")).LocalPlayer.Character.HumanoidRootPart.CFrame = az;
+					ay = C.Character.HumanoidRootPart.Position;
+				elseif not C and ay then
+					(game:GetService("Players")).LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(ay);
+					ay = nil;
+				end;
+			end;
+		end);
+		(getgenv()).khen.LockType = "Namecall";
+		(getgenv()).khen.RESOLVER = "MoveDirection";
+		local aA = (loadstring(game:HttpGet("https://raw.githubusercontent.com/CongoOhioDog/automatic-spork/fe941a88f627e38e55029fa5c643a70b4890e5bf/Argument", true)))();
+		function getRemoteInfo()
+			local aB = game.PlaceId;
+			return aA[aB] or { Remote = "MainEvent", Argument = "UpdateMousePos" };
+		end;
+		local aC, aD = tick(), nil;
+		function predictedposition()
+			local aE = khen.SelectedPart;
+			local aF = C.Character[aE];
+			if aF then
+				local aG = tick();
+				local aH = aF.CFrame;
+				local aI = Vector3.new(0, 0, 0);
+				if khen.ResolverEnabled then
+					if (getgenv()).khen.RESOLVER == "Recalculate" then
+						if aD then
+							local aJ = aG - aC;
+							if aJ > 0 then
+								local aK = aH - aD;
+								aI = aK / aJ;
+							end;
+						end;
+						aD = aH;
+						aC = aG;
+					elseif (getgenv()).khen.RESOLVER == "MoveDirection" then
+						aI = C.Character.Humanoid.MoveDirection * C.Character.Humanoid.WalkSpeed;
+					elseif (getgenv()).khen.RESOLVER == "LookVector" then
+						aI = (aF.CFrame.LookVector * khen.HorizontalPrediction) * 1.5;
+					end;
+				else
+					aI = aF.AssemblyLinearVelocity;
+				end;
+				local aL = khen.HorizontalPrediction;
+				local aM = khen.VerticalPrediction;
+				local aN = khen.jumpoffset or 0;
+				if khen.UseVertical then
+					return Vector3.new(aH.X + aI.X / aL, aH.Y + aI.Y / aM, aH.Z + aI.Z / aL) + Vector3.new(0, khen.jumpoffset, 0);
+				else
+					return Vector3.new(aH.X + aI.X * aL, aH.Y + aI.Y * aM, aH.Z + aI.Z * aL) + Vector3.new(0, khen.jumpoffset, 0);
+				end;
+			end;
+			return nil;
+		end;
+		if game.PlaceId == 9825515356 then
+			local aO = A.PlayerGui:WaitForChild("Framework");
+			local aP;
+			if aO then
+				aP = getsenv(aO);
+			end;
+			t.PostSimulation:Connect(function(aQ)
+				if (getgenv()).khen.LockType == "Index" and ((getgenv()).khen.Enabled and (aP and C)) then
+					aP._G.MOUSE_POSITION = TargetFuturePosition();
+				end;
+			end);
+		else
+			local aR = {};
+			local aS = (game:GetService("Players")).LocalPlayer:GetMouse();
+			aR[1] = hookmetamethod(aS, "__index", newcclosure(function(self, aT)
+					if aT == "Hit" and ((getgenv()).khen.LockType == "Index" and ((getgenv()).khen.Enabled and (C and (C.Character and (getgenv()).khen.SelectedPart)))) then
+						local aU = predictedposition() + Vector3.new(0, (getgenv()).khen.jumpoffset, 0);
+						if aU then
+							return CFrame.new(aU);
+						end;
+					end;
+					return aR[1](self, aT);
+				end));
+		end;
+		local aV = getrawmetatable(game);
+		local aW = aV.__namecall;
+		setreadonly(aV, false);
+		aV.__namecall = newcclosure(function(self, ...)
+				local aX = { ... };
+				local aY = getnamecallmethod();
+				if (getgenv()).khen.Enabled and ((getgenv()).khen.LockType == "Namecall" and (not checkcaller() and aY == "FireServer")) then
+					for aZ, au in pairs(aX) do
+						if typeof(au) == "Vector3" or typeof(au) == "CFrame" then
+							remote = self;
+							argument = aZ;
+							firesignal_args = aX;
+							if C and C.Character then
+								aX[aZ] = predictedposition() + Vector3.new(0, (getgenv()).khen.jumpoffset, 0);
+							end;
+						end;
+					end;
+					return aW(self, unpack(aX));
+				end;
+				return aW(self, ...);
+			end);
+		setreadonly(aV, true);
+		local a_, b0 = game:GetService("Players"), (game:GetService("Players")).LocalPlayer;
+		local function b1()
+			if C then
+				local a9 = b0.Character;
+				if a9 then
+					local b2 = a9:FindFirstChildOfClass("Tool");
+					if b2 and b2:IsA("Tool") then
+						b2:Activate();
+					end;
+				end;
+			end;
+		end;
+		local b3 = Instance.new("BillboardGui");
+		b3.Name = "PP";
+		b3.Size = UDim2.new(.5, 0, .5, 0);
+		b3.AlwaysOnTop = true;
+		local b4 = Instance.new("Frame", b3);
+		b4.Size = UDim2.new(.7, 0, .7, 0);
+		b4.BackgroundTransparency = 0;
+		local b5 = Instance.new("UIStroke", b4);
+		b5.Thickness = 1.5;
+		b5.Color = Color3.fromRGB(0, 0, 0);
+		local b6 = Instance.new("UICorner", b4);
+		b6.CornerRadius = UDim.new(.5, 0);
+		local b7 = Instance.new("Part");
+		b7.Size = Vector3.new(0, 0, 0);
+		b7.Anchored = true;
+		b7.Parent = workspace;
+		b3.Adornee = b7;
+		b3.Parent = workspace;
+		t.RenderStepped:Connect(function()
+			b4.BackgroundColor3 = d.Accent;
+			if C and (C.Character and (getgenv()).khen.VelocityDot) then
+				local b8 = predictedposition();
+				b7.Transparency = 0;
+				b7.Position = b8 + Vector3.new(0, (getgenv()).khen.jumpoffset, 0);
+			else
+				local b8 = Vector3.new(0, 999999999999999999, 0);
+				b7.Position = b8;
+				b7.Transparency = 1;
+			end;
+		end);
+		local b9 = Drawing.new("Line");
+		b9.Color = Color3.fromRGB(255, 0, 0);
+		b9.Thickness = 1;
+		b9.Visible = false;
+		local ba, bb, bc, bd = Vector2.new(aq.ViewportSize.X / 2, aq.ViewportSize.Y / 2), nil, nil, .6;
+		bb, bc = ba, ba;
+		t.RenderStepped:Connect(function()
+			if C and (C.Character and (getgenv()).khen.tracer) then
+				local be = C.Character:FindFirstChild("HumanoidRootPart");
+				if be then
+					local b8 = aq:WorldToViewportPoint(be.Position + Vector3.new(0, (getgenv()).khen.jumpoffset, 0));
+					if b8.Z > 0 then
+						bc = bc:Lerp(Vector2.new(b8.X, b8.Y), bd);
+						bb = bb:Lerp(ba, bd);
+						b9.From, b9.To = bb, bc;
+						b9.Visible = true;
+						return;
+					end;
+				end;
+			end;
+			b9.Visible = false;
+		end);
+		local bf, bg, bh = (getgenv()).khen.ShootDelay, nil, false;
+		function checkTarget()
+			if C and C.Character then
+				local am = C.Character:FindFirstChildOfClass("Humanoid");
+				local ab = C.Character:FindFirstChild("HumanoidRootPart");
+				if am and ab then
+					local bi = am:GetState() == Enum.HumanoidStateType.Freefall;
+					if bi and (getgenv()).khen.AutoAir then
+						if not bg then
+							bg = tick();
+						else
+							local bj = tick() - bg;
+							if bj >= bf then
+								if not bh then
+									bh = true;
+									while C and (C.Character and bi) do
+										b1();
+										wait(.001);
+										bi = am:GetState() == Enum.HumanoidStateType.Freefall;
+										if not bi then
+											bh = false;
+											bg = nil;
+											break;
+										end;
+									end;
+									bh = false;
+								end;
+							end;
+						end;
+					else
+						bg = nil;
+						bh = false;
+					end;
+				end;
+			end;
+		end;
+		local bk = (loadstring(game:HttpGet("https://raw.githubusercontent.com/CongoOhioDog/automatic-spork/ace00650a0fc7e01fad3d61e4a5135f03a9fb61e/Prediction", true)))();
+		function updatePredictionValue()
+			if (getgenv()).khen.AutoPrediction then
+				local bl = z.Network.ServerStatsItem["Data Ping"]:GetValueString();
+				local bm = string.split(bl, "(");
+				local bn = tonumber(bm[1]);
+				if bn then
+					if (getgenv()).khen.AutoPredMode == "PingBased" then
+						local bo = math.huge;
+						local bp = nil;
+						for aZ = 1, #bk, 1 do
+							local bq = bk[aZ][1];
+							local br = bk[aZ][2];
+							local bs = math.abs(bn - bq);
+							if bs < bo then
+								bo = bs;
+								bp = br;
+							end;
+						end;
+						if bp then
+							(getgenv()).khen.HorizontalPrediction = bp;
+							(getgenv()).khen.VerticalPrediction = bp * .8;
+						end;
+					end;
+				end;
+			end;
+		end;
+		function LookAtPlayer(bt)
+			local bu = (game:GetService("Players")).LocalPlayer.Character or (game:GetService("Players")).LocalPlayer.CharacterAdded:Wait();
+			local bv = bu:FindFirstChild("HumanoidRootPart");
+			if bv then
+				if (getgenv()).khen and (getgenv()).khen.LookAt then
+					if bt and (bt.Character and bt.Character:FindFirstChild("HumanoidRootPart")) then
+						local bw = bt.Character.HumanoidRootPart;
+						local bx = bw.Position;
+						local by = bv.Position;
+						local bz = (Vector3.new(bx.X - by.X, 0, bx.Z - by.Z)).unit;
+						bv.CFrame = CFrame.new(by, by + bz);
+						bu.Humanoid.AutoRotate = false;
+					end;
+				else
+					(game:GetService("Players")).LocalPlayer.Character.Humanoid.AutoRotate = true;
+				end;
+			end;
+		end;
+		function NearestPart(C)
+			local bA = {
+					"Head",
+					"UpperTorso",
+					"LowerTorso",
+					"LeftUpperArm",
+					"LeftLowerArm",
+					"LeftHand",
+					"RightUpperArm",
+					"RightLowerArm",
+					"RightHand",
+					"LeftUpperLeg",
+					"LeftLowerLeg",
+					"LeftFoot",
+					"RightUpperLeg",
+					"RightLowerLeg",
+					"RightFoot",
+				};
+			local bB = (getgenv()).khen.SelectedPart;
+			if C and C.Character then
+				if (getgenv()).khen.NearestPart then
+					local bC = math.huge;
+					local bD = nil;
+					for ad, bE in pairs(bA) do
+						local a4 = C.Character:FindFirstChild(bE);
+						if a4 then
+							local bF = (a4.Position - (game:GetService("Players")).LocalPlayer.Character.HumanoidRootPart.Position).Magnitude;
+							if bF < bC then
+								bC = bF;
+								bD = a4;
+							end;
+						end;
+					end;
+					if bD then
+						(getgenv()).khen.SelectedPart = bD.Name;
+					end;
+				else
+					(getgenv()).khen.SelectedPart = bB;
+				end;
+			end;
+		end;
+		function ViewTarget()
+			if C and (C.Character and (getgenv()).khen.ViewAt) then
+				aq.CameraSubject = C.Character.Humanoid;
+			else
+				aq.CameraSubject = (game:GetService("Players")).LocalPlayer.Character.Humanoid;
+			end;
+		end;
+		function inAir()
+			bf = (getgenv()).khen.ShootDelay;
+			if C and (C.Character and C.Character:FindFirstChild("Humanoid")) then
+				local bG = C.Character.Humanoid:GetState() == Enum.HumanoidStateType.Freefall;
+				if bG then
+					(getgenv()).khen.jumpoffset = (getgenv()).khen.jumpoffset2;
+				else
+					(getgenv()).khen.jumpoffset = 0;
+				end;
+			end;
+		end;
+		t.Stepped:Connect(function()
+			updatePredictionValue();
+			checkTarget();
+			updateTargetHealth();
+			LookAtPlayer(C);
+			NearestPart(C);
+			inAir();
+			ViewTarget();
+			if (getgenv()).khen.AutoShoot and A.Character:FindFirstChildWhichIsA("Tool") ~= nil then
+				(A.Character:FindFirstChildOfClass("Tool")):Activate();
+			end;
+			if not (getgenv()).khen.AutoPrediction then
+				(getgenv()).khen.HorizontalPrediction = (getgenv()).khen.HorizontalPrediction2;
+				(getgenv()).khen.VerticalPrediction = (getgenv()).khen.VerticalPrediction2;
+			end;
+		end);
+		(getgenv()).khen.Exposure = 0;
+		(getgenv()).khen.ClockTime = 12;
+		local bH = game:GetService("Lighting");
+		local bH = game:GetService("Lighting");
+		local bI, bJ, bK, bL, bM, bN, bO = bH.FogColor, bH.FogStart, bH.FogEnd, bH.Ambient, bH.Brightness, bH.ClockTime, bH.ExposureCompensation;
+		(getgenv()).Environment = {
+				Exposure = 0,
+				ClockTime = 12,
+				FogColor = Color3.fromRGB(255, 58, 58),
+				FogStart = 0,
+				FogEnd = 100,
+				Ambient = Color3.fromRGB(255, 0, 0),
+				Brightness = 2,
+				Enabled = false,
+			};
+		t.RenderStepped:Connect(function()
+			if (getgenv()).Environment.Enabled then
+				bH.FogColor = (getgenv()).Environment.FogColor;
+				bH.FogStart = (getgenv()).Environment.FogStart;
+				bH.FogEnd = (getgenv()).Environment.FogEnd;
+				bH.Ambient = (getgenv()).Environment.Ambient;
+				bH.Brightness = (getgenv()).Environment.Brightness;
+				bH.ClockTime = (getgenv()).Environment.ClockTime;
+				bH.ExposureCompensation = (getgenv()).Environment.Exposure;
+			else
+				bH.FogColor = bI;
+				bH.FogStart = bJ;
+				bH.FogEnd = bK;
+				bH.Ambient = bL;
+				bH.Brightness = bM;
+				bH.ClockTime = bN;
+				bH.ExposureCompensation = bO;
+			end;
+		end);
+		Recalculate = function(bP)
+				local bQ = bP.HumanoidRootPart.Position;
+				local bR = tick();
+				task.wait(.0001);
+				local bS = bP.HumanoidRootPart.Position;
+				local bT = tick();
+				local bU = bT - bR;
+				local bV = bS - bQ;
+				local bW = bV / bU;
+				bQ = bS;
+				bR = bT;
+				return bW;
+			end;
+		t.Heartbeat:Connect(LPH_JIT(function()
+			if (getgenv()).khen.Camera and (C and (C.Character and (getgenv()).khen.SelectedPart)) then
+				if C.Character[(getgenv()).khen.SelectedPart] then
+					(getgenv()).khen.velocity = (getgenv()).khen.ResolverEnabled and Recalculate(C.Character) or C.Character[(getgenv()).khen.SelectedPart].AssemblyLinearVelocity;
+					(getgenv()).khen.targetPosition = (getgenv()).khen.UseExternal and Vector3.new(C.Character[(getgenv()).khen.SelectedPart].Position.X + (getgenv()).khen.velocity.X / (getgenv()).khen.CamPrediction1, C.Character[(getgenv()).khen.SelectedPart].Position.Y + (getgenv()).khen.velocity.Y / (getgenv()).khen.CamPrediction2, C.Character[(getgenv()).khen.SelectedPart].Position.Z + (getgenv()).khen.velocity.Z / (getgenv()).khen.CamPrediction1) or Vector3.new(C.Character[(getgenv()).khen.SelectedPart].Position.X + (getgenv()).khen.velocity.X * (getgenv()).khen.CamPrediction1, C.Character[(getgenv()).khen.SelectedPart].Position.Y + (getgenv()).khen.velocity.Y * (getgenv()).khen.CamPrediction2, C.Character[(getgenv()).khen.SelectedPart].Position.Z + (getgenv()).khen.velocity.Z * (getgenv()).khen.CamPrediction1);
+					aq.CFrame = aq.CFrame:Lerp(CFrame.new(aq.CFrame.Position, (getgenv()).khen.targetPosition), (getgenv()).khen.smoothness or .1, Enum.EasingStyle[(getgenv()).khen.easingStyle], Enum.EasingDirection[(getgenv()).khen.easingDirection]);
+				end;
+			end;
+		end));
+		local bX = (game:GetService("Players")).LocalPlayer;
+		(bX.Character:WaitForChild("Humanoid")).StateChanged:Connect(function(aW, bY)
+			if (getgenv()).khen.JumpBreak and bY == Enum.HumanoidStateType.Freefall then
+				wait(.17);
+				bX.Character.HumanoidRootPart.Velocity = Vector3.new(0, -15, 0);
+			end;
+		end);
+		(game:GetService("RunService")).heartbeat:Connect(function()
+			if (getgenv()).Desync == true then
+				local bZ = (game:GetService("Players")).LocalPlayer.Character.HumanoidRootPart.Velocity;
+				if (getgenv()).AntiLockType == "Behind" then
+					(getgenv()).Direction = Vector3.new(0, 0, -1);
+				elseif (getgenv()).AntiLockType == "Down" then
+					(getgenv()).Direction = Vector3.new(0, -1, 0);
+				elseif (getgenv()).AntiLockType == "ForWard" then
+					(getgenv()).Direction = Vector3.new(0, 0, 1);
+				elseif (getgenv()).AntiLockType == "Left" then
+					(getgenv()).Direction = Vector3.new(-1, 0, 0);
+				elseif (getgenv()).AntiLockType == "One" then
+					(getgenv()).Direction = Vector3.new(1, 1, 1);
+				elseif (getgenv()).AntiLockType == "Right" then
+					(getgenv()).Direction = Vector3.new(1, 0, 0);
+				elseif (getgenv()).AntiLockType == "Up" then
+					(getgenv()).Direction = Vector3.new(0, 1, 0);
+				elseif (getgenv()).AntiLockType == "Zero" then
+					(getgenv()).Direction = Vector3.new(0, 0, 0);
+				end;
+				(game:GetService("Players")).LocalPlayer.Character.HumanoidRootPart.Velocity = (getgenv()).Direction * 65536.0;
+				(game:GetService("RunService")).RenderStepped:Wait();
+				(game:GetService("Players")).LocalPlayer.Character.HumanoidRootPart.Velocity = bZ;
+			end;
+		end);
+		t.Heartbeat:Connect(function()
+			if bX.Character and bX.Character:FindFirstChild("HumanoidRootPart") then
+				if (getgenv()).khen and (getgenv()).khen.network then
+					setfflag("S2PhysicsSenderRate", 2);
+				else
+					setfflag("S2PhysicsSenderRate", 13);
+				end;
+			end;
+		end);
+		local b_, c0, r, c1 = ((game:GetService("MarketplaceService")):GetProductInfo(game.PlaceId)).Name, os.date("%Y-%m-%d"), game:GetService("Players"), (game:GetService("Players")).LocalPlayer;
+		local c2 = "Newbie";
+		local c3, c4, c5, c6, c7, c8 = Instance.new("ScreenGui"), Instance.new("Frame"), Instance.new("UIGradient"), Instance.new("UICorner"), Instance.new("UIStroke"), Color3.fromRGB(255, 58, 58);
+		c3.Parent = (game:GetService("Players")).LocalPlayer:WaitForChild("PlayerGui");
+		c3.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+		local c9, ca, cb, cc, cd, ce = false, .6, "Center", Color3.fromRGB(0, 0, 0), Color3.fromRGB(0, 0, 255), 125;
+		c4.Parent = c3;
+		c4.Visible = c9;
+		c4.BackgroundColor3 = Color3.fromRGB(255, 255, 255);
+		c4.BackgroundTransparency = ca;
+		c4.BorderColor3 = Color3.fromRGB(0, 0, 0);
+		c4.BorderSizePixel = 0;
+		c6.CornerRadius = UDim.new(1, 0);
+		c6.Parent = c4;
+		c7.Thickness = 1.3;
+		c7.Color = c8;
+		c7.Parent = c4;
+		c5.Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, cc), ColorSequenceKeypoint.new(1, cd) });
+		c5.Parent = c4;
+		local function cf()
+			local cg = c5.Color.Keypoints[1].Value;
+			c7.Color = Color3.new(cg.R, cg.G, cg.B);
+		end;
+		local ch = workspace.CurrentCamera;
+		local ci = ch.ViewportSize;
+		local function cj(ce)
+			c4.Size = UDim2.new(0, ce, 0, ce);
+			c4.Position = UDim2.new(.5, -ce / 2, .5, -ce / 2);
+		end;
+		cj(200);
+		local ck = (game:GetService("Players")).LocalPlayer;
+		local aS = ck:GetMouse();
+		aS.Move:Connect(function()
+			if aS and cb == "Mouse" then
+				c4.Position = UDim2.new(0, aS.X - c4.Size.X.Offset / 2, 0, aS.Y - c4.Size.Y.Offset / 2);
+			else
+				c4.Position = UDim2.new(.5, -c4.Size.X.Offset / 2, .5, -c4.Size.Y.Offset / 2);
+			end;
+		end);
+		local cl = 4;
+		spawn(function()
+			while true do
+				c5.Rotation = c5.Rotation + cl;
+				cf();
+				wait(.01);
+			end;
+		end);
+		local cm = Drawing.new("Circle");
+		cm.Transparency = .5;
+		cm.Thickness = 2;
+		cm.Color = Color3.new(1, 0, 0);
+		cm.Filled = false;
+		cm.Radius = 250;
+		cm.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2);
+		cm.Visible = false;
+		local cn = Instance.new("ScreenGui");
+		cn.Name = "lol";
+		cn.Parent = game.CoreGui;
+		cn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+		cn.ResetOnSpawn = false;
+		local co = Instance.new("ImageButton");
+		co.Name = "ImageButton";
+		co.Parent = cn;
+		co.Active = true;
+		co.Draggable = true;
+		co.BackgroundColor3 = Color3.fromRGB(20, 20, 20);
+		co.BackgroundTransparency = .35;
+		co.Size = UDim2.new(0, 90, 0, 90);
+		co.Image = "rbxassetid://10747366027";
+		co.Position = UDim2.new(.5, -25, .5, -25);
+		local cp = Instance.new("UICorner");
+		cp.CornerRadius = UDim.new(.2, 0);
+		cp.Parent = co;
+		local cq = false;
+		function SigmaOhioPlayer()
+			local cr;
+			local cs = math.huge;
+			local ck = (game:GetService("Players")).LocalPlayer;
+			local ct = (game:GetService("Workspace")).CurrentCamera;
+			local ba = Vector2.new(ct.ViewportSize.X / 2, ct.ViewportSize.Y / 2);
+			local cu = cm.Radius;
+			local ci = ct.ViewportSize;
+			for aZ, au in pairs((game:GetService("Players")):GetPlayers()) do
+				if au ~= ck and (au.Character and (au.Character:FindFirstChild("Humanoid") and (au.Character.Humanoid.Health > 0 and au.Character:FindFirstChild("HumanoidRootPart")))) then
+					local b8, cv = ct:WorldToViewportPoint(au.Character.PrimaryPart.Position);
+					if cv and (b8.X > 0 and (b8.Y > 0 and (b8.X < ci.X and b8.Y < ci.Y))) then
+						local cw = (Vector2.new(b8.X, b8.Y) - ba).magnitude;
+						if cw < cu and cw < cs then
+							cr = au;
+							cs = cw;
+						end;
+					end;
+				end;
+			end;
+			return cr;
+		end;
+		local function cx()
+			if TargetAimbot.Enabled then
+				local cy = SigmaOhioPlayer();
+				if B and C then
+					B = false;
+					al = nil;
+					(game:GetService("Players")).LocalPlayer.Character.Humanoid.AutoRotate = true;
+					C = nil;
+					u.CurrentCamera.CameraSubject = A.Character.Humanoid;
+					if TargetAimbot.LookAt then
+						A.Character.Humanoid.AutoRotate = true;
+					end;
+					co.Image = "rbxassetid://10747366027";
+					d:Notification("Untargeted", 2);
+				else
+					if cy then
+						B = true;
+						C = cy;
+						if C.Character and C.Character:FindFirstChild("Humanoid") then
+							al = C.Character.Humanoid.Health;
+						else
+							return;
+						end;
+						co.Image = "rbxassetid://10723434711";
+						d:Notification("Target Locked: " .. tostring(C.DisplayName), 2);
+					else
+						d:Notification("No target found", 2);
+					end;
+				end;
+			end;
+		end;
+		co.MouseButton1Click:Connect(cx);
+		q.InputBegan:Connect(function(cz, cA)
+			if not cA then
+				if cz.KeyCode == TargetAimbot.Keybind or cz.KeyCode == Enum.KeyCode.DPadDown then
+					cx();
+				end;
+			end;
+		end);
+		local cB = d:Window({ Name = string.format("FAILURTY.CC | %s | %s | %s", b_, c0, c2), Amount = 7 });
+		local cC = (game:GetService("Players")).LocalPlayer.Name;
+		local cD = string.sub(tostring(math.random()), 3, 8);
+		local cE = { "Michael Myers", "Terrifier", "Scream" };
+		local cF = cE[math.random(#cE)];
+		local cG = d:Watermark({ Name = string.format("%s | %s | %s |", cC, cD, cF) });
+		local cH = d:Indicator({ Name = "New Indicator" });
+		local cI = cH:NewValue({ Name = "New Text", Value = "value here" });
+		local cJ = cH:NewBar({
+				Name = "New Bar",
+				Value = 10,
+				Min = 0,
+				Max = 100,
+			});
+		local cK = cB:Page({ Name = "Legit", Weapons = true });
+		local cL = cB:Page({ Name = "Rage", Weapons = true });
+		local cM = cB:Page({ Name = "Movement", Weapons = true });
+		local cN = cB:Page({ Name = "Visuals", Weapons = true });
+		local cO = cB:Page({ Name = "Settings" });
+		local cP = cK:Weapon({ Icon = "rbxassetid://78117064682304" });
+		local cQ = cK:Weapon({ Icon = "rbxassetid://104037274406938" });
+		local cR = cM:Weapon({ Icon = "rbxassetid://106397886212631" });
+		local cS = cK:Weapon({ Icon = "rbxassetid://113531571097970" });
+		local cT = cN:Weapon({ Icon = "rbxassetid://114736089502081" });
+		local cU = cL:Weapon({ Icon = "rbxassetid://114736089502081" });
+		local cV = cP:Section({ Name = "Target", Side = "Left" });
+		cV:Divider({ Name = "Target Aim" });
+		cV:Toggle({ Name = "Enabled", Callback = function(b4)
+				TargetAimbot.Enabled = b4;
+			end });
+		cV:Keybind({
+			Name = "Lock Keybind",
+			Flag = "Lock Keybind",
+			UseKey = true,
+			Default = TargetAimbot.Keybind,
+			Callback = function(cW)
+				TargetAimbot.Keybind = cW;
+			end,
+		});
+		cV:Toggle({ Name = "Look At", Callback = function(b4)
+				(getgenv()).khen.LookAt = b4;
+			end });
+		cV:Toggle({ Name = "View", Callback = function(b4)
+				(getgenv()).khen.ViewAt = b4;
+			end });
+		cV:Toggle({ Name = "Auto Air", Callback = function(b4)
+				(getgenv()).khen.AutoAir = b4;
+			end });
+		cV:List({
+			Name = "Method",
+			Options = { "Index", "Namecall" },
+			Default = "Namecall",
+			Callback = function(b4)
+				(getgenv()).khen.LockType = b4;
+			end,
+		});
+		local cX = cP:Section({ Name = "Body", Side = "Left" });
+		cX:Divider({ Name = "Hit Part" });
+		cX:List({
+			Name = "Hit Part",
+			Options = {
+				"Head",
+				"UpperTorso",
+				"LowerTorso",
+				"HumanoidRootPart",
+				"LeftUpperArm",
+				"LeftLowerArm",
+				"LeftHand",
+				"RightUpperArm",
+				"RightLowerArm",
+				"RightHand",
+				"LeftUpperLeg",
+				"LeftLowerLeg",
+				"LeftFoot",
+				"RightUpperLeg",
+				"RightLowerLeg",
+				"RightFoot",
+			},
+			Default = "HumanoidRootPart",
+			Callback = function(b4)
+				khen.SelectedPart = b4;
+				TargetAimbot.RealHitPart = b4;
+			end,
+		});
+		local cY = cP:Section({ Name = "Prediction", Side = "Right" });
+		cY:Divider({ Name = "Prediction" });
+		cY:Toggle({ Name = "Auto Prediction", Callback = function(b4)
+				(getgenv()).khen.AutoPrediction = b4;
+			end });
+		cY:Textbox({ Name = "X", Default = .1, Callback = function(b4)
+				(getgenv()).khen.HorizontalPrediction2 = tonumber(b4) or .1;
+			end });
+		cY:Textbox({ Name = "Y", Default = .1, Callback = function(b4)
+				(getgenv()).khen.VerticalPrediction2 = tonumber(b4) or .1;
+			end });
+		cY:Textbox({ Name = "Offset", Default = (getgenv()).khen.jumpoffset2, Callback = function(b4)
+				(getgenv()).khen.jumpoffset2 = tonumber(b4);
+			end });
+		cY:Divider({ Name = "ESP Target" });
+		cY:Toggle({ Name = "Dot Target", Callback = function(b4)
+				(getgenv()).khen.VelocityDot = b4;
+			end });
+		cY:Toggle({ Name = "Tracer Target", Callback = function(b4)
+				(getgenv()).khen.tracer = b4;
+			end });
+		cY:Toggle({ Name = "Highlight Target", Callback = function(b4)
+				p = b4;
+			end });
+		cY:Divider({ Name = "Resolver" });
+		cY:Toggle({ Name = "Resolver", Flag = "Target Resolver", Callback = function(b4)
+				khen.ResolverEnabled = b4;
+			end });
+		cY:List({
+			Name = "Resolver Method",
+			Flag = "Resolver Method",
+			Options = { "Recalculate", "MoveDirection", "LookVector" },
+			Default = (getgenv()).khen.RESOLVER,
+			Callback = function(b4)
+				(getgenv()).khen.RESOLVER = b4;
+			end,
+		});
+		local cZ = cR:Section({ Name = "Local Player", Side = "Left" });
+		(getgenv()).NOJUMP = (getgenv()).NOJUMP or false;
+		(getgenv()).IDKBRO = (getgenv()).IDKBRO or false;
+		if not (getgenv()).__NOJUMP_IDKBRO_HOOKED then
+			local c_ = getrawmetatable(game);
+			local aW = c_.__newindex;
+			setreadonly(c_, false);
+			c_.__newindex = newcclosure(function(d0, d1, au)
+					if d1 == "JumpPower" and (getgenv()).NOJUMP then
+						au = 50;
+					end;
+					if d1 == "WalkSpeed" and (getgenv()).IDKBRO then
+						if type(au) == "number" and au < 16 then
+							au = 16;
+						end;
+					end;
+					if type(aW) == "function" then
+						return aW(d0, d1, au);
+					else
+						return rawset(d0, d1, au);
+					end;
+				end);
+			setreadonly(c_, true);
+			(getgenv()).__NOJUMP_IDKBRO_HOOKED = true;
+		end;
+		cZ:Divider({ Name = "No Jump Cooldown" });
+		cZ:Toggle({ Name = "No Jump Cooldown", Callback = function(d2)
+				(getgenv()).NOJUMP = d2;
+			end });
+		cZ:Divider({ Name = "No Slow Down" });
+		cZ:Toggle({ Name = "No Slow Down", Callback = function(d2)
+				(getgenv()).IDKBRO = d2;
+			end });
+		local d3 = cR:Section({ Name = "Walk Speed", Side = "Right" });
+		d3:Divider({ Name = "Walk Speed" });
+		local d4 = 50;
+		local d5 = nil;
+		local d6 = false;
+		local function d7()
+			if d5 then
+				d5:Destroy();
+			end;
+			d5 = Instance.new("ScreenGui");
+			d5.Name = "WalkSpeedGui";
+			d5.Parent = game.CoreGui;
+			d5.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+			d5.ResetOnSpawn = false;
+			local d8 = Instance.new("TextButton");
+			d8.Name = "WalkSpeedButton";
+			d8.Size = UDim2.new(0, 60, 0, 50);
+			d8.Position = UDim2.new(.5, -25, .5, -35);
+			d8.BackgroundColor3 = Color3.fromRGB(0, 0, 0);
+			d8.BackgroundTransparency = .4;
+			d8.Text = "WS: OFF";
+			d8.TextColor3 = Color3.fromRGB(255, 0, 0);
+			d8.Font = Enum.Font.Code;
+			d8.TextScaled = true;
+			d8.TextWrapped = true;
+			d8.Parent = d5;
+			local d9 = Instance.new("UICorner");
+			d9.CornerRadius = UDim.new(0, 10);
+			d9.Parent = d8;
+			local da = Instance.new("UIStroke");
+			da.Color = Color3.fromRGB(255, 0, 0);
+			da.Thickness = 1;
+			da.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
+			da.Parent = d8;
+			local am;
+			local db = false;
+			local dc = 16;
+			local function dd()
+				if am then
+					if db then
+						am.WalkSpeed = d4;
+					else
+						am.WalkSpeed = dc;
+					end;
+				end;
+			end;
+			local function de()
+				if db then
+					d8.Text = "WS: ON";
+				else
+					d8.Text = "WS: OFF";
+				end;
+			end;
+			local df = false;
+			local dg, dh;
+			d8.InputBegan:Connect(function(cz)
+				if cz.UserInputType == Enum.UserInputType.MouseButton1 or cz.UserInputType == Enum.UserInputType.Touch then
+					df = true;
+					dg = d8.Position;
+					dh = cz.Position;
+					cz.Changed:Connect(function()
+						if cz.UserInputState == Enum.UserInputState.End then
+							df = false;
+						end;
+					end);
+				end;
+			end);
+			d8.InputChanged:Connect(function(cz)
+				if df and (cz.UserInputType == Enum.UserInputType.MouseMovement or cz.UserInputType == Enum.UserInputType.Touch) then
+					local aJ = cz.Position - dh;
+					d8.Position = UDim2.new(dg.X.Scale, dg.X.Offset + aJ.X, dg.Y.Scale, dg.Y.Offset + aJ.Y);
+				end;
+			end);
+			local function di(a9)
+				am = a9:WaitForChild("Humanoid");
+				dc = am.WalkSpeed;
+				local dj;
+				dj = (am:GetPropertyChangedSignal("WalkSpeed")):Connect(function()
+						if db and am.WalkSpeed ~= d4 then
+							am.WalkSpeed = d4;
+						elseif not db and am.WalkSpeed ~= dc then
+							dc = am.WalkSpeed;
+						end;
+					end);
+				a9.AncestryChanged:Connect(function()
+					if not a9.Parent then
+						dj:Disconnect();
+					end;
+				end);
+				dd();
+				de();
+			end;
+			local ck = (game:GetService("Players")).LocalPlayer;
+			ck.CharacterAdded:Connect(di);
+			if ck.Character then
+				di(ck.Character);
+			end;
+			d8.MouseButton1Click:Connect(function()
+				db = not db;
+				dd();
+				de();
+			end);
+		end;
+		d3:Toggle({ Name = "Walk Speed GUI", Callback = function(d2)
+				d6 = d2;
+				if d2 then
+					d7();
+				else
+					if d5 then
+						d5:Destroy();
+						d5 = nil;
+					end;
+				end;
+			end });
+		d3:Textbox({ Name = "WalkSpeed Value", Placeholder = "50", Callback = function(dk)
+				local dl = tonumber(dk);
+				if dl and (dl > 0 and dl <= 1000) then
+					d4 = dl;
+				end;
+			end });
+		d3:Divider({ Name = "Jump Power" });
+		local dm = 100;
+		local dn = nil;
+		local dp = false;
+		local function dq()
+			if dn then
+				dn:Destroy();
+			end;
+			dn = Instance.new("ScreenGui");
+			dn.Name = "JumpPowerGui";
+			dn.Parent = game.CoreGui;
+			dn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+			dn.ResetOnSpawn = false;
+			local d8 = Instance.new("TextButton");
+			d8.Name = "JumpPowerButton";
+			d8.Size = UDim2.new(0, 60, 0, 50);
+			d8.Position = UDim2.new(.5, 115, .5, -35);
+			d8.BackgroundColor3 = Color3.fromRGB(0, 0, 0);
+			d8.BackgroundTransparency = .4;
+			d8.Text = "JP: OFF";
+			d8.TextColor3 = Color3.fromRGB(255, 0, 0);
+			d8.Font = Enum.Font.Code;
+			d8.TextScaled = true;
+			d8.TextWrapped = true;
+			d8.Parent = dn;
+			local d9 = Instance.new("UICorner");
+			d9.CornerRadius = UDim.new(0, 10);
+			d9.Parent = d8;
+			local da = Instance.new("UIStroke");
+			da.Color = Color3.fromRGB(255, 0, 0);
+			da.Thickness = 1;
+			da.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
+			da.Parent = d8;
+			local am;
+			local db = false;
+			local dr = 50;
+			local function ds()
+				if am then
+					if db then
+						am.JumpPower = dm;
+					else
+						am.JumpPower = dr;
+					end;
+				end;
+			end;
+			local function de()
+				if db then
+					d8.Text = "JP: ON";
+				else
+					d8.Text = "JP: OFF";
+				end;
+			end;
+			local df = false;
+			local dg, dh;
+			d8.InputBegan:Connect(function(cz)
+				if cz.UserInputType == Enum.UserInputType.MouseButton1 or cz.UserInputType == Enum.UserInputType.Touch then
+					df = true;
+					dg = d8.Position;
+					dh = cz.Position;
+					cz.Changed:Connect(function()
+						if cz.UserInputState == Enum.UserInputState.End then
+							df = false;
+						end;
+					end);
+				end;
+			end);
+			d8.InputChanged:Connect(function(cz)
+				if df and (cz.UserInputType == Enum.UserInputType.MouseMovement or cz.UserInputType == Enum.UserInputType.Touch) then
+					local aJ = cz.Position - dh;
+					d8.Position = UDim2.new(dg.X.Scale, dg.X.Offset + aJ.X, dg.Y.Scale, dg.Y.Offset + aJ.Y);
+				end;
+			end);
+			local function di(a9)
+				am = a9:WaitForChild("Humanoid");
+				dr = am.JumpPower;
+				local dj;
+				dj = (am:GetPropertyChangedSignal("JumpPower")):Connect(function()
+						if db and am.JumpPower ~= dm then
+							am.JumpPower = dm;
+						elseif not db and am.JumpPower ~= dr then
+							dr = am.JumpPower;
+						end;
+					end);
+				a9.AncestryChanged:Connect(function()
+					if not a9.Parent then
+						dj:Disconnect();
+					end;
+				end);
+				ds();
+				de();
+			end;
+			local ck = (game:GetService("Players")).LocalPlayer;
+			ck.CharacterAdded:Connect(di);
+			if ck.Character then
+				di(ck.Character);
+			end;
+			d8.MouseButton1Click:Connect(function()
+				db = not db;
+				ds();
+				de();
+			end);
+		end;
+		d3:Toggle({ Name = "Jump Power GUI", Callback = function(d2)
+				dp = d2;
+				if d2 then
+					dq();
+				else
+					if dn then
+						dn:Destroy();
+						dn = nil;
+					end;
+				end;
+			end });
+		d3:Textbox({ Name = "JumpPower Value", Placeholder = "100", Callback = function(dk)
+				local dl = tonumber(dk);
+				if dl and (dl > 0 and dl <= 1000) then
+					dm = dl;
+				end;
+			end });
+		local dt = cR:Section({ Name = "Velocity Fly", Side = "Right" });
+		dt:Divider({ Name = "Velocity Fly" });
+		local du = {
+				Speed = 50,
+				GUI = nil,
+				Enabled = false,
+				BV = nil,
+				BG = nil,
+				Conn = nil,
+			};
+		function setFly(d2)
+			local ck = game.Players.LocalPlayer;
+			local dv = ck.Character;
+			if not dv then
+				return;
+			end;
+			local dw = dv:FindFirstChildWhichIsA("Humanoid");
+			local dx = dv:FindFirstChild("Torso") or dv:FindFirstChild("UpperTorso");
+			if not (dw and dx) then
+				return;
+			end;
+			if d2 then
+				du.Enabled = true;
+				du.BG = Instance.new("BodyGyro", dx);
+				du.BG.P = 90000.0;
+				du.BG.maxTorque = Vector3.new(9000000000.0, 9000000000.0, 9000000000.0);
+				du.BG.CFrame = dx.CFrame;
+				du.BV = Instance.new("BodyVelocity", dx);
+				du.BV.Velocity = Vector3.new(0, .1, 0);
+				du.BV.MaxForce = Vector3.new(9000000000.0, 9000000000.0, 9000000000.0);
+				du.OriginalWalkSpeed = dw.WalkSpeed;
+				dw.WalkSpeed = 0;
+				du.Conn = (game:GetService("RunService")).RenderStepped:Connect(function()
+						local dy = workspace.CurrentCamera;
+						local dz = dw.MoveDirection;
+						if dz.Magnitude > 0 then
+							local dA = dy.CFrame;
+							local dB = dA.LookVector;
+							local dC = dA.RightVector;
+							local dD = dA:Inverse();
+							local dE = dD:VectorToWorldSpace(dz);
+							du.BV.Velocity = (dB * -dE.Z + dC * dE.X) * du.Speed;
+						else
+							du.BV.Velocity = Vector3.new(0, .1, 0);
+						end;
+						du.BG.CFrame = dy.CFrame;
+					end);
+			else
+				du.Enabled = false;
+				if du.OriginalWalkSpeed then
+					dw.WalkSpeed = du.OriginalWalkSpeed;
+				end;
+				if du.Conn then
+					du.Conn:Disconnect();
+				end;
+				if du.BV then
+					du.BV:Destroy();
+				end;
+				if du.BG then
+					du.BG:Destroy();
+				end;
+			end;
+		end;
+		function createFlyGUI()
+			if du.GUI then
+				du.GUI:Destroy();
+			end;
+			du.GUI = Instance.new("ScreenGui");
+			du.GUI.Name = "FlyGui";
+			du.GUI.Parent = game.CoreGui;
+			du.GUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+			du.GUI.ResetOnSpawn = false;
+			local d8 = Instance.new("TextButton");
+			d8.Size = UDim2.new(0, 60, 0, 50);
+			d8.Position = UDim2.new(.5, -30, .5, -25);
+			d8.BackgroundColor3 = Color3.fromRGB(0, 0, 0);
+			d8.BackgroundTransparency = .4;
+			d8.Text = "Fly: OFF";
+			d8.TextColor3 = Color3.fromRGB(255, 0, 0);
+			d8.Font = Enum.Font.Code;
+			d8.TextScaled = true;
+			d8.TextWrapped = true;
+			d8.Parent = du.GUI;
+			local dF = Instance.new("UICorner", d8);
+			dF.CornerRadius = UDim.new(0, 10);
+			local dG = Instance.new("UIStroke", d8);
+			dG.Color = Color3.fromRGB(255, 0, 0);
+			dG.Thickness = 1;
+			dG.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
+			local df, dg, dH = false, nil, nil;
+			d8.InputBegan:Connect(function(cz)
+				if cz.UserInputType == Enum.UserInputType.MouseButton1 or cz.UserInputType == Enum.UserInputType.Touch then
+					df = true;
+					dg = d8.Position;
+					dH = cz.Position;
+					cz.Changed:Connect(function()
+						if cz.UserInputState == Enum.UserInputState.End then
+							df = false;
+						end;
+					end);
+				end;
+			end);
+			d8.InputChanged:Connect(function(cz)
+				if df and (cz.UserInputType == Enum.UserInputType.MouseMovement or cz.UserInputType == Enum.UserInputType.Touch) then
+					local aJ = cz.Position - dH;
+					d8.Position = UDim2.new(dg.X.Scale, dg.X.Offset + aJ.X, dg.Y.Scale, dg.Y.Offset + aJ.Y);
+				end;
+			end);
+			local function dI()
+				if du.Enabled then
+					d8.Text = "Fly: ON";
+				else
+					d8.Text = "Fly: OFF";
+				end;
+			end;
+			d8.MouseButton1Click:Connect(function()
+				setFly(not du.Enabled);
+				dI();
+			end);
+			dI();
+		end;
+		dt:Toggle({ Name = "Fly GUI", Callback = function(d2)
+				if d2 then
+					createFlyGUI();
+				else
+					if du.GUI then
+						du.GUI:Destroy();
+						du.GUI = nil;
+						setFly(false);
+					end;
+				end;
+			end });
+		dt:Textbox({ Name = "Fly Speed", Placeholder = "50", Callback = function(dk)
+				local dl = tonumber(dk);
+				if dl and (dl > 1 and dl <= 1000) then
+					du.Speed = dl;
+				end;
+			end });
+		local dJ = cR:Section({ Name = "Cframe Speed", Side = "Left" });
+		dJ:Divider({ Name = "Cframe Speed" });
+		(getgenv()).cframe = (getgenv()).cframe or {};
+		local dK = (getgenv()).cframe;
+		dK.settings = { enabled = false, showbutton = false, speed = 5 };
+		local dL = game:GetService("TweenService");
+		local w = game:GetService("CoreGui");
+		local r = game:GetService("Players");
+		local A = r.LocalPlayer;
+		local dM = A:WaitForChild("PlayerGui");
+		local t = game:GetService("RunService");
+		local aq = workspace.CurrentCamera;
+		local q = game:GetService("UserInputService");
+		local c3, dN;
+		local dO;
+		local function dP()
+			if c3 then
+				c3:Destroy();
+			end;
+			c3 = Instance.new("ScreenGui");
+			c3.Name = "SpeedCFrameGUI";
+			c3.ResetOnSpawn = false;
+			c3.Parent = w;
+			dN = Instance.new("TextButton");
+			dN.Name = "SpeedCFrameButton";
+			dN.Size = UDim2.new(0, 60, 0, 50);
+			dN.Position = UDim2.new(.5, -95, .5, -35);
+			dN.BackgroundColor3 = Color3.fromRGB(0, 0, 0);
+			dN.BackgroundTransparency = .4;
+			dN.Text = dK.settings.enabled and "CFS: ON" or "CFS: OFF";
+			dN.TextColor3 = Color3.fromRGB(255, 0, 0);
+			dN.Font = Enum.Font.Code;
+			dN.TextScaled = true;
+			dN.TextWrapped = true;
+			dN.Parent = c3;
+			local dQ = Instance.new("UIStroke");
+			dQ.Color = Color3.fromRGB(255, 0, 0);
+			dQ.Thickness = 1;
+			dQ.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
+			dQ.Parent = dN;
+			local c6 = Instance.new("UICorner");
+			c6.CornerRadius = UDim.new(0, 10);
+			c6.Parent = dN;
+			dN.MouseButton1Click:Connect(function()
+				dK.settings.enabled = not dK.settings.enabled;
+				dN.Text = dK.settings.enabled and "CFS: ON" or "CFS: OFF";
+			end);
+			local df = false;
+			local dg, dh;
+			dN.InputBegan:Connect(function(cz)
+				if cz.UserInputType == Enum.UserInputType.MouseButton1 or cz.UserInputType == Enum.UserInputType.Touch then
+					df = true;
+					dg = dN.Position;
+					dh = cz.Position;
+					cz.Changed:Connect(function()
+						if cz.UserInputState == Enum.UserInputState.End then
+							df = false;
+						end;
+					end);
+				end;
+			end);
+			dN.InputChanged:Connect(function(cz)
+				if df and (cz.UserInputType == Enum.UserInputType.MouseMovement or cz.UserInputType == Enum.UserInputType.Touch) then
+					local aJ = cz.Position - dh;
+					dN.Position = UDim2.new(dg.X.Scale, dg.X.Offset + aJ.X, dg.Y.Scale, dg.Y.Offset + aJ.Y);
+				end;
+			end);
+		end;
+		local function dR()
+			if c3 then
+				c3:Destroy();
+				c3 = nil;
+				dN = nil;
+			end;
+		end;
+		function createCFrameGUI()
+			dK.settings.showbutton = true;
+			dP();
+			if not dO then
+				dO = t.Heartbeat:Connect(function()
+						if dK.settings.enabled and A.Character then
+							local be = A.Character:FindFirstChild("HumanoidRootPart");
+							local am = A.Character:FindFirstChild("Humanoid");
+							if be and am then
+								local dS = am.MoveDirection;
+								be.CFrame = be.CFrame + dS * dK.settings.speed;
+							end;
+						end;
+					end);
+			end;
+		end;
+		function destroyCFrameGUI()
+			dK.settings.showbutton = false;
+			dK.settings.enabled = false;
+			dR();
+			if dO then
+				dO:Disconnect();
+				dO = nil;
+			end;
+		end;
+		dJ:Toggle({ Name = "CFrame Speed GUI", Callback = function(d2)
+				if d2 then
+					createCFrameGUI();
+				else
+					destroyCFrameGUI();
+				end;
+			end });
+		dJ:Textbox({ Name = "CFrame Speed", Placeholder = "5", Callback = function(dk)
+				local dT = tonumber(dk);
+				if dT then
+					dK.settings.speed = dT;
+				end;
+			end });
+		local dU = cR:Section({ Name = "Auto Shoot", Side = "Left" });
+		dU:Divider({ Name = "Auto Shoot" });
+		local c3 = nil;
+		local dV = false;
+		local dW = .1;
+		local function dX()
+			if c3 then
+				c3:Destroy();
+			end;
+			c3 = Instance.new("ScreenGui");
+			c3.Parent = (game:GetService("Players")).LocalPlayer:WaitForChild("PlayerGui");
+			c3.ResetOnSpawn = false;
+			local d8 = Instance.new("TextButton");
+			d8.Size = UDim2.new(0, 60, 0, 50);
+			d8.Position = UDim2.new(.5, 115, .5, -35);
+			d8.Text = "AutoShoot: OFF";
+			d8.BackgroundColor3 = Color3.fromRGB(0, 0, 0);
+			d8.BackgroundTransparency = .4;
+			d8.TextColor3 = Color3.fromRGB(255, 0, 0);
+			d8.Font = Enum.Font.Code;
+			d8.TextScaled = true;
+			d8.TextWrapped = true;
+			d8.Parent = c3;
+			local c6 = Instance.new("UICorner");
+			c6.CornerRadius = UDim.new(0, 10);
+			c6.Parent = d8;
+			local c7 = Instance.new("UIStroke");
+			c7.Color = Color3.fromRGB(255, 0, 0);
+			c7.Thickness = 1;
+			c7.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
+			c7.Parent = d8;
+			local df = false;
+			local dg, dh;
+			d8.InputBegan:Connect(function(cz)
+				if cz.UserInputType == Enum.UserInputType.MouseButton1 or cz.UserInputType == Enum.UserInputType.Touch then
+					df = true;
+					dg = d8.Position;
+					dh = cz.Position;
+					cz.Changed:Connect(function()
+						if cz.UserInputState == Enum.UserInputState.End then
+							df = false;
+						end;
+					end);
+				end;
+			end);
+			d8.InputChanged:Connect(function(cz)
+				if df and (cz.UserInputType == Enum.UserInputType.MouseMovement or cz.UserInputType == Enum.UserInputType.Touch) then
+					local aJ = cz.Position - dh;
+					d8.Position = UDim2.new(dg.X.Scale, dg.X.Offset + aJ.X, dg.Y.Scale, dg.Y.Offset + aJ.Y);
+				end;
+			end);
+			local function dY()
+				while dV do
+					local a9 = (game:GetService("Players")).LocalPlayer.Character;
+					if a9 then
+						local b2 = a9:FindFirstChildOfClass("Tool");
+						if b2 and b2:FindFirstChild("Handle") then
+							b2:Activate();
+						end;
+					end;
+					task.wait(dW);
+				end;
+			end;
+			d8.MouseButton1Click:Connect(function()
+				dV = not dV;
+				d8.Text = dV and "AutoShoot: ON" or "AutoShoot: OFF";
+				if dV then
+					task.spawn(dY);
+				end;
+			end);
+		end;
+		local function dZ()
+			dV = false;
+			if c3 then
+				c3:Destroy();
+				c3 = nil;
+			end;
+		end;
+		dU:Toggle({ Name = "Auto Shoot GUI", Callback = function(d2)
+				if d2 then
+					dX();
+				else
+					dZ();
+				end;
+			end });
+		dU:Textbox({ Name = "Shoot Delay", Placeholder = "0.1", Callback = function(dk)
+				local d_ = tonumber(dk);
+				if d_ and d_ >= 0 then
+					dW = d_;
+				end;
+			end });
+		local e0 = cQ:Section({ Name = "Main" });
+		e0:Divider({ Name = "Camera Lock" });
+		e0:Toggle({ Name = "Enabled", Callback = function(b4)
+				(getgenv()).khen.Camera = b4;
+			end });
+		e0:Textbox({ Name = "Camera", Default = tostring((getgenv()).khen.smoothness), Callback = function(b4)
+				(getgenv()).khen.smoothness = tonumber(b4);
+			end });
+		e0:List({
+			Name = "Easing Style",
+			Options = {
+				"Linear",
+				"Quad",
+				"Cubic",
+				"Quart",
+				"Quint",
+				"Sine",
+				"Exponential",
+				"Circular",
+				"Back",
+				"Bounce",
+				"Elastic",
+			},
+			Default = (getgenv()).khen.easingStyle,
+			Callback = function(b4)
+				(getgenv()).khen.easingStyle = b4;
+			end,
+		});
+		e0:List({
+			Name = "Easing Direction",
+			Options = { "In", "Out", "InOut" },
+			Default = (getgenv()).khen.easingDirection,
+			Callback = function(b4)
+				(getgenv()).khen.easingDirection = b4;
+			end,
+		});
+		local e1 = cQ:Section({ Name = "Prediction", Side = "Right" });
+		e1:Divider({ Name = "Prediction" });
+		e1:Textbox({ Name = "X", Default = .1, Callback = function(b4)
+				(getgenv()).khen.CamPrediction1 = tonumber(b4);
+			end });
+		e1:Textbox({ Name = "Y", Default = .1, Callback = function(b4)
+				(getgenv()).khen.CamPrediction2 = tonumber(b4);
+			end });
+		local e2 = cS:Section({ Name = "Hit Detection", Side = "Right" });
+		e2:Divider({ Name = "Hit Detection" });
+		e2:Toggle({ Name = "Hit Effect", Callback = function(b4)
+				TargetAimbot.HitEffect = b4;
+			end });
+		e2:Toggle({ Name = "Hit Sound", Callback = function(b4)
+				TargetAimbot.HitSounds = b4;
+			end });
+		e2:Toggle({ Name = "Hit Notify", Callback = function(b4)
+				Hitnotify = b4;
+			end });
+		e2:List({
+			Name = "Effect Type",
+			Flag = "Effect Type",
+			Options = {
+				"Atomic Slash",
+				"Crescent Slash",
+				"Coom",
+				"Nova",
+				"Cosmic Explosion",
+				"AuraBurst",
+				"Thunder",
+			},
+			Default = TargetAimbot.HitEffectType,
+			Callback = function(b4)
+				TargetAimbot.HitEffectType = b4;
+			end,
+		});
+		e2:List({
+			Name = "Sound Type",
+			Flag = "Sound Type",
+			Options = {
+				"RIFK7",
+				"Bubble",
+				"Minecraft",
+				"Cod",
+				"Bameware",
+				"Neverlose",
+				"Gamesense",
+				"Rust",
+				"BlackPencil",
+				"UWU",
+				"Plooh",
+				"Moan",
+				"Hentai",
+				"Bruh",
+				"BoneBreakage",
+				"Fein",
+				"Unicorn",
+				"Kitty",
+				"Bird",
+				"BirthdayCake",
+				"KenCarson",
+			},
+			Default = TargetAimbot.HitSound,
+			Callback = function(b4)
+				TargetAimbot.HitSound = b4;
+			end,
+		});
+		e2:Colorpicker({ Name = "Highlight Fill", Default = TargetAimbot.HighlightColor1, Callback = function(b4)
+				TargetAimbot.HighlightColor1 = b4;
+			end });
+		e2:Colorpicker({ Name = "Highlight Outline", Default = TargetAimbot.HighlightColor2, Callback = function(b4)
+				TargetAimbot.HighlightColor2 = b4;
+			end });
+		e2:Colorpicker({ Name = "Hit Effect Color", Default = TargetAimbot.HitEffectColor, Callback = function(b4)
+				TargetAimbot.HitEffectColor = b4;
+			end });
+		e2:Colorpicker({ Name = "Visualizer", Default = TargetAimbot.CSync.Color, Callback = function(b4)
+				TargetAimbot.CSync.Color = b4;
+			end });
+		local e3 = cS:Section({ Name = "Anti Lock", Side = "Right" });
+		e3:Divider({ Name = "Anti Lock" });
+		e3:Toggle({ Name = "Enable Anti Lock", Callback = function(b4)
+				(getgenv()).Desync = b4;
+			end });
+		e3:List({
+			Name = "Anti Lock Type",
+			Options = {
+				"Behind",
+				"Down",
+				"ForWard",
+				"Left",
+				"One",
+				"Right",
+				"Up",
+				"Zero",
+			},
+			Default = (getgenv()).AntiLockType,
+			Callback = function(b4)
+				(getgenv()).AntiLockType = b4;
+			end,
+		});
+		local e4 = cS:Section({ Name = "Hit Chams", Side = "Left" });
+		e4:Divider({ Name = "Hit Chams" });
+		e4:Toggle({ Name = "Enabled", Callback = function(b4)
+				TargetAimbot.HitChams = b4;
+			end });
+		e4:Toggle({ Name = "Use Color", Callback = function(b4)
+				TargetAimbot.HitChamColorEnabled = b4;
+			end });
+		e4:Toggle({ Name = "Accessory", Callback = function(b4)
+				TargetAimbot.HitChamsAcc = b4;
+			end });
+		e4:Colorpicker({ Name = "Color", Default = TargetAimbot.HitChamsColor, Callback = function(b4)
+				TargetAimbot.HitChamsColor = b4;
+			end });
+		e4:Slider({
+			Name = "Duration",
+			Min = 0,
+			Max = 5,
+			Default = TargetAimbot.HitChamsDuration,
+			Suffix = "",
+			Decimals = 1,
+			Callback = function(b4)
+				TargetAimbot.HitChamsDuration = b4;
+			end,
+		});
+		e4:Slider({
+			Name = "Transparency",
+			Min = 0,
+			Max = 1,
+			Default = TargetAimbot.HitChamsTransparency,
+			Suffix = "",
+			Decimals = .001,
+			Callback = function(b4)
+				TargetAimbot.HitChamsTransparency = b4;
+			end,
+		});
+		e4:List({
+			Name = "Material",
+			Options = { Enum.Material.Neon.Name, Enum.Material.SmoothPlastic.Name },
+			Default = TargetAimbot.HitChamsMaterial.Name,
+			Callback = function(b4)
+				TargetAimbot.HitChamsMaterial = Enum.Material[b4];
+			end,
+		});
+		local e5 = cT:Section({ Name = "Trail", Side = "Right" });
+		local e6 = cT:Section({ Name = "Environment", Side = "Left" });
+		(getgenv()).TrailColor = Color3.fromRGB(255, 58, 58);
+		(getgenv()).TrailLifeTime = 5;
+		(getgenv()).TrailWidth = .08;
+		(getgenv()).TrailFadeOut = 1.5;
+		e5:Divider({ Name = "Trail" });
+		e5:Toggle({ Name = "Trail", Callback = function(au)
+				utility = utility or {};
+				utility.trail_character = function(e7)
+						local ck = (game:GetService("Players")).LocalPlayer;
+						local a9 = ck.Character or ck.CharacterAdded:Wait();
+						local ab = a9:WaitForChild("HumanoidRootPart");
+						if e7 then
+							local e8 = Instance.new("Part", workspace);
+							e8.Name = "TrailPart";
+							e8.Size = Vector3.new(.1, .1, .1);
+							e8.Transparency = 1;
+							e8.Anchored = true;
+							e8.CanCollide = false;
+							e8.CFrame = ab.CFrame;
+							local e9 = Instance.new("Trail", e8);
+							e9.Name = "BlaBla";
+							local ea = Instance.new("Attachment", e8);
+							ea.Position = Vector3.new(0, 1, 0);
+							local eb = Instance.new("Attachment", e8);
+							eb.Position = Vector3.new(0, -1, 0);
+							e9.Attachment0 = ea;
+							e9.Attachment1 = eb;
+							e9.Lifetime = (getgenv()).TrailLifeTime;
+							e9.Transparency = NumberSequence.new(0, 0);
+							e9.WidthScale = NumberSequence.new((getgenv()).TrailWidth);
+							utility.TrailConnection = (game:GetService("RunService")).RenderStepped:Connect(function()
+									if ab and e8.Parent then
+										e8.CFrame = ab.CFrame;
+										e9.Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, (getgenv()).TrailColor), ColorSequenceKeypoint.new(1, (getgenv()).TrailColor) });
+										e9.WidthScale = NumberSequence.new((getgenv()).TrailWidth);
+										e9.Lifetime = (getgenv()).TrailLifeTime;
+									end;
+								end);
+						else
+							for ad, ec in ipairs(workspace:GetChildren()) do
+								if ec:IsA("Part") and ec.Name == "TrailPart" then
+									local e9 = ec:FindFirstChild("BlaBla");
+									if e9 then
+										task.spawn(function()
+											for aZ = 0, 1, .05 do
+												e9.Transparency = NumberSequence.new(aZ);
+												task.wait((getgenv()).TrailFadeOut / 20);
+											end;
+											ec:Destroy();
+										end);
+									else
+										ec:Destroy();
+									end;
+								end;
+							end;
+							if utility.TrailConnection then
+								utility.TrailConnection:Disconnect();
+								utility.TrailConnection = nil;
+							end;
+						end;
+					end;
+				utility.trail_character(au);
+			end });
+		e5:Colorpicker({ Name = "Color", Default = (getgenv()).TrailColor, Callback = function(b4)
+				(getgenv()).TrailColor = b4;
+			end });
+		e5:Textbox({ Name = "Lifetime", Default = tostring((getgenv()).TrailLifeTime), Callback = function(b4)
+				local dl = tonumber(b4);
+				if dl then
+					(getgenv()).TrailLifeTime = dl;
+				end;
+			end });
+		e5:Textbox({ Name = "Width", Default = tostring((getgenv()).TrailWidth), Callback = function(b4)
+				local dl = tonumber(b4);
+				if dl then
+					(getgenv()).TrailWidth = dl;
+				end;
+			end });
+		e5:Textbox({ Name = "FadeOut Time", Default = tostring((getgenv()).TrailFadeOut), Callback = function(b4)
+				local dl = tonumber(b4);
+				if dl then
+					(getgenv()).TrailFadeOut = dl;
+				end;
+			end });
+		e6:Divider({ Name = "Environment" });
+		e6:Toggle({ Name = "Enable", Default = (getgenv()).Environment.Enabled, Callback = function(b4)
+				(getgenv()).Environment.Enabled = b4;
+			end });
+		e6:Textbox({ Name = "Exposure", Default = (getgenv()).Environment.Exposure, Callback = function(b4)
+				(getgenv()).Environment.Exposure = tonumber(b4);
+			end });
+		e6:Textbox({ Name = "Clock Time", Default = (getgenv()).Environment.ClockTime, Callback = function(b4)
+				(getgenv()).Environment.ClockTime = tonumber(b4);
+			end });
+		e6:Colorpicker({ Name = "Fog Color", Default = (getgenv()).Environment.FogColor, Callback = function(b4)
+				(getgenv()).Environment.FogColor = b4;
+			end });
+		e6:Textbox({ Name = "Fog Start", Default = (getgenv()).Environment.FogStart, Callback = function(b4)
+				(getgenv()).Environment.FogStart = tonumber(b4);
+			end });
+		e6:Textbox({ Name = "Fog End", Default = (getgenv()).Environment.FogEnd, Callback = function(b4)
+				(getgenv()).Environment.FogEnd = tonumber(b4);
+			end });
+		e6:Colorpicker({ Name = "Ambient Color", Default = (getgenv()).Environment.Ambient, Callback = function(b4)
+				(getgenv()).Environment.Ambient = b4;
+			end });
+		e6:Textbox({ Name = "Brightness", Default = (getgenv()).Environment.Brightness, Callback = function(b4)
+				(getgenv()).Environment.Brightness = tonumber(b4);
+			end });
+		local ed = cT:Section({ Name = "Esp", Side = "Right" });
+		ed:Divider({ Name = "ESP Players" });
+		local ee = (game:GetService("Players")).LocalPlayer;
+		local ch = (game:GetService("Workspace")).CurrentCamera;
+		local ef = workspace.CurrentCamera;
+		local eg = ef.worldToViewportPoint;
+		local eh = false;
+		local ei = false;
+		local ej = false;
+		local ek = false;
+		ed:Toggle({ Name = "Boxes", Callback = function(el)
+				eh = el;
+			end });
+		ed:Toggle({ Name = "Health Bars", Callback = function(el)
+				ei = el;
+			end });
+		ed:Toggle({ Name = "Tool ESP", Callback = function(el)
+				ej = el;
+			end });
+		ed:Toggle({ Name = "Display Names", Callback = function(el)
+				ek = el;
+			end });
+		local em = Vector3.new(0, .5, 0);
+		local en = Vector3.new(0, 3, 0);
+		local function eo(au)
+			if au == ee then
+				return;
+			end;
+			local ep = Drawing.new("Square");
+			ep.Visible = false;
+			ep.Color = Color3.new(0, 0, 0);
+			ep.Thickness = 3;
+			ep.Transparency = 1;
+			ep.Filled = false;
+			local eq = Drawing.new("Square");
+			eq.Visible = false;
+			eq.Color = Color3.new(1, 1, 1);
+			eq.Thickness = 1;
+			eq.Transparency = 1;
+			eq.Filled = false;
+			local er = Drawing.new("Line");
+			er.Thickness = 3;
+			er.Color = Color3.new(0, 0, 0);
+			er.Visible = false;
+			local es = Drawing.new("Line");
+			es.Thickness = 2;
+			es.Visible = false;
+			local et = Drawing.new("Text");
+			et.Visible = false;
+			et.Size = 12;
+			et.Center = true;
+			et.Outline = true;
+			et.OutlineColor = Color3.new(0, 0, 0);
+			et.Color = Color3.new(1, 1, 1);
+			local eu = Drawing.new("Text");
+			eu.Visible = false;
+			eu.Size = 13;
+			eu.Center = true;
+			eu.Outline = true;
+			eu.OutlineColor = Color3.new(0, 0, 0);
+			eu.Color = Color3.new(1, 1, 1);
+			local function ev()
+				(game:GetService("RunService")).RenderStepped:Connect(function()
+					if au == ee then
+						eq.Visible = false;
+						ep.Visible = false;
+						er.Visible = false;
+						es.Visible = false;
+						et.Visible = false;
+						eu.Visible = false;
+						return;
+					end;
+					if au.Character and (au.Character:FindFirstChild("Humanoid") and (au.Character:FindFirstChild("HumanoidRootPart") and au.Character.Humanoid.Health > 0)) then
+						local ew, cv = ch:worldToViewportPoint(au.Character.HumanoidRootPart.Position);
+						local ex = au.Character.HumanoidRootPart;
+						local ey = au.Character.Head;
+						local ez, eA = eg(ef, ex.Position);
+						local eB = eg(ef, ey.Position + em);
+						local eC = eg(ef, ex.Position - en);
+						if cv then
+							local eD = 1000 / ez.Z;
+							local eE = eB.Y - eC.Y;
+							local eF = ez.X - eD / 2;
+							local eG = ez.Y - eE / 2;
+							if eh then
+								ep.Size = Vector2.new(eD, eE);
+								ep.Position = Vector2.new(eF, eG);
+								ep.Visible = true;
+								eq.Size = Vector2.new(eD, eE);
+								eq.Position = Vector2.new(eF, eG);
+								eq.Visible = true;
+							else
+								eq.Visible = false;
+								ep.Visible = false;
+							end;
+							if ei then
+								er.From = Vector2.new(eF - 7, eG);
+								er.To = Vector2.new(eF - 7, eG + eE);
+								er.Visible = true;
+								local eH = au.Character.Humanoid.Health / au.Character.Humanoid.MaxHealth;
+								es.From = Vector2.new(eF - 7, eG + eE);
+								es.To = Vector2.new(eF - 7, (eG + eE) - eE * eH);
+								es.Color = Color3.fromRGB(255 * (1 - eH), 255 * eH, 0);
+								es.Visible = true;
+							else
+								er.Visible = false;
+								es.Visible = false;
+							end;
+							if ek then
+								local eI = au.DisplayName;
+								if eI == au.Name then
+									eu.Text = au.Name;
+								else
+									eu.Text = eI;
+								end;
+								eu.Position = Vector2.new(ez.X, eB.Y - 25);
+								eu.Visible = true;
+							else
+								eu.Visible = false;
+							end;
+							if ej then
+								local eJ = "None";
+								if au.Character:FindFirstChildOfClass("Tool") then
+									eJ = (au.Character:FindFirstChildOfClass("Tool")).Name;
+								end;
+								et.Text = "" .. eJ;
+								et.Position = Vector2.new(ez.X, eC.Y + 15);
+								et.Visible = true;
+							else
+								et.Visible = false;
+							end;
+						else
+							eq.Visible = false;
+							ep.Visible = false;
+							er.Visible = false;
+							es.Visible = false;
+							et.Visible = false;
+							eu.Visible = false;
+						end;
+					else
+						eq.Visible = false;
+						ep.Visible = false;
+						er.Visible = false;
+						es.Visible = false;
+						et.Visible = false;
+						eu.Visible = false;
+					end;
+				end);
+			end;
+			(coroutine.wrap(ev))();
+		end;
+		for ad, au in pairs((game:GetService("Players")):GetChildren()) do
+			eo(au);
+		end;
+		(game:GetService("Players")).PlayerAdded:Connect(function(au)
+			eo(au);
+		end);
+		local ee, ch, ef, eg = (game:GetService("Players")).LocalPlayer, (game:GetService("Workspace")).CurrentCamera, workspace.CurrentCamera, workspace.CurrentCamera.worldToViewportPoint;
+		_G.TeamCheck = false;
+		local eK = false;
+		ed:Toggle({ Name = "Tracers", Callback = function(el)
+				eK = el;
+			end });
+		local function eL(au)
+			if au == ee then
+				return;
+			end;
+			local F = Drawing.new("Line");
+			F.Visible = false;
+			F.Color = Color3.new(1, 1, 1);
+			F.Thickness = 1;
+			F.Transparency = 1;
+			local function eM()
+				(game:GetService("RunService")).RenderStepped:Connect(function()
+					if eK and (au.Character ~= nil and (au.Character:FindFirstChild("Humanoid") ~= nil and (au.Character:FindFirstChild("HumanoidRootPart") ~= nil and (au ~= ee and au.Character.Humanoid.Health > 0)))) then
+						local ew, eN = ch:worldToViewportPoint(au.Character.HumanoidRootPart.Position);
+						if eN then
+							F.From = Vector2.new(ch.ViewportSize.X / 2, ch.ViewportSize.Y);
+							F.To = Vector2.new(ew.X, ew.Y);
+							if _G.TeamCheck and au.TeamColor == ee.TeamColor then
+								F.Visible = false;
+							else
+								F.Visible = true;
+							end;
+						else
+							F.Visible = false;
+						end;
+					else
+						F.Visible = false;
+					end;
+				end);
+			end;
+			(coroutine.wrap(eM))();
+		end;
+		for aZ, au in pairs((game:GetService("Players")):GetChildren()) do
+			eL(au);
+		end;
+		(game:GetService("Players")).PlayerAdded:Connect(function(au)
+			eL(au);
+		end);
+		local eO = cU:Section({ Name = "CSync", Side = "Left" });
+		eO:Divider({ Name = "Target Strafe" });
+		eO:Toggle({ Name = "Enabled", Callback = function(b4)
+				TargetAimbot.CSync.Enabled = b4;
+			end });
+		eO:Toggle({ Name = "Spoof", Callback = function(b4)
+				TargetAimbot.CSync.Visualize = b4;
+			end });
+		eO:List({
+			Name = "Type",
+			Options = { "Orbit", "Random" },
+			Default = TargetAimbot.CSync.Type,
+			Callback = function(b4)
+				TargetAimbot.CSync.Type = b4;
+			end,
+		});
+		eO:Slider({
+			Name = "Distance",
+			Min = 0,
+			Max = 20,
+			Default = TargetAimbot.CSync.Distance,
+			Suffix = "",
+			Decimals = 1,
+			Callback = function(b4)
+				TargetAimbot.CSync.Distance = b4;
+			end,
+		});
+		eO:Slider({
+			Name = "Height",
+			Min = 0,
+			Max = 10,
+			Default = TargetAimbot.CSync.Height,
+			Suffix = "",
+			Decimals = 1,
+			Callback = function(b4)
+				TargetAimbot.CSync.Height = b4;
+			end,
+		});
+		eO:Slider({
+			Name = "Speed",
+			Min = 0,
+			Max = 20,
+			Default = TargetAimbot.CSync.Speed,
+			Suffix = "",
+			Decimals = 1,
+			Callback = function(b4)
+				TargetAimbot.CSync.Speed = b4;
+			end,
+		});
+		eO:Slider({
+			Name = "Random",
+			Min = 0,
+			Max = 20,
+			Default = TargetAimbot.CSync.RandomAmount,
+			Suffix = "",
+			Decimals = 1,
+			Callback = function(b4)
+				TargetAimbot.CSync.RandomAmount = b4;
+			end,
+		});
+		local eP = cU:Section({ Name = "I miss you", Side = "Right" });
+		eP:Divider({ Name = "Wall Bang" });
+		local eQ = workspace:FindFirstChild("Ignored");
+		local eR = { "Vehicles", "MAP" };
+		eP:Toggle({ Name = "Wall Bang", Callback = function(el)
+				if el and eQ then
+					for ad, m in ipairs(eR) do
+						local eS = workspace:FindFirstChild(m);
+						if eS then
+							eS.Parent = eQ;
+						end;
+					end;
+				else
+					for ad, m in ipairs(eR) do
+						local eS = eQ and eQ:FindFirstChild(m);
+						if eS then
+							eS.Parent = workspace;
+						end;
+					end;
+				end;
+			end });
+		local A, eT, eU = (game:GetService("Players")).LocalPlayer, false, false;
+		eP:Divider({ Name = "Rapid Fire" });
+		eP:Toggle({ Name = "Rapid Fire", Callback = function(el)
+				eT = el;
+			end });
+		eP:Divider({ Name = "Infinite Ammo" });
+		eP:Toggle({ Name = "Infinite Ammo", Callback = function(el)
+				eU = el;
+			end });
+		local eV;
+		eV = hookmetamethod(game, "__index", function(self, eW)
+				if eU then
+					local eX = tostring(self);
+					if ((eX:lower()):find("ammo") or (eX:lower()):find("AMMO")) and eW == "Value" then
+						return 1;
+					end;
+				end;
+				return eV(self, eW);
+			end);
+		task.spawn(function()
+			while true do
+				task.wait();
+				if eT then
+					local b2 = A.Character and A.Character:FindFirstChildOfClass("Tool");
+					if b2 and b2:FindFirstChild("GunScript") then
+						for ad, eY in pairs(getconnections(b2.Activated)) do
+							if eY.Function then
+								for aZ = 1, (debug.getinfo(eY.Function)).nups, 1 do
+									if type(debug.getupvalue(eY.Function, aZ)) == "number" then
+										debug.setupvalue(eY.Function, aZ, 1e-51);
+									end;
+								end;
+							end;
+						end;
+					end;
+				end;
+			end;
+		end);
+		local eZ = cU:Section({ Name = "Gun TP", Side = "Right" });
+		eZ:Divider({ Name = "Gun TP" });
+		local ap, t = (game:GetService("Players")).LocalPlayer, game:GetService("RunService");
+		function cframe_to_offset(e_, f0)
+			local f1 = (getgenv()).TargetAimbot.GunTP;
+			local f2 = e_ * CFrame.new(f1.Offset[1], f1.Offset[2], f1.Offset[3], 1, 0, 0, 0, 0, 1, 0, -1, 0);
+			return (f2:ToObjectSpace(f0)):Inverse();
+		end;
+		function something_tp(f3)
+			local f4 = f3.Grip;
+			local f1 = (getgenv()).TargetAimbot.GunTP;
+			if C and (C.Character and (f1.Enabled and (ap.Character and ap.Character:FindFirstChild("RightHand")))) then
+				f3.Parent = ap.Backpack;
+				ap.Character.RightHand.Anchored = f1.Anchor;
+				f3.Grip = cframe_to_offset(ap.Character.RightHand.CFrame, C.Character.HumanoidRootPart.CFrame);
+				ap.Character.RightHand.Anchored = true;
+				f3.Parent = ap.Character;
+				t.RenderStepped:Wait();
+				f3.Parent = ap.Backpack;
+				ap.Character.RightHand.Anchored = false;
+				f3.Grip = f4;
+				f3.Parent = ap.Character;
+			end;
+		end;
+		function bullet_teleport(bP)
+			bP.ChildAdded:Connect(function(f5)
+				local f1 = (getgenv()).TargetAimbot.GunTP;
+				if f1.Enabled and f5:IsA("Tool") then
+					local f6;
+					f6 = f5.Activated:Connect(function()
+							something_tp(f5);
+						end);
+					bP.ChildRemoved:Connect(function(f7)
+						if f7 == f5 then
+							f6:Disconnect();
+						end;
+					end);
+				end;
+			end);
+		end;
+		if ap.Character then
+			bullet_teleport(ap.Character);
+		end;
+		ap.CharacterAdded:Connect(function(dv)
+			bullet_teleport(dv);
+		end);
+		eZ:Toggle({ Name = "Enabled", Callback = function(el)
+				(getgenv()).TargetAimbot.GunTP.Enabled = el;
+			end });
+		eZ:Toggle({ Name = "Anchor", Callback = function(el)
+				(getgenv()).TargetAimbot.GunTP.Anchor = el;
+			end });
+		eZ:Slider({
+			Name = "X",
+			Min = -10,
+			Max = 10,
+			Default = (getgenv()).TargetAimbot.GunTP.Offset[1],
+			Suffix = "",
+			Decimals = 2,
+			Callback = function(f8)
+				(getgenv()).TargetAimbot.GunTP.Offset[1] = tonumber(f8) or 0;
+			end,
+		});
+		eZ:Slider({
+			Name = "Y",
+			Min = -10,
+			Max = 10,
+			Default = (getgenv()).TargetAimbot.GunTP.Offset[2],
+			Suffix = "",
+			Decimals = 2,
+			Callback = function(f8)
+				(getgenv()).TargetAimbot.GunTP.Offset[2] = tonumber(f8) or 0;
+			end,
+		});
+		eZ:Slider({
+			Name = "Z",
+			Min = -10,
+			Max = 10,
+			Default = (getgenv()).TargetAimbot.GunTP.Offset[3],
+			Suffix = "",
+			Decimals = 2,
+			Callback = function(f8)
+				(getgenv()).TargetAimbot.GunTP.Offset[3] = tonumber(f8) or 0;
+			end,
+		});
+		local f9 = cU:Section({ Name = "Hitbox", Side = "Left" });
+		f9:Divider({ Name = "Hitbox" });
+		(getgenv()).khencc = { hitbox_expander = {
+					Enabled = false,
+					Size = 15,
+					Transparency = .7,
+					Color = Color3.fromRGB(255, 206, 201),
+				}, Watermark = {
+					Enabled = false,
+					Font = Enum.Font.SourceSansBold,
+					TextSize = 18,
+					OutlineTransparency = .5,
+					TextTransparency = 0,
+				} };
+		local r, A = game:GetService("Players"), (game:GetService("Players")).LocalPlayer;
+		task.delay(.5, function()
+			(game:GetService("RunService")).RenderStepped:Connect(function()
+				for ad, au in pairs(r:GetPlayers()) do
+					if au ~= A and (au.Character and au.Character:FindFirstChild("HumanoidRootPart")) then
+						local ab = au.Character.HumanoidRootPart;
+						if (getgenv()).khencc.hitbox_expander.Enabled then
+							pcall(function()
+								ab.Size = Vector3.new((getgenv()).khencc.hitbox_expander.Size, (getgenv()).khencc.hitbox_expander.Size, (getgenv()).khencc.hitbox_expander.Size);
+								ab.Transparency = (getgenv()).khencc.hitbox_expander.Transparency;
+								ab.Color = (getgenv()).khencc.hitbox_expander.Color;
+								ab.Material = Enum.Material.ForceField;
+								ab.CanCollide = false;
+							end);
+						else
+							pcall(function()
+								ab.Size = Vector3.new(2, 2, 1);
+								ab.Transparency = 1;
+								ab.Material = Enum.Material.Plastic;
+							end);
+						end;
+					end;
+				end;
+			end);
+			function createFloatingText(a9)
+				local dx = a9:FindFirstChild("UpperTorso") or a9:FindFirstChild("Torso");
+				if dx then
+					if (getgenv()).khencc.Watermark.Enabled and not a9:FindFirstChild("khenccWM") then
+						local fa = Instance.new("BillboardGui");
+						fa.Size = UDim2.new(0, 24, 0, 24);
+						fa.Adornee = dx;
+						fa.AlwaysOnTop = true;
+						fa.Name = "khenccWM";
+						fa.Parent = a9;
+						local fb = Instance.new("TextLabel");
+						fb.Size = UDim2.new(1, 0, 1, 0);
+						fb.BackgroundTransparency = 1;
+						fb.Text = "imissyou";
+						fb.TextSize = (getgenv()).khencc.Watermark.TextSize;
+						fb.TextColor3 = Color3.fromRGB(255, 58, 58);
+						fb.Font = (getgenv()).khencc.Watermark.Font;
+						fb.TextStrokeTransparency = (getgenv()).khencc.Watermark.TextTransparency;
+						fb.Parent = fa;
+					elseif not (getgenv()).khencc.Watermark.Enabled then
+						local aW = a9:FindFirstChild("khenccWM");
+						if aW then
+							aW:Destroy();
+						end;
+					end;
+				end;
+			end;
+			(game:GetService("RunService")).Heartbeat:Connect(function()
+				for ad, ck in pairs(r:GetPlayers()) do
+					if ck ~= A and ck.Character then
+						createFloatingText(ck.Character);
+					end;
+				end;
+			end);
+		end);
+		f9:Toggle({ Name = "Hitbox Expander", Callback = function(el)
+				(getgenv()).khencc.hitbox_expander.Enabled = el;
+			end });
+		f9:Textbox({ Name = "Hitbox Size", Placeholder = "15", Callback = function(dk)
+				local dl = tonumber(dk);
+				if dl then
+					(getgenv()).khencc.hitbox_expander.Size = dl;
+				end;
+			end });
+		f9:Textbox({ Name = "Transparency", Placeholder = "0.7", Callback = function(fc)
+				local fd = tonumber(fc);
+				if fd then
+					(getgenv()).khencc.hitbox_expander.Transparency = fd;
+				end;
+			end });
+		f9:Toggle({ Name = "Watermark", Callback = function(el)
+				(getgenv()).khencc.Watermark.Enabled = el;
+			end });
+		local fe = cO:Section({ Name = "Dance", Side = "Right" });
+		local ff = { Misc = { Animation = { Enabled = false, SelectedDance = "Floss", Speed = 2 } } };
+		local fg = {
+				Floss = "10714340543",
+				Spin = "2516930867",
+				Sit = "807343012",
+				ArmSpin = "900850443",
+				Lay = "2695918332",
+			};
+		local fh;
+		function AnimPlay(fi, fj)
+			if fh then
+				fh:Stop();
+			end;
+			local fk = Instance.new("Animation");
+			fk.AnimationId = "rbxassetid://" .. fi;
+			fh = A.Character.Humanoid:LoadAnimation(fk);
+			fh:Play();
+			fh:AdjustSpeed(tonumber(fj) or 1);
+			fk:Destroy();
+		end;
+		fe:Slider({
+			Name = "Speed",
+			Flag = "Dance Speed",
+			Min = 0,
+			Max = 1000,
+			Default = ff.Misc.Animation.Speed,
+			Suffix = "",
+			Decimals = .001,
+			Callback = function(b4)
+				ff.Misc.Animation.Speed = b4;
+			end,
+		});
+		fe:List({
+			Name = "Dance",
+			Flag = "Dance Type",
+			Options = {
+				"Floss",
+				"Spin",
+				"Sit",
+				"ArmSpin",
+				"Lay",
+			},
+			Default = "Floss",
+			Callback = function(b4)
+				ff.Misc.Animation.SelectedDance = b4;
+			end,
+		});
+		fe:Toggle({ Name = "Animate", Flag = "Animate", Callback = function(d2)
+				ff.Misc.Animation.Enabled = d2;
+				if ff.Misc.Animation.Enabled then
+					local fl = fg[ff.Misc.Animation.SelectedDance or "Floss"];
+					if fl then
+						AnimPlay(fl, ff.Misc.Animation.Speed or 1);
+					end;
+				else
+					if fh then
+						fh:Stop();
+						fh = nil;
+					end;
+				end;
+			end });
+		do
+			local fm = cO:Section({ Name = "Config", Zindex = 2 });
+			if not isfolder("Failurty") then
+				makefolder("Failurty");
+			end;
+			if not isfolder("Failurty/Configs") then
+				makefolder("Failurty/Configs");
+			end;
+			local fn = fm:List({ Name = "Config", Flag = "SettingConfigurationList", Options = {} });
+			fm:Textbox({ Flag = "SettingsConfigurationName", Name = "Config Name" });
+			local fo = {};
+			function UpdateConfigList()
+				local fp = {};
+				for ad, fq in ipairs(listfiles("Failurty/Configs")) do
+					local fr = fq:match("Failurty/Configs/(.+)%.cfg");
+					if fr then
+						table.insert(fp, fr);
+					end;
+				end;
+				if #fp ~= #fo or table.concat(fp) ~= table.concat(fo) then
+					fo = fp;
+					fn:Refresh(fo);
+				end;
+			end;
+			fm:Button({ Name = "Create", Callback = function()
+					local fs = Flags.SettingsConfigurationName;
+					if fs and (fs ~= "" and not isfile("Failurty/Configs/" .. (fs .. ".cfg"))) then
+						writefile("Failurty/Configs/" .. (fs .. ".cfg"), d:GetConfig());
+						UpdateConfigList();
+					end;
+				end });
+			fm:Button({ Name = "Save", Callback = function()
+					local ft = Flags.SettingConfigurationList;
+					if ft then
+						writefile("Failurty/Configs/" .. (ft .. ".cfg"), d:GetConfig());
+					end;
+				end });
+			fm:Button({ Name = "Load", Callback = function()
+					local ft = Flags.SettingConfigurationList;
+					if ft then
+						local fu = readfile("Failurty/Configs/" .. (ft .. ".cfg"));
+						d:LoadConfig(fu);
+					end;
+				end });
+			fm:Button({ Name = "Delete", Callback = function()
+					local ft = Flags.SettingConfigurationList;
+					if ft and isfile("Failurty/Configs/" .. (ft .. ".cfg")) then
+						delfile("Failurty/Configs/" .. (ft .. ".cfg"));
+						UpdateConfigList();
+					end;
+				end });
+			fm:Button({ Name = "Refresh", Callback = function()
+					pcall(UpdateConfigList);
+				end });
+			fm:Keybind({
+				Name = "Menu Key",
+				Flag = "MenuKey",
+				UseKey = true,
+				Default = Enum.KeyCode.End,
+				Callback = function(el)
+					d.UIKey = el;
+				end,
+			});
+			fm:Colorpicker({
+				Name = "Menu Accent",
+				Flag = "MenuAccent",
+				Default = d.Accent,
+				Callback = function(el)
+					d:ChangeAccent(el);
+				end,
+			});
+			fm:Toggle({ Name = "Show Watermark", Flag = "Watermark", Callback = function(el)
+					cG:SetVisible(el);
+				end });
+			local fv = "khen.cc";
+			fm:Toggle({ Name = "Update", Flag = "CustomMark", Callback = function(el)
+					stats.Update = el;
+					if not stats.Update then
+						cG:UpdateText(fv);
+					end;
+				end });
+			fm:Textbox({
+				Flag = "WatermarkText",
+				Name = "Watermark Text",
+				State = "tkhen",
+				Callback = function(el)
+					fv = el;
+					if not stats.Update then
+						cG:UpdateText(fv);
+					end;
+				end,
+			});
+		end;
+		local fw = false;
+		d:SetOpen(false);
+		local d5 = Instance.new("ScreenGui");
+		d5.Name = "lol";
+		d5.Parent = game:GetService("CoreGui");
+		local fx = Instance.new("ImageButton");
+		fx.Name = "ToggleButton";
+		fx.Size = UDim2.new(0, 80, 0, 80);
+		fx.Position = UDim2.new(1, -110, 0, 10);
+		fx.BackgroundTransparency = 1;
+		fx.Image = "rbxassetid://100252839273080";
+		fx.Draggable = true;
+		fx.Parent = d5;
+		fx.MouseButton1Click:Connect(function()
+			fw = not fw;
+			d:SetOpen(fw);
+		end);
+		local fy = os.clock() - c;
+		d:Notification(string.format("Loaded: %.3f seconds", fy), 3);
+	end;
+end;
+a(true);
