@@ -3,7 +3,7 @@ local Script = "Get Force Stand for free at discord.gg/kT3VZfgG"
 local Owner = "LostSouI404"
 local BlackScreen = true
 local DisableRendering = true
-local FPSCap = 24-
+local FPSCap = 240
 local Guns = {"rifle", "aug", "flintlock", "flamethrower"}
 
 if not game:IsLoaded() then game.Loaded:Wait() end
