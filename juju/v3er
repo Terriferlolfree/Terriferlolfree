@@ -1,0 +1,235 @@
+--========================================
+-- JUJU MOBILE UI + KEY SYSTEM (SAFE)
+--========================================
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+
+local player = Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+--========================================
+-- CONFIG
+--========================================
+
+local VALID_KEYS = {
+    ["JUJU-2026-ALPHA"] = true,
+    ["JUJU-MOBILE-PRIVATE"] = true,
+    ["JUJU-DEV-ACCESS"] = true,
+}
+
+local FLAGS = {}
+local CONFIG_NAME = "JUJU_CONFIG_V1"
+
+--========================================
+-- CONFIG SAVE / LOAD (Attributes-based)
+--========================================
+
+local function SaveConfig()
+    for k,v in pairs(FLAGS) do
+        player:SetAttribute(CONFIG_NAME.."_"..k, HttpService:JSONEncode(v))
+    end
+end
+
+local function LoadConfig()
+    for _,attr in ipairs(player:GetAttributes()) do end
+    for name,value in pairs(player:GetAttributes()) do
+        if string.find(name, CONFIG_NAME.."_") then
+            local key = name:gsub(CONFIG_NAME.."_","")
+            FLAGS[key] = HttpService:JSONDecode(value)
+        end
+    end
+end
+
+LoadConfig()
+
+--========================================
+-- GUI ROOT
+--========================================
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "JujuMobileUI"
+gui.ResetOnSpawn = false
+gui.Parent = PlayerGui
+
+--========================================
+-- THEME
+--========================================
+
+local theme = {
+    bg = Color3.fromRGB(6,6,6),
+    section = Color3.fromRGB(20,20,20),
+    accent = Color3.fromRGB(154,213,222),
+    text = Color3.fromRGB(255,255,255),
+}
+
+--========================================
+-- KEY SYSTEM UI
+--========================================
+
+local keyFrame = Instance.new("Frame")
+keyFrame.Size = UDim2.fromScale(0.8,0.35)
+keyFrame.Position = UDim2.fromScale(0.1,0.3)
+keyFrame.BackgroundColor3 = theme.bg
+keyFrame.Parent = gui
+keyFrame.Visible = true
+keyFrame.BorderSizePixel = 0
+
+local keyCorner = Instance.new("UICorner", keyFrame)
+keyCorner.CornerRadius = UDim.new(0,16)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.fromScale(1,0.25)
+title.Text = "juju key system"
+title.BackgroundTransparency = 1
+title.TextColor3 = theme.accent
+title.TextScaled = true
+title.Parent = keyFrame
+
+local input = Instance.new("TextBox")
+input.PlaceholderText = "enter key"
+input.Size = UDim2.fromScale(0.8,0.25)
+input.Position = UDim2.fromScale(0.1,0.35)
+input.BackgroundColor3 = theme.section
+input.TextColor3 = theme.text
+input.TextScaled = true
+input.ClearTextOnFocus = false
+input.Parent = keyFrame
+
+Instance.new("UICorner", input)
+
+local status = Instance.new("TextLabel")
+status.Size = UDim2.fromScale(1,0.15)
+status.Position = UDim2.fromScale(0,0.62)
+status.BackgroundTransparency = 1
+status.TextColor3 = Color3.fromRGB(255,100,100)
+status.TextScaled = true
+status.Text = ""
+status.Parent = keyFrame
+
+local unlock = Instance.new("TextButton")
+unlock.Size = UDim2.fromScale(0.6,0.18)
+unlock.Position = UDim2.fromScale(0.2,0.78)
+unlock.Text = "unlock"
+unlock.TextScaled = true
+unlock.BackgroundColor3 = theme.accent
+unlock.TextColor3 = Color3.new(0,0,0)
+unlock.Parent = keyFrame
+Instance.new("UICorner", unlock)
+
+--========================================
+-- MAIN MENU
+--========================================
+
+local main = Instance.new("Frame")
+main.Size = UDim2.fromScale(0.85,0.75)
+main.Position = UDim2.fromScale(0.075,0.12)
+main.BackgroundColor3 = theme.bg
+main.Visible = false
+main.Parent = gui
+main.BorderSizePixel = 0
+Instance.new("UICorner", main)
+
+-- DRAG (TOUCH)
+do
+    local dragging, startPos, startFrame
+    main.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            startPos = i.Position
+            startFrame = main.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(i)
+        if dragging and i.UserInputType == Enum.UserInputType.Touch then
+            local delta = i.Position - startPos
+            main.Position = startFrame + UDim2.fromOffset(delta.X, delta.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end
+
+--========================================
+-- TABS
+--========================================
+
+local tabs = {"Aimbot","Visuals","Misc"}
+local pages = {}
+
+local tabBar = Instance.new("Frame", main)
+tabBar.Size = UDim2.fromScale(1,0.12)
+tabBar.BackgroundTransparency = 1
+
+for i,name in ipairs(tabs) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.fromScale(1/#tabs,1)
+    btn.Position = UDim2.fromScale((i-1)/#tabs,0)
+    btn.Text = name
+    btn.TextScaled = true
+    btn.BackgroundTransparency = 1
+    btn.TextColor3 = i==1 and theme.accent or theme.text
+    btn.Parent = tabBar
+
+    local page = Instance.new("Frame", main)
+    page.Size = UDim2.fromScale(1,0.88)
+    page.Position = UDim2.fromScale(0,0.12)
+    page.Visible = i==1
+    page.BackgroundTransparency = 1
+    pages[name] = page
+
+    btn.MouseButton1Click:Connect(function()
+        for _,p in pairs(pages) do p.Visible=false end
+        for _,b in ipairs(tabBar:GetChildren()) do
+            if b:IsA("TextButton") then b.TextColor3 = theme.text end
+        end
+        btn.TextColor3 = theme.accent
+        page.Visible = true
+    end)
+end
+
+--========================================
+-- UI ELEMENTS
+--========================================
+
+local function Toggle(parent,text,y,default,callback)
+    FLAGS[text] = FLAGS[text] ~= nil and FLAGS[text] or default
+
+    local btn = Instance.new("TextButton", parent)
+    btn.Size = UDim2.fromScale(0.9,0.12)
+    btn.Position = UDim2.fromScale(0.05,y)
+    btn.Text = text
+    btn.TextScaled = true
+    btn.BackgroundColor3 = FLAGS[text] and theme.accent or theme.section
+    btn.TextColor3 = theme.text
+    Instance.new("UICorner", btn)
+
+    btn.MouseButton1Click:Connect(function()
+        FLAGS[text] = not FLAGS[text]
+        btn.BackgroundColor3 = FLAGS[text] and theme.accent or theme.section
+        SaveConfig()
+        callback(FLAGS[text])
+    end)
+end
+
+-- DEMO ELEMENTS
+Toggle(pages.Aimbot,"Enable Aimbot",0.05,false,function() end)
+Toggle(pages.Visuals,"ESP Boxes",0.05,false,function() end)
+Toggle(pages.Misc,"Auto Save Config",0.05,true,function() end)
+
+--========================================
+-- KEY VALIDATION
+--========================================
+
+unlock.MouseButton1Click:Connect(function()
+    if VALID_KEYS[input.Text] then
+        keyFrame.Visible = false
+        main.Visible = true
+    else
+        status.Text = "invalid key"
+    end
+end)
