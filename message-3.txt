@@ -1,0 +1,1450 @@
+-- rip pluh
+-- one of history's script
+-- truly goated btw
+
+if not LPH_OBFUSCATED then
+    function LPH_NO_VIRTUALIZE(...)
+        return ...
+    end
+    function LPH_JIT_MAX(...)
+        return ...
+    end
+    function LPH_JIT_ULTRA(...)
+        return ...
+    end
+end
+
+LPH_JIT_ULTRA(function()
+    local v1 = nil
+
+    if getgenv().phyx_target.GUIs['Big Gui'] ~= true then
+        if getgenv().phyx_target.GUIs['Big Gui'] == false then
+            v1 = UDim2.new(0, 75, 0, 35)
+        end
+    else
+        v1 = UDim2.new(0, 100, 0, 50)
+    end
+
+    local u2 = true
+    local _ = game:GetService('Workspace').CurrentCamera
+    local u3 = nil
+    local u4 = false
+
+    game.Players.LocalPlayer:GetMouse()
+
+    local _Part = Instance.new('Part', game.Workspace)
+    local _RunService = game:GetService('RunService')
+    local u7 = false
+    local u8 = 0
+    local v9 = Color3.fromRGB(30, 30, 30)
+    local _HttpService = game:GetService('HttpService')
+    local _Folder = Instance.new('Folder', game:GetService('Workspace'))
+    local u12 = {}
+
+    local function u20()
+        if getgenv().phyx_target.GUIs['Save Position'] and isfile('phyx_by_pluh.txt') then
+            local v13, v14 = pcall(function()
+                return _HttpService:JSONDecode(readfile('phyx_by_pluh.txt'))
+            end)
+
+            if v13 and v14 then
+                local v15, v16, v17 = pairs(v14)
+                local v18 = {}
+
+                while true do
+                    local v19
+
+                    v17, v19 = v15(v16, v17)
+
+                    if v17 == nil then
+                        break
+                    end
+
+                    v18[v17] = UDim2.new(0, v19.X, 0, v19.Y)
+                end
+
+                return v18
+            end
+        end
+
+        return {}
+    end
+    local function u33(p21)
+        local v22 = u20() or {}
+        local v23, v24, v25 = pairs(v22)
+        local v26 = {}
+
+        while true do
+            local v27
+
+            v25, v27 = v23(v24, v25)
+
+            if v25 == nil then
+                break
+            end
+
+            v26[v25] = {
+                X = v27.X.Offset,
+                Y = v27.Y.Offset,
+            }
+        end
+
+        local v28, v29, v30 = pairs(p21)
+
+        while true do
+            local v31
+
+            v30, v31 = v28(v29, v30)
+
+            if v30 == nil then
+                break
+            end
+
+            v26[v30] = {
+                X = v31.X.Offset,
+                Y = v31.Y.Offset,
+            }
+        end
+
+        local v32 = _HttpService
+
+        writefile('phyx_by_pluh.txt', v32:JSONEncode(v26))
+    end
+    local function u39()
+        if isfile('phyx_by_pluh.txt') then
+            delfile('phyx_by_pluh.txt')
+        end
+
+        u33({})
+
+        local v34, v35, v36 = pairs(u12)
+
+        while true do
+            local v37
+
+            v36, v37 = v34(v35, v36)
+
+            if v36 == nil then
+                break
+            end
+
+            local v38 = UDim2.new(0, 10 + v37.Counter * 110, 0, 10)
+
+            v37.Frame.Position = v38
+        end
+
+        print('GUI positions have been reset to defaults.')
+    end
+    local function v57(p40, p41, p42, p43, p44)
+        local _ScreenGui = Instance.new('ScreenGui')
+
+        _ScreenGui.Name = p40
+        _ScreenGui.Parent = game.CoreGui
+
+        local _Frame = Instance.new('Frame')
+
+        _Frame.Size = p41
+        _Frame.Position = u20()[p40] or UDim2.new(0, 10 + u8 * 110, 0, 10)
+        _Frame.BackgroundColor3 = p42
+        _Frame.Active = true
+        _Frame.Draggable = true
+        _Frame.Parent = _ScreenGui
+
+        local _UIStroke = Instance.new('UIStroke')
+
+        _UIStroke.Color = Color3.fromRGB(0, 0, 0)
+        _UIStroke.Thickness = 2
+        _UIStroke.Parent = _Frame
+
+        local _UICorner = Instance.new('UICorner')
+
+        _UICorner.CornerRadius = UDim.new(0, 10)
+        _UICorner.Parent = _Frame
+
+        local v49, v50, v51, v52
+
+        if p41 ~= UDim2.new(0, 100, 0, 50) then
+            v49 = p41.X.Offset - 10
+            v50 = p41.Y.Offset - 10
+            v51 = 5
+            v52 = 5
+        else
+            v49 = 80
+            v50 = 30
+            v51 = (p41.X.Offset - v49) / 2
+            v52 = (p41.Y.Offset - v50) / 2
+        end
+
+        local _TextButton = Instance.new('TextButton')
+
+        _TextButton.Size = UDim2.new(0, v49, 0, v50)
+        _TextButton.Position = UDim2.new(0, v51, 0, v52)
+        _TextButton.Text = p43 or 'Button'
+        _TextButton.Font = Enum.Font.Fantasy
+        _TextButton.TextScaled = true
+        _TextButton.TextWrapped = true
+        _TextButton.TextColor3 = Color3.fromRGB(255, 215, 18)
+        _TextButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        _TextButton.Parent = _Frame
+
+        local _UIPadding = Instance.new('UIPadding')
+
+        _UIPadding.PaddingTop = UDim.new(0, 2)
+        _UIPadding.PaddingBottom = UDim.new(0, 2)
+        _UIPadding.PaddingLeft = UDim.new(0, 2)
+        _UIPadding.PaddingRight = UDim.new(0, 2)
+        _UIPadding.Parent = _TextButton
+
+        local _UICorner2 = Instance.new('UICorner')
+
+        _UICorner2.CornerRadius = UDim.new(0, 10)
+        _UICorner2.Parent = _TextButton
+
+        _TextButton.MouseButton1Click:Connect(p44)
+        _Frame:GetPropertyChangedSignal('Position'):Connect(function()
+            local v56 = u20()
+
+            v56[p40] = _Frame.Position
+
+            u33(v56)
+        end)
+
+        u12[p40] = {
+            Frame = _Frame,
+            Counter = u8,
+        }
+        u8 = u8 + 1
+
+        return _TextButton, _Frame
+    end
+
+    function play_sound(p58, p59)
+        local _Sound = Instance.new('Sound')
+
+        _Sound.SoundId = 'rbxassetid://' .. p58
+        _Sound.Volume = p59
+        _Sound.Parent = _Folder
+
+        local v61 = _Sound
+
+        _Sound.Play(v61)
+        _Sound.Ended:Connect(function()
+            _Sound:Destroy()
+        end)
+    end
+
+    game.Players.LocalPlayer.Chatted:Connect(function(p62)
+        if string.lower(p62) == '/e phyx.reset' then
+            u39()
+        end
+    end)
+
+    local v63 = protectgui or (syn and syn.protect_gui or function() end)
+    local _ScreenGui2 = Instance.new('ScreenGui')
+    local _TextService = game:GetService('TextService')
+    local _CoreGui = game:GetService('CoreGui')
+
+    v63(_ScreenGui2)
+
+    _ScreenGui2.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    _ScreenGui2.Parent = _CoreGui
+
+    local u85 = {
+        Registry = {},
+        RegistryMap = {},
+        HudRegistry = {},
+        FontColor = Color3.fromRGB(255, 255, 255),
+        MainColor = Color3.fromRGB(28, 28, 28),
+        BackgroundColor = Color3.fromRGB(20, 20, 20),
+        AccentColor = Color3.fromRGB(240, 196, 7),
+        OutlineColor = Color3.fromRGB(50, 50, 50),
+        RiskColor = Color3.fromRGB(255, 50, 50),
+        Black = Color3.new(0, 0, 0),
+        Font = Enum.Font.Code,
+        OpenedFrames = {},
+        DependencyBoxes = {},
+        Signals = {},
+        ScreenGui = _ScreenGui2,
+        GetTextBounds = function(_, p67, p68, p69, p70)
+            local v71 = _TextService:GetTextSize(p67, p69, p68, p70 or Vector2.new(1920, 1080))
+
+            return v71.X, v71.Y
+        end,
+        Create = function(_, p72, p73)
+            if type(p72) == 'string' then
+                p72 = Instance.new(p72)
+            end
+
+            local v74 = next
+            local v75 = nil
+
+            while true do
+                local v76
+
+                v75, v76 = v74(p73, v75)
+
+                if v75 == nil then
+                    break
+                end
+
+                p72[v75] = v76
+            end
+
+            return p72
+        end,
+        AddToRegistry = function(_, p77, p78, p79)
+            local v80 = {
+                Instance = p77,
+                Properties = p78,
+                Idx = #u85.Registry + 1,
+            }
+
+            table.insert(u85.Registry, v80)
+
+            u85.RegistryMap[p77] = v80
+
+            if p79 then
+                table.insert(u85.HudRegistry, v80)
+            end
+        end,
+        GetDarkerColor = function(_, p81)
+            local v82, v83, v84 = Color3.toHSV(p81)
+
+            return Color3.fromHSV(v82, v83, v84 / 1.5)
+        end,
+    }
+    local v86 = u85
+
+    u85.NotificationArea = u85.Create(v86, 'Frame', {
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 40),
+        Size = UDim2.new(0, 300, 0, 200),
+        ZIndex = 100,
+        Parent = _ScreenGui2,
+    })
+
+    local v87 = u85
+
+    u85.Create(v87, 'UIListLayout', {
+        Padding = UDim.new(0, 4),
+        FillDirection = Enum.FillDirection.Vertical,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent = u85.NotificationArea,
+    })
+
+    function u85.ApplyTextStroke(_, p88)
+        p88.TextStrokeTransparency = 1
+
+        u85:Create('UIStroke', {
+            Color = Color3.new(0, 0, 0),
+            Thickness = 1,
+            LineJoinMode = Enum.LineJoinMode.Miter,
+            Parent = p88,
+        })
+    end
+    function u85.CreateLabel(_, p89, p90)
+        local _TextLabel = u85:Create('TextLabel', {
+            BackgroundTransparency = 1,
+            Font = u85.Font,
+            TextColor3 = u85.FontColor,
+            TextSize = 16,
+            TextStrokeTransparency = 0,
+        })
+
+        u85:ApplyTextStroke(_TextLabel)
+        u85:AddToRegistry(_TextLabel, {
+            TextColor3 = 'FontColor',
+        }, p90)
+
+        return u85:Create(_TextLabel, p89)
+    end
+    function u85.Notify(_, p92, p93)
+        if getgenv().phyx_target.Main.Notification then
+            local v94, v95 = u85:GetTextBounds(p92, u85.Font, 14)
+            local u96 = v95 + 7
+            local _Frame2 = u85:Create('Frame', {
+                BorderColor3 = Color3.new(0, 0, 0),
+                Position = UDim2.new(0, 100, 0, 10),
+                Size = UDim2.new(0, 0, 0, u96),
+                ClipsDescendants = true,
+                ZIndex = 100,
+                Parent = u85.NotificationArea,
+            })
+            local _Frame3 = u85:Create('Frame', {
+                BackgroundColor3 = u85.MainColor,
+                BorderColor3 = u85.OutlineColor,
+                BorderMode = Enum.BorderMode.Inset,
+                Size = UDim2.new(1, 0, 1, 0),
+                ZIndex = 101,
+                Parent = _Frame2,
+            })
+
+            u85:AddToRegistry(_Frame3, {
+                BackgroundColor3 = 'MainColor',
+                BorderColor3 = 'OutlineColor',
+            }, true)
+
+            local _Frame4 = u85:Create('Frame', {
+                BackgroundColor3 = Color3.new(1, 1, 1),
+                BorderSizePixel = 0,
+                Position = UDim2.new(0, 1, 0, 1),
+                Size = UDim2.new(1, -2, 1, -2),
+                ZIndex = 102,
+                Parent = _Frame3,
+            })
+            local v100 = u85
+            local _Create = v100.Create
+            local v102 = {}
+            local _new = ColorSequence.new
+            local v104 = {}
+            local v105 = u85
+
+            __set_list(v104, 1, {
+                ColorSequenceKeypoint.new(0, v105:GetDarkerColor(u85.MainColor)),
+                ColorSequenceKeypoint.new(1, u85.MainColor),
+            })
+
+            v102.Color = _new(v104)
+            v102.Rotation = -90
+            v102.Parent = _Frame4
+
+            u85:AddToRegistry(_Create(v100, 'UIGradient', v102), {
+                Color = function()
+                    local _new2 = ColorSequence.new
+                    local v107 = {}
+                    local v108 = u85
+
+                    __set_list(v107, 1, {
+                        ColorSequenceKeypoint.new(0, v108:GetDarkerColor(u85.MainColor)),
+                        ColorSequenceKeypoint.new(1, u85.MainColor),
+                    })
+
+                    return _new2(v107)
+                end,
+            })
+            u85:CreateLabel({
+                Position = UDim2.new(0, 4, 0, 0),
+                Size = UDim2.new(1, -4, 1, 0),
+                Text = p92,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextSize = 14,
+                ZIndex = 103,
+                Parent = _Frame4,
+            })
+            u85:AddToRegistry(u85:Create('Frame', {
+                BackgroundColor3 = u85.AccentColor,
+                BorderSizePixel = 0,
+                Position = UDim2.new(0, -1, 0, -1),
+                Size = UDim2.new(0, 3, 1, 2),
+                ZIndex = 104,
+                Parent = _Frame2,
+            }), {
+                BackgroundColor3 = 'AccentColor',
+            }, true)
+            pcall(_Frame2.TweenSize, _Frame2, UDim2.new(0, v94 + 8 + 4, 0, u96), 'Out', 'Quad', 0.4, true)
+            task.spawn(function()
+                wait(p93 or 5)
+                pcall(_Frame2.TweenSize, _Frame2, UDim2.new(0, 0, 0, u96), 'Out', 'Quad', 0.4, true)
+                wait(0.4)
+                _Frame2:Destroy()
+            end)
+        end
+    end
+
+    local u109 = 1428011334
+    local u110 = 1079408535
+
+    game.Players.PlayerAdded:Connect(function(p111)
+        if p111.UserId == u109 and p111 ~= game.Players.LocalPlayer then
+            u85:Notify('someone joined...', 5)
+            wait(3)
+            play_sound(u110, 1)
+        end
+    end)
+
+    function makemarker(p112, p113, p114, p115, p116)
+        local _BillboardGui = Instance.new('BillboardGui', p112)
+
+        _BillboardGui.Name = 'PP'
+        _BillboardGui.Adornee = p113
+        _BillboardGui.Size = UDim2.new(p115, p116, p115, p116)
+        _BillboardGui.AlwaysOnTop = getgenv().phyx_target.Main.Dot
+
+        local _Frame5 = Instance.new('Frame', _BillboardGui)
+
+        if getgenv().phyx_target.Main.Dot ~= true then
+            _Frame5.Size = UDim2.new(0, 0, 0, 0)
+        else
+            _Frame5.Size = UDim2.new(1, 1, 1, 1)
+        end
+        if getgenv().phyx_target.Main.Dot ~= true then
+            _Frame5.Transparency = 1
+            _Frame5.BackgroundTransparency = 1
+        else
+            _Frame5.Transparency = 0
+            _Frame5.BackgroundTransparency = 0
+        end
+
+        _Frame5.BackgroundColor3 = p114
+        Instance.new('UICorner', _Frame5).CornerRadius = UDim.new(1, 1)
+
+        local _UIStroke2 = Instance.new('UIStroke', _Frame5)
+
+        _UIStroke2.Thickness = 1.4
+        _UIStroke2.Color = Color3.new(0, 0, 0)
+        _UIStroke2.Transparency = 0
+
+        return _BillboardGui
+    end
+
+    local v120 = game.Players:GetPlayers()
+
+    function noob(p121)
+        repeat
+            wait()
+        until p121.Character
+
+        local u122 = makemarker(guimain, p121.Character:WaitForChild('HumanoidRootPart'), Color3.fromRGB(9, 44, 99), 0.1, 1)
+
+        u122.Name = p121.Name
+
+        p121.CharacterAdded:Connect(function(p123)
+            u122.Adornee = p123:WaitForChild('HumanoidRootPart')
+        end)
+        spawn(function()
+            while wait() and p121.Character do end
+        end)
+    end
+
+    local u124 = u85
+
+    for v125 = 1, #v120 do
+        local v126 = v125
+
+        if v120[v126] ~= game.Players.LocalPlayer then
+            noob(v120[v126])
+        end
+    end
+
+    game.Players.PlayerAdded:Connect(function(p127)
+        noob(p127)
+    end)
+    spawn(function()
+        _Part.Anchored = true
+        _Part.CanCollide = false
+
+        if getgenv().phyx_target.Main.Dot ~= true then
+            _Part.Size = Vector3.new(0, 0, 0)
+        else
+            _Part.Size = Vector3.new(0, 0, 0)
+        end
+
+        _Part.Transparency = 1
+
+        if getgenv().phyx_target.Main.Dot then
+            makemarker(_Part, _Part, Color3.fromRGB(255, 215, 18), 0.4, 0)
+        end
+    end)
+
+    local u128 = false
+    local _Partz = getgenv().phyx_target.Main.Partz
+    local u130 = _Partz[1]
+    local u131 = u130
+
+    local function u133()
+        if #_Partz == 1 then
+            return _Partz[1]
+        end
+
+        repeat
+            local v132 = _Partz[math.random(1, #_Partz)]
+        until v132 ~= u131
+
+        return v132
+    end
+
+    task.spawn(function()
+        while true do
+            u130 = u133()
+            u131 = u130
+
+            task.wait(0.001)
+        end
+    end)
+
+    local function u136(p134)
+        if p134 ~= nil then
+            local _Velocity = p134.Character.HumanoidRootPart.Velocity
+
+            return _Velocity.Y < -70 and true or ((_Velocity.X > 450 or _Velocity.X < -35) and true or (_Velocity.Y > 60 and true or (_Velocity.Z > 35 or _Velocity.Z < -35)))
+        end
+    end
+
+    local _Prediction = getgenv().phyx_target.Main.Prediction
+    local _Horizontal = _Prediction.Horizontal
+    local _Vertical = _Prediction.Vertical
+    local u140 = getgenv().phyx_target.Main['Air Delay'][1] and getgenv().phyx_target.Main['Air Delay'].delay or 0
+
+    _RunService.Heartbeat:Connect(function()
+        local v141 = game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValueString()
+        local v142 = string.split(v141, '(')
+        local v143 = tonumber(v142[1])
+
+        if getgenv().phyx_target.Main['Ping Based'] == vertical or getgenv().phyx_target.Main['Ping Based'] == all then
+            _Vertical = tonumber(v143 / 1000)
+            u140 = tonumber(v143 / 100004)
+        end
+        if getgenv().phyx_target.Main['Ping Based'] == horizontal or getgenv().phyx_target.Main['Ping Based'] == all then
+            if v143 < 200 then
+                _Horizontal = 0.2198343243234332
+            elseif v143 < 170 then
+                _Horizontal = 0.2165713
+            elseif v143 < 160 then
+                _Horizontal = 0.16242
+            elseif v143 < 150 then
+                _Horizontal = 0.158041
+            elseif v143 < 140 then
+                _Horizontal = 0.155313
+            elseif v143 < 130 then
+                _Horizontal = 0.152692
+            elseif v143 < 120 then
+                _Horizontal = 0.153017
+            elseif v143 < 110 then
+                _Horizontal = 0.15165
+            elseif v143 < 100 then
+                _Horizontal = 0.1483987
+            elseif v143 < 80 then
+                _Horizontal = 0.145134
+            elseif v143 < 70 then
+                _Horizontal = 0.143633
+            elseif v143 < 65 then
+                _Horizontal = 0.1374236
+            elseif v143 < 50 then
+                _Horizontal = 0.13644
+            elseif v143 < 30 then
+                _Horizontal = 0.12452476
+            end
+        end
+    end)
+
+    local u144 = RecalculateData or {
+        OldPos = Vector3.new(0, 0, 0),
+        OldTick = tick(),
+        ResolvedVelocity = Vector3.new(0, 0, 0),
+    }
+
+    local function u148(p145)
+        local v146 = u3.Character[p145]
+        local v147 = u136(u3) and Vector3.new(u144.ResolvedVelocity.X * _Horizontal, math.clamp(u144.ResolvedVelocity.Y, -23, 50) * _Vertical, u144.ResolvedVelocity.Z * _Horizontal) or Vector3.new(u3.Character[p145].AssemblyLinearVelocity.X * _Horizontal, math.clamp(u3.Character[p145].AssemblyLinearVelocity.Y, -23, 50) * _Vertical, u3.Character[p145].AssemblyLinearVelocity.Z * _Horizontal)
+
+        return v146.Position + v147
+    end
+
+    local u154 = LPH_NO_VIRTUALIZE(function()
+        if u3 ~= nil and u3.Character and u3.Character:FindFirstChild('HumanoidRootPart') then
+            local _Position = u3.Character.HumanoidRootPart.Position
+            local v150 = tick()
+            local v151 = v150 - u144.OldTick
+
+            if v151 == 0 then
+                return
+            end
+
+            local v152 = (_Position - u144.OldPos) / v151
+            local v153 = getgenv().phyx_target.Main['Resolver Smoothness'] or 0.145
+
+            u144.ResolvedVelocity = (u144.ResolvedVelocity or Vector3.zero) + (v152 - (u144.ResolvedVelocity or Vector3.zero)) * v153
+            u144.OldPos = _Position
+            u144.OldTick = v150
+        end
+    end)
+
+    game:GetService('RunService').Heartbeat:Connect(function(_)
+        u154()
+
+        if u4 and (u3 and u3.Character ~= nil) and u3.Character:FindFirstChild('HumanoidRootPart') then
+            _Part.CFrame = CFrame.new(u148(getgenv().phyx_target['Aim Assist'].Partz))
+        else
+            _Part.CFrame = CFrame.new(0, 9999, 0)
+        end
+    end)
+    print('2')
+
+    local v155, v156, v157 = pairs(getgc(true))
+    local u158 = u148
+    local u159 = u130
+    local u160 = u140
+    local u161 = u144
+
+    while true do
+        local v162, v163 = v155(v156, v157)
+
+        if v162 == nil then
+            break
+        end
+
+        v157 = v162
+
+        if type(v163) == 'table' then
+            setreadonly(v163, false)
+
+            local v164 = rawget(v163, 'indexInstance')
+
+            if type(v164) == 'table' and v164[1] == 'kick' then
+                setreadonly(v164, false)
+                rawset(v163, 'Table', {
+                    'kick',
+                    function()
+                        coroutine.yield()
+                    end,
+                })
+                u124:Notify('AntiCheat bypassed - pluh', 8)
+
+                break
+            end
+        end
+    end
+
+    local u165 = nil
+
+    if getgenv().phyx_target.GUIs['Auto Air'] then
+        local _AutoAirGui, _ = v57('AutoAirGui', v1, v9, 'Air Off', function()
+            if u165 then
+                u128 = not u128
+
+                if u128 then
+                    u165.Text = 'Air - On'
+                else
+                    u165.Text = 'Air - Off'
+                end
+            else
+                warn('Air button was not created properly.')
+            end
+        end)
+        local _ = _AutoAirGui
+    end
+
+    local u167 = nil
+
+    if getgenv().phyx_target.GUIs['Bullet Tp'] then
+        local _BulletTP, _ = v57('BulletTP', v1, v9, 'Bullet Tp Off', function()
+            if u167 then
+                u7 = not u7
+
+                if u7 then
+                    u167.Text = 'Bullet Tp On'
+                else
+                    u167.Text = 'Bullet Tp Off'
+                end
+            else
+                warn('Air button was not created properly.')
+            end
+        end)
+        local _ = _BulletTP
+    end
+
+    local u169 = false
+    local _type = getgenv().phyx_target.GUIs.Macro.type
+    local _Players = game:GetService('Players')
+    local _RunService2 = game:GetService('RunService')
+    local _LocalPlayer = _Players.LocalPlayer
+    local u174 = _LocalPlayer
+    local _CurrentCamera = Workspace.CurrentCamera
+    local u176 = false
+    local v177 = getrawmetatable(game)
+    local u178 = nil
+
+    if _type == 'Speed' then
+        local _ = hookfunction(v177.__newindex, newcclosure(function(p179, p180, p181)
+            if p180 == 'WalkSpeed' and u176 then
+                p181 = math.max(p181, 150)
+            end
+
+            return u178(p179, p180, p181)
+        end))
+    end
+
+    _RunService2.RenderStepped:Connect(function()
+        if u169 and (u174 and _CurrentCamera) then
+            local _Character = u174.Character
+            local v183
+
+            if _Character then
+                v183 = _Character:FindFirstChild('HumanoidRootPart')
+            else
+                v183 = _Character
+            end
+
+            local v184
+
+            if _Character then
+                v184 = _Character:FindFirstChildOfClass('Humanoid')
+            else
+                v184 = _Character
+            end
+            if _Character and (v183 and v184) then
+                if _type ~= 'Legit' then
+                    if _type ~= 'Speed' then
+                        if _type == 'CFrame' then
+                            local _MoveDirection = v184.MoveDirection
+
+                            v183.CFrame = v183.CFrame + _MoveDirection * 2
+                        end
+                    else
+                        u176 = true
+                    end
+                else
+                    local v186 = Vector2.new(_CurrentCamera.ViewportSize.X / 2, _CurrentCamera.ViewportSize.Y / 2)
+                    local _unit = (_CurrentCamera:ViewportPointToRay(v186.X / _CurrentCamera.ViewportSize.X, v186.Y / _CurrentCamera.ViewportSize.Y, 0).Origin - v183.Position).unit
+
+                    if v184:GetState() ~= Enum.HumanoidStateType.Physics and v184:GetState() ~= Enum.HumanoidStateType.Ragdoll then
+                        mousemoveabs(_CurrentCamera.ViewportSize.X / 2, _CurrentCamera.ViewportSize.Y / 2)
+
+                        v183.CFrame = CFrame.lookAt(v183.Position, v183.Position + Vector3.new(-_unit.X, 0, -_unit.Z))
+                    end
+                end
+            end
+        else
+            u176 = false
+        end
+    end)
+
+    local u188 = nil
+
+    if getgenv().phyx_target.GUIs.Macro[1] then
+        local _MacroGui, _ = v57('MacroGui', v1, v9, 'Toggle Macro', function()
+            if u188 then
+                local _Character2 = _LocalPlayer.Character
+
+                if _Character2 then
+                    _Character2 = _Character2:FindFirstChildOfClass('Humanoid')
+                end
+                if u169 or not _Character2 then
+                    u169 = false
+                    u188.Text = 'Macro Off'
+                else
+                    if getgenv().phyx_target.GUIs.Macro.type == 'Legit' and (_Character2.MoveDirection.Magnitude == 0 and _Character2:PlayEmoteAndGetAnimTrackById(15610015346)) then
+                        wait(0.25)
+
+                        local _katana = _LocalPlayer.Backpack:FindFirstChild('katana')
+
+                        if _katana then
+                            _Character2:EquipTool(_katana)
+                        end
+                    end
+
+                    u169 = true
+                    u188.Text = 'Macro On'
+                end
+            else
+                warn('Macro toggle button was not created properly.')
+            end
+        end)
+        local _ = _MacroGui
+    end
+
+    function findShopItem(p192)
+        local _Workspace = game:GetService('Workspace')
+        local v194, v195, v196 = ipairs(p192)
+
+        while true do
+            local v197
+
+            v196, v197 = v194(v195, v196)
+
+            if v196 == nil then
+                break
+            end
+
+            _Workspace = _Workspace:FindFirstChild(v197)
+
+            if not _Workspace then
+                if v197 == 'Pads' then
+                    p192[v196] = 'Shops'
+                    _Workspace = game:GetService('Workspace'):FindFirstChild('Shops')
+                end
+                if not _Workspace then
+                    return nil
+                end
+            end
+        end
+
+        return _Workspace
+    end
+    function buyItem(p198, p199)
+        local v200 = findShopItem(p198)
+
+        if not v200 and p199 then
+            v200 = findShopItem(p199)
+        end
+        if v200 then
+            local _ClickDetector = v200:FindFirstChild('ClickDetector')
+
+            if _ClickDetector then
+                fireclickdetector(_ClickDetector)
+            end
+        else
+            return
+        end
+    end
+    function sortInventory()
+        local v202 = {
+            Enabled = true,
+            ['Slot 1'] = 'rev',
+            ['Slot 2'] = 'tactical sg',
+            ['Slot 3'] = 'db',
+            ['Slot 4'] = '',
+            ['Slot 5'] = '',
+            ['Slot 6'] = '',
+            ['Slot 7'] = '',
+            ['Slot 8'] = '',
+            ['Slot 9'] = '',
+            ['Slot 0'] = '',
+        }
+
+        if not v202.Enabled then
+            return
+        end
+
+        local _Backpack = game.Players.LocalPlayer:FindFirstChildOfClass('Backpack')
+
+        if not _Backpack then
+            return
+        end
+
+        local _Folder2 = Instance.new('Folder')
+
+        _Folder2.Parent = game:GetService('ServerStorage')
+
+        local v205, v206, v207 = pairs(_Backpack:GetChildren())
+
+        while true do
+            local v208
+
+            v207, v208 = v205(v206, v207)
+
+            if v207 == nil then
+                break
+            end
+
+            v208.Parent = _Folder2
+        end
+
+        for v209 = 1, 10 do
+            local v210 = v202['Slot ' .. tostring(v209 % 10)]
+
+            if v210 then
+                if v210 ~= '' then
+                    local v211, v212, v213 = ipairs(_Folder2:GetChildren())
+
+                    while true do
+                        local v214
+
+                        v213, v214 = v211(v212, v213)
+
+                        if v213 == nil then
+                            break
+                        end
+                        if v214.Name == v210 then
+                            v214.Parent = _Backpack
+
+                            table.remove(_Folder2:GetChildren(), v213)
+
+                            break
+                        end
+                    end
+                end
+            end
+        end
+
+        local v215, v216, v217 = pairs(_Folder2:GetChildren())
+
+        while true do
+            local v218
+
+            v217, v218 = v215(v216, v217)
+
+            if v217 == nil then
+                break
+            end
+
+            v218.Parent = _Backpack
+        end
+
+        _Folder2:Destroy()
+    end
+    function buyAndSortItems()
+        buyItem({
+            'MAP',
+            'Pads',
+            '[Tactical Shotgun]',
+        }, {
+            'MAP',
+            'Shops',
+            '[Tactical Shotgun]',
+        })
+        buyItem({
+            'MAP',
+            'Pads',
+            '[Pizza]',
+        }, {
+            'MAP',
+            'Shops',
+            '[Pizza]',
+        })
+        buyItem({
+            'MAP',
+            'Pads',
+            '[Medium Armor]',
+        }, {
+            'MAP',
+            'Shops',
+            '[Medium Armor]',
+        })
+        game.Players.LocalPlayer:WaitForChild('Backpack')
+        task.wait(0.3)
+        sortInventory()
+    end
+
+    if getgenv().phyx_target.GUIs['Buy Items'] then
+        local _BuyGui, v220 = v57('BuyGui', v1, v9, 'Buy', function()
+            buyAndSortItems()
+        end)
+
+        buyframe = v220
+        buy = _BuyGui
+    end
+    if getgenv().phyx_target.GUIs.Leave then
+        v57('LeaveGui', v1, v9, 'Leave', function()
+            _LocalPlayer:Kick('You have been permanently banned: Locking')
+        end)
+    end
+    if getgenv().phyx_target.GUIs.Reset then
+        v57('ResetGui', v1, v9, 'Reset Character', function()
+            local _Character3 = _LocalPlayer.Character
+            local v222 = _Character3 and _Character3:FindFirstChildOfClass('Humanoid')
+
+            if v222 then
+                v222.Health = 0
+            end
+        end)
+    end
+
+    local u223 = nil
+    local u224 = false
+    local u225 = nil
+
+    if getgenv().phyx_target.GUIs['Trigger Bot'][1] then
+        local _TriggerGui, _ = v57('TriggerGui', v1, v9, 'Trigger - Off', function()
+            if u223 then
+                u224 = not u224
+
+                if u224 then
+                    u223.Text = 'Trigger - On'
+
+                    if not u225 then
+                        u225 = game:GetService('RunService').Stepped:Connect(function()
+                            local v226 = u3 and (game.Players.LocalPlayer and game.Players.LocalPlayer.Character) and game.Players.LocalPlayer.Character:FindFirstChildWhichIsA('Tool')
+
+                            if v226 then
+                                v226:Activate()
+                                task.delay(getgenv().phyx_target.GUIs['Trigger Bot'].delay)
+                            end
+                        end)
+                    end
+                else
+                    u223.Text = 'Trigger - Off'
+
+                    if u225 then
+                        u225:Disconnect()
+
+                        u225 = nil
+                    end
+                end
+            else
+                warn('trigger button was not created properly.')
+            end
+        end)
+        local _ = _TriggerGui
+    end
+
+    print('3')
+
+    local _ScreenGui3 = Instance.new('ScreenGui')
+    local _Frame6 = Instance.new('Frame')
+    local _UICorner3 = Instance.new('UICorner')
+    local _TextButton2 = Instance.new('TextButton')
+    local _UICorner4 = Instance.new('UICorner')
+    local _ImageLabel = Instance.new('ImageLabel')
+    local _UIStroke3 = Instance.new('UIStroke')
+
+    _ScreenGui3.Name = 'plehh'
+    _ScreenGui3.Parent = game.CoreGui
+    _ScreenGui3.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    _Frame6.Parent = _ScreenGui3
+    _Frame6.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    _Frame6.BackgroundTransparency = 0.5
+    _Frame6.BorderSizePixel = 0
+    _Frame6.Position = UDim2.new(0.1338, 0, 0.201, 0)
+    _Frame6.Size = UDim2.new(0, 202, 0, 70)
+    _Frame6.Active = true
+    _Frame6.Draggable = true
+    _UICorner3.Parent = _Frame6
+    _UIStroke3.Parent = _Frame6
+    _UIStroke3.Thickness = 2
+    _UIStroke3.Color = Color3.fromRGB(0, 0, 0)
+
+    local _TweenService = game:GetService('TweenService')
+    local u236 = TweenInfo.new(2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true)
+    local u237 = {
+        Color = Color3.fromRGB(64, 64, 64),
+    }
+    local u238 = {
+        Color = Color3.fromRGB(0, 0, 0),
+    }
+    local v239 = _TweenService
+    local u240 = _TweenService.Create(v239, _UIStroke3, u236, u237)
+
+    u240.Completed:Connect(function()
+        u240 = _TweenService:Create(_UIStroke3, u236, _UIStroke3.Color == u237.Color and u238 or u237)
+
+        u240:Play()
+    end)
+
+    local v241 = u240
+
+    u240.Play(v241)
+
+    _TextButton2.Parent = _Frame6
+    _TextButton2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    _TextButton2.BackgroundTransparency = 0
+    _TextButton2.BorderSizePixel = 0
+    _TextButton2.Size = UDim2.new(0, 170, 0, 44)
+    _TextButton2.Position = UDim2.new(0.5, -85, 0.5, -22)
+    _TextButton2.TextSize = 20
+    _TextButton2.TextColor3 = Color3.fromRGB(255, 255, 255)
+    _TextButton2.Font = Enum.Font.Code
+    _TextButton2.Text = ''
+    _UICorner4.Parent = _TextButton2
+    _ImageLabel.Parent = _Frame6
+    _ImageLabel.Size = UDim2.new(0, 120, 0, 120)
+    _ImageLabel.Position = UDim2.new(0.5, -60, 0.5, -60)
+    _ImageLabel.BackgroundTransparency = 1
+    _ImageLabel.Image = 'rbxassetid://92076780674896'
+    _ImageLabel.ScaleType = Enum.ScaleType.Fit
+
+    _TextButton2.MouseButton1Click:Connect(function()
+        u4 = not u4
+
+        if u4 then
+            u3 = getClosestPlayerToCursor()
+
+            if u3 then
+                u124:Notify('Abusing: ' .. tostring(u3.Character.Humanoid.DisplayName), 2)
+            end
+        else
+            if u3 then
+                u124:Notify('Spared: ' .. tostring(u3.Character.Humanoid.DisplayName), 2)
+            end
+
+            u3 = nil
+        end
+    end)
+    game:GetService('RunService')
+
+    function getClosestPlayerToCursor()
+        local _huge = math.huge
+        local _X = game:GetService('GuiService'):GetScreenResolution().X
+        local v244 = Vector2.new(_X / 2, game:GetService('GuiService'):GetScreenResolution().Y / 2)
+        local v245, v246, v247 = ipairs(game:GetService('Players'):GetPlayers())
+        local v248 = nil
+
+        while true do
+            local v249
+
+            v247, v249 = v245(v246, v247)
+
+            if v247 == nil then
+                break
+            end
+            if v249 ~= game.Players.LocalPlayer then
+                local _Character4 = v249.Character
+
+                if _Character4 and (_Character4:FindFirstChild('HumanoidRootPart') and _Character4.Humanoid.Health > 0) then
+                    local v251, v252 = game:GetService('Workspace').CurrentCamera:WorldToViewportPoint(_Character4.HumanoidRootPart.Position)
+
+                    if v252 then
+                        local _Magnitude = (v244 - Vector2.new(v251.X, v251.Y)).Magnitude
+
+                        if _Magnitude < _huge then
+                            v248 = v249
+                            _huge = _Magnitude
+                        end
+                    end
+                end
+            end
+        end
+
+        return v248
+    end
+
+    print('4')
+    game:GetService('RunService').Heartbeat:Connect(function(_)
+        if getgenv().phyx_target['Aim Assist']['Cam Enabled'] == true and (u4 and (u2 and u3)) then
+            local _CurrentCamera2 = workspace.CurrentCamera
+            local v255 = u158(getgenv().phyx_target['Aim Assist'].Partz)
+            local v256 = tonumber(getgenv().phyx_target['Aim Assist']['Smoothness Value'])
+            local v257 = CFrame.new(_CurrentCamera2.CFrame.p, v255)
+
+            _CurrentCamera2.CFrame = _CurrentCamera2.CFrame:Lerp(v257, v256, Enum.EasingStyle.Sine, Enum.EasingDirection.In)
+
+            local v258, v259, v260 = pairs(getconnections(_CurrentCamera2.Changed))
+
+            while true do
+                local v261
+
+                v260, v261 = v258(v259, v260)
+
+                if v260 == nil then
+                    break
+                end
+
+                v261:Disable()
+            end
+
+            local v262, v263, v264 = pairs(getconnections(_CurrentCamera2:GetPropertyChangedSignal('CFrame')))
+
+            while true do
+                local v265
+
+                v264, v265 = v262(v263, v264)
+
+                if v264 == nil then
+                    break
+                end
+
+                v265:Disable()
+            end
+        end
+        if getgenv().phyx_target.Main['Knock Unlock'] == true and (u3 and u3.Character ~= nil) and (u3.Character:FindFirstChild('Humanoid') and u3.Character:FindFirstChild('Humanoid').Health <= 1) then
+            u4 = nil
+            u3 = nil
+
+            u124:Notify('Bozo Died :Skull:', 2)
+        end
+    end)
+
+    local v266 = getrawmetatable(game)
+    local ___namecall = v266.__namecall
+
+    setreadonly(v266, false)
+
+    v266.__namecall = newcclosure(function(p268, ...)
+        local v269 = {...}
+        local v270 = getnamecallmethod()
+
+        if checkcaller() or (not u4 or v270 ~= 'FireServer' and v270 ~= 'InvokeServer') then
+            return ___namecall(p268, ...)
+        end
+        if u3 ~= nil and u3.Character then
+            local v271, v272, v273 = ipairs(v269)
+
+            while true do
+                local v274
+
+                v273, v274 = v271(v272, v273)
+
+                if v273 == nil then
+                    break
+                end
+                if typeof(v274) == 'Vector3' then
+                    v269[v273] = u158(u159)
+                end
+            end
+        end
+
+        return ___namecall(p268, unpack(v269))
+    end)
+
+    local u275 = false
+    local u276 = {
+        'Katana',
+        'cookie',
+        'knife',
+    }
+
+    game:GetService('RunService').Heartbeat:Connect(function()
+        if u128 and u3 then
+            local _Character5 = u3.Character
+
+            if _Character5 then
+                _Character5 = u3.Character:FindFirstChild('HumanoidRootPart')
+            end
+            if _Character5 and (15 < (u136(u3) and u161.ResolvedVelocity.Y or _Character5.Velocity.Y) and not u275) then
+                u275 = true
+
+                task.delay(u160, function()
+                    if u275 then
+                        local _Character6 = game:GetService('Players').LocalPlayer.Character
+                        local v279 = _Character6 and _Character6:FindFirstChildOfClass('Tool')
+
+                        if v279 then
+                            local v280 = v279.Name:lower()
+                            local v281, v282, v283 = ipairs(u276)
+                            local v284 = false
+
+                            while true do
+                                local v285
+
+                                v283, v285 = v281(v282, v283)
+
+                                if v283 == nil then
+                                    break
+                                end
+                                if v280 == v285:lower() then
+                                    v284 = true
+
+                                    break
+                                end
+                            end
+
+                            if not v284 then
+                                v279:Activate()
+                            end
+                        end
+
+                        task.delay(getgenv().phyx_target.Main['Air Delay'].delay2, function()
+                            u275 = false
+                        end)
+                    end
+                end)
+            end
+        end
+    end)
+
+    local _Players2 = game:GetService('Players')
+    local _RunService3 = game:GetService('RunService')
+    local _LocalPlayer2 = _Players2.LocalPlayer
+
+    local function u291(p289, p290)
+        return (p289 * CFrame.new(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, -1, 0)):ToObjectSpace(p290):Inverse()
+    end
+    local function u294(p292)
+        local _Grip = p292.Grip
+
+        if u3 and u3.Character then
+            p292.Parent = _LocalPlayer2.Backpack
+            _LocalPlayer2.Character.RightHand.Anchored = false
+            p292.Grip = u291(_LocalPlayer2.Character.RightHand.CFrame, u3.Character.HumanoidRootPart.CFrame)
+            _LocalPlayer2.Character.RightHand.Anchored = true
+            p292.Parent = _LocalPlayer2.Character
+
+            _RunService3.RenderStepped:Wait()
+
+            p292.Parent = _LocalPlayer2.Backpack
+            _LocalPlayer2.Character.RightHand.Anchored = false
+            p292.Grip = _Grip
+            p292.Parent = _LocalPlayer2.Character
+        end
+    end
+
+    local u295 = nil
+
+    local function u299(p296)
+        if u295 then
+            u295:Disconnect()
+        end
+
+        p296.ChildAdded:Connect(function(p297)
+            if u7 and p297:IsA('Tool') then
+                u295 = p297.Activated:Connect(function()
+                    u294(p297)
+                end)
+            end
+        end)
+        p296.ChildRemoved:Connect(function(p298)
+            if p298:IsA('Tool') and u295 then
+                u295:Disconnect()
+
+                u295 = nil
+            end
+        end)
+    end
+    local function v300()
+        if _LocalPlayer2.Character then
+            u299(_LocalPlayer2.Character)
+        end
+    end
+
+    _LocalPlayer2.CharacterAdded:Connect(v300)
+    v300()
+
+    local v301 = {
+        '3450794184',
+        '3997124966',
+        '9060788686',
+        '1548304764',
+        '2027986581',
+        '3601621507',
+        '7036390821',
+        '5153737200',
+    }
+    local v302 = v301[math.random(1, #v301)]
+
+    play_sound(v302, 1)
+
+    local v303 = {
+        ['bawat_piyesa.ogg'] = 'https://github.com/kian22kian/sounds/raw/refs/heads/main/bawat%20piiyesa.ogg',
+        ksi = 'https://github.com/kian22kian/sounds/raw/refs/heads/main/KSI%20-%20Thick%20Of%20It%20(feat.%20Trippie%20Redd)%20%5BOfficial%20Music%20Video%5D.mp3',
+        ['apple_pay.wav'] = 'https://github.com/LionTheGreatRealFrFr/hitsounds1/raw/refs/heads/master/applepay.wav',
+    }
+    local u304 = 'phyx_sounds'
+
+    if not isfolder(u304) then
+        makefolder(u304)
+    end
+
+    local v305, v306, v307 = pairs(v303)
+
+    while true do
+        local v308
+
+        v307, v308 = v305(v306, v307)
+
+        if v307 == nil then
+            break
+        end
+
+        local v309 = u304 .. '/' .. v307
+
+        if not isfile(v309) then
+            writefile(v309, game:HttpGet(v308))
+        end
+
+        while not isfile(v309) do
+            task.wait(0.1)
+        end
+    end
+
+    function play_csound(p310, p311)
+        local _ss = string.format('%s/%s', u304, p310)
+
+        if isfile(_ss) then
+            local _Sound2 = Instance.new('Sound')
+
+            _Sound2.SoundId = getcustomasset(_ss)
+            _Sound2.Volume = p311 or 1
+            _Sound2.PlayOnRemove = true
+            _Sound2.Parent = game:GetService('Workspace')
+
+            _Sound2:Destroy()
+        else
+            warn('Sound file not found:', _ss)
+        end
+    end
+end)()
+
+while true do
+    setfpscap(1000)
+    task.wait(0.001)
+end
