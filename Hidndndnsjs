@@ -1,0 +1,445 @@
+-- ============================================================
+--  PlayerViewerScript (Enhanced)
+--  LocalScript → StarterPlayerScripts
+--
+--  Commands:
+--    view <n>     – View a player
+--    unview          – Stop viewing, restore cam
+--    tp <n>       – Teleport to a player
+--    info <n>     – Show player stats overlay
+--    list            – List all players in game
+--    zoom <1-50>     – Set camera zoom distance
+--    help            – Show all commands
+-- ============================================================
+
+local Players           = game:GetService("Players")
+local RunService        = game:GetService("RunService")
+local UserInputService  = game:GetService("UserInputService")
+local TweenService      = game:GetService("TweenService")
+
+local localPlayer = Players.LocalPlayer
+local camera      = workspace.CurrentCamera
+
+local viewState = {
+    target      = nil,
+    connection  = nil,
+    yaw         = 0,
+    pitch       = math.rad(15),
+    zoom        = 14,
+    minPitch    = math.rad(-60),
+    maxPitch    = math.rad(70),
+    minZoom     = 3,
+    maxZoom     = 50,
+}
+
+local drag = {
+    active      = false,
+    lastX       = 0,
+    lastY       = 0,
+    sensitivity = 0.005,
+}
+
+local pinch = {
+    active   = false,
+    lastDist = 0,
+}
+
+-- ── GUI ──────────────────────────────────────
+local gui = Instance.new("ScreenGui")
+gui.Name            = "ViewerGui"
+gui.ResetOnSpawn    = false
+gui.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
+gui.Parent          = localPlayer.PlayerGui
+
+local function makeFrame(parent, size, pos, color, alpha)
+    local f = Instance.new("Frame")
+    f.Size                   = size
+    f.Position               = pos
+    f.BackgroundColor3       = color or Color3.fromRGB(15, 15, 20)
+    f.BackgroundTransparency = alpha or 0
+    f.BorderSizePixel        = 0
+    f.Parent                 = parent
+    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 10); c.Parent = f
+    return f
+end
+
+local function makeLabel(parent, text, size, color, font, xAlign)
+    local l = Instance.new("TextLabel")
+    l.Size                   = size
+    l.BackgroundTransparency = 1
+    l.Text                   = text
+    l.TextColor3             = color or Color3.fromRGB(255, 255, 255)
+    l.Font                   = font or Enum.Font.GothamMedium
+    l.TextSize               = 14
+    l.TextXAlignment         = xAlign or Enum.TextXAlignment.Left
+    l.Parent                 = parent
+    return l
+end
+
+-- Command Bar
+local barFrame = makeFrame(gui, UDim2.new(0, 360, 0, 44), UDim2.new(0.5, -180, 0, 12), Color3.fromRGB(10, 10, 16))
+local accent = Instance.new("Frame")
+accent.Size             = UDim2.new(0, 4, 1, -8)
+accent.Position         = UDim2.new(0, 4, 0, 4)
+accent.BackgroundColor3 = Color3.fromRGB(80, 200, 255)
+accent.BorderSizePixel  = 0
+accent.Parent           = barFrame
+local ac = Instance.new("UICorner"); ac.CornerRadius = UDim.new(0, 4); ac.Parent = accent
+
+local textBox = Instance.new("TextBox")
+textBox.Size                 = UDim2.new(1, -20, 1, -10)
+textBox.Position             = UDim2.new(0, 14, 0, 5)
+textBox.BackgroundTransparency = 1
+textBox.TextColor3           = Color3.fromRGB(220, 235, 255)
+textBox.PlaceholderText      = "view <n>  |  help  |  list  |  tp <n>"
+textBox.PlaceholderColor3    = Color3.fromRGB(80, 90, 110)
+textBox.Text                 = ""
+textBox.Font                 = Enum.Font.Code
+textBox.TextSize             = 14
+textBox.TextXAlignment       = Enum.TextXAlignment.Left
+textBox.ClearTextOnFocus     = false
+textBox.Parent               = barFrame
+
+-- Toast
+local toastFrame = makeFrame(gui, UDim2.new(0, 300, 0, 36), UDim2.new(0.5, -150, 0, 64), Color3.fromRGB(10, 10, 16))
+toastFrame.BackgroundTransparency = 1
+local toastLabel = makeLabel(toastFrame, "", UDim2.new(1, -16, 1, 0), Color3.fromRGB(100, 220, 130), Enum.Font.GothamMedium, Enum.TextXAlignment.Center)
+toastLabel.Position = UDim2.new(0, 8, 0, 0)
+local toastTween = nil
+
+-- Info Panel
+local infoPanel = makeFrame(gui, UDim2.new(0, 220, 0, 160), UDim2.new(1, -234, 0, 12), Color3.fromRGB(8, 10, 18))
+infoPanel.Visible = false
+local infoTitle = makeLabel(infoPanel, "Player Info", UDim2.new(1, -16, 0, 28), Color3.fromRGB(80, 200, 255), Enum.Font.GothamBold, Enum.TextXAlignment.Left)
+infoTitle.Position = UDim2.new(0, 10, 0, 4); infoTitle.TextSize = 15
+local infoBody = makeLabel(infoPanel, "", UDim2.new(1, -16, 1, -36), Color3.fromRGB(200, 215, 235), Enum.Font.Code, Enum.TextXAlignment.Left)
+infoBody.Position = UDim2.new(0, 10, 0, 32); infoBody.TextSize = 12; infoBody.TextWrapped = true; infoBody.TextYAlignment = Enum.TextYAlignment.Top
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 24, 0, 24); closeBtn.Position = UDim2.new(1, -28, 0, 4)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60); closeBtn.Text = "✕"
+closeBtn.TextColor3 = Color3.fromRGB(255,255,255); closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 12; closeBtn.BorderSizePixel = 0; closeBtn.Parent = infoPanel
+local cc = Instance.new("UICorner"); cc.CornerRadius = UDim.new(0,6); cc.Parent = closeBtn
+closeBtn.MouseButton1Click:Connect(function() infoPanel.Visible = false end)
+
+-- Player List Panel
+local listPanel = makeFrame(gui, UDim2.new(0, 200, 0, 260), UDim2.new(0, 12, 0, 64), Color3.fromRGB(8, 10, 18))
+listPanel.Visible = false
+local listTitle = makeLabel(listPanel, "🎮 Players Online", UDim2.new(1, -16, 0, 28), Color3.fromRGB(80, 200, 255), Enum.Font.GothamBold, Enum.TextXAlignment.Left)
+listTitle.Position = UDim2.new(0, 10, 0, 4); listTitle.TextSize = 14
+local listScroll = Instance.new("ScrollingFrame")
+listScroll.Size = UDim2.new(1, -8, 1, -36); listScroll.Position = UDim2.new(0, 4, 0, 32)
+listScroll.BackgroundTransparency = 1; listScroll.BorderSizePixel = 0
+listScroll.ScrollBarThickness = 4; listScroll.ScrollBarImageColor3 = Color3.fromRGB(80, 200, 255)
+listScroll.Parent = listPanel
+local listLayout = Instance.new("UIListLayout")
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder; listLayout.Padding = UDim.new(0, 3); listLayout.Parent = listScroll
+local listCloseBtn = Instance.new("TextButton")
+listCloseBtn.Size = UDim2.new(0, 24, 0, 24); listCloseBtn.Position = UDim2.new(1, -28, 0, 4)
+listCloseBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60); listCloseBtn.Text = "✕"
+listCloseBtn.TextColor3 = Color3.fromRGB(255,255,255); listCloseBtn.Font = Enum.Font.GothamBold
+listCloseBtn.TextSize = 12; listCloseBtn.BorderSizePixel = 0; listCloseBtn.Parent = listPanel
+local lcc = Instance.new("UICorner"); lcc.CornerRadius = UDim.new(0,6); lcc.Parent = listCloseBtn
+listCloseBtn.MouseButton1Click:Connect(function() listPanel.Visible = false end)
+
+-- Viewing Badge
+local badge = makeFrame(gui, UDim2.new(0, 200, 0, 30), UDim2.new(0.5, -100, 1, -50), Color3.fromRGB(80, 200, 255))
+badge.Visible = false
+local badgeLabel = makeLabel(badge, "👁  VIEWING: —", UDim2.new(1, 0, 1, 0), Color3.fromRGB(5, 10, 20), Enum.Font.GothamBold, Enum.TextXAlignment.Center)
+badgeLabel.TextSize = 13
+
+-- Zoom Slider
+local zoomBar = makeFrame(gui, UDim2.new(0, 36, 0, 160), UDim2.new(1, -54, 0.5, -80), Color3.fromRGB(10, 10, 16))
+zoomBar.Visible = false
+local zoomTrack = Instance.new("Frame")
+zoomTrack.Size = UDim2.new(0, 4, 1, -24); zoomTrack.Position = UDim2.new(0.5, -2, 0, 12)
+zoomTrack.BackgroundColor3 = Color3.fromRGB(40, 50, 70); zoomTrack.BorderSizePixel = 0; zoomTrack.Parent = zoomBar
+local ztc = Instance.new("UICorner"); ztc.CornerRadius = UDim.new(0,4); ztc.Parent = zoomTrack
+local zoomHandle = Instance.new("TextButton")
+zoomHandle.Size = UDim2.new(0, 24, 0, 24); zoomHandle.AnchorPoint = Vector2.new(0.5, 0.5)
+zoomHandle.BackgroundColor3 = Color3.fromRGB(80, 200, 255); zoomHandle.Text = ""
+zoomHandle.BorderSizePixel = 0; zoomHandle.Parent = zoomBar
+local zhc = Instance.new("UICorner"); zhc.CornerRadius = UDim.new(0.5,0); zhc.Parent = zoomHandle
+local zoomLabel = makeLabel(zoomBar, "🔍", UDim2.new(1, 0, 0, 14), Color3.fromRGB(80, 200, 255), Enum.Font.GothamBold, Enum.TextXAlignment.Center)
+zoomLabel.Position = UDim2.new(0, 0, 1, -14); zoomLabel.TextSize = 11
+
+-- ── FUNCTIONS ────────────────────────────────
+
+local function showToast(msg, color, duration)
+    if toastTween then toastTween:Cancel() end
+    toastLabel.Text = msg
+    toastLabel.TextColor3 = color or Color3.fromRGB(100, 220, 130)
+    toastFrame.BackgroundTransparency = 0.15
+    toastTween = TweenService:Create(toastFrame, TweenInfo.new(duration or 3, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), { BackgroundTransparency = 1 })
+    toastTween:Play()
+    toastTween.Completed:Connect(function() toastLabel.Text = "" end)
+end
+
+local function findPlayer(name)
+    local lower = name:lower()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Name:lower() == lower or p.DisplayName:lower() == lower then return p end
+    end
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Name:lower():find(lower, 1, true) or p.DisplayName:lower():find(lower, 1, true) then return p end
+    end
+    return nil
+end
+
+local function getRoot(player)
+    local char = player and player.Character
+    if not char then return nil end
+    return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Head")
+end
+
+local function updateZoomHandle()
+    local t = 1 - (viewState.zoom - viewState.minZoom) / (viewState.maxZoom - viewState.minZoom)
+    local trackH = zoomTrack.AbsoluteSize.Y
+    local trackY = zoomTrack.AbsolutePosition.Y - zoomBar.AbsolutePosition.Y
+    zoomHandle.Position = UDim2.new(0.5, 0, 0, trackY + trackH * (1 - t) + 12)
+end
+
+local function getOrbitCFrame(origin)
+    local yawCF   = CFrame.Angles(0, viewState.yaw, 0)
+    local pitchCF = CFrame.Angles(viewState.pitch, 0, 0)
+    local offset  = (yawCF * pitchCF) * Vector3.new(0, 0, viewState.zoom)
+    return CFrame.new(origin + offset, origin)
+end
+
+local function stopViewing()
+    if viewState.connection then viewState.connection:Disconnect(); viewState.connection = nil end
+    viewState.target = nil
+    camera.CameraType = Enum.CameraType.Custom
+    local hum = localPlayer.Character and localPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if hum then camera.CameraSubject = hum end
+    badge.Visible = false; zoomBar.Visible = false
+    showToast("🔁 Camera restored", Color3.fromRGB(200, 200, 100))
+end
+
+local function startViewing(target)
+    if viewState.connection then viewState.connection:Disconnect(); viewState.connection = nil end
+    viewState.target = target; viewState.yaw = 0; viewState.pitch = math.rad(15)
+    camera.CameraType = Enum.CameraType.Scriptable
+    viewState.connection = RunService.RenderStepped:Connect(function()
+        if not viewState.target or not viewState.target.Parent then stopViewing(); return end
+        local root = getRoot(viewState.target)
+        if root then camera.CFrame = getOrbitCFrame(root.Position + Vector3.new(0, 2, 0)) end
+    end)
+    badge.Visible = true; zoomBar.Visible = true
+    badgeLabel.Text = "👁  VIEWING: " .. target.Name
+    updateZoomHandle()
+    showToast("👁 Now viewing " .. target.Name, Color3.fromRGB(80, 200, 255))
+end
+
+-- ── ZOOM SLIDER INPUT ────────────────────────
+local sliderDragging = false
+zoomHandle.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.Touch or inp.UserInputType == Enum.UserInputType.MouseButton1 then
+        sliderDragging = true
+    end
+end)
+UserInputService.InputEnded:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.Touch or inp.UserInputType == Enum.UserInputType.MouseButton1 then
+        sliderDragging = false
+    end
+end)
+UserInputService.InputChanged:Connect(function(inp)
+    if sliderDragging and (inp.UserInputType == Enum.UserInputType.Touch or inp.UserInputType == Enum.UserInputType.MouseMove) then
+        local posY = inp.Position.Y
+        local trackTop    = zoomTrack.AbsolutePosition.Y
+        local trackBottom = trackTop + zoomTrack.AbsoluteSize.Y
+        local t = 1 - math.clamp((posY - trackTop) / (trackBottom - trackTop), 0, 1)
+        viewState.zoom = viewState.minZoom + t * (viewState.maxZoom - viewState.minZoom)
+        updateZoomHandle()
+    end
+end)
+
+-- ── PC MOUSE ORBIT ───────────────────────────
+UserInputService.InputBegan:Connect(function(inp, gp)
+    if gp or not viewState.target then return end
+    if inp.UserInputType == Enum.UserInputType.MouseButton2 then
+        drag.active = true; drag.lastX = inp.Position.X; drag.lastY = inp.Position.Y
+    end
+    if inp.UserInputType == Enum.UserInputType.MouseWheel then
+        viewState.zoom = math.clamp(viewState.zoom - inp.Position.Z * 2, viewState.minZoom, viewState.maxZoom)
+        updateZoomHandle()
+    end
+end)
+UserInputService.InputEnded:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton2 then drag.active = false end
+end)
+UserInputService.InputChanged:Connect(function(inp, gp)
+    if gp or not viewState.target then return end
+    if drag.active and inp.UserInputType == Enum.UserInputType.MouseMovement then
+        local dx = inp.Position.X - drag.lastX; local dy = inp.Position.Y - drag.lastY
+        drag.lastX = inp.Position.X; drag.lastY = inp.Position.Y
+        viewState.yaw   = viewState.yaw - dx * drag.sensitivity
+        viewState.pitch = math.clamp(viewState.pitch + dy * drag.sensitivity, viewState.minPitch, viewState.maxPitch)
+    end
+end)
+
+-- ── MOBILE TOUCH ORBIT + PINCH ZOOM ─────────
+local activeTouches = {}
+local function isOverGui(pos)
+    local guis = localPlayer.PlayerGui:GetGuiObjectsAtPosition(pos.X, pos.Y)
+    for _, obj in ipairs(guis) do
+        if obj ~= badge and obj ~= toastFrame and obj ~= toastLabel then return true end
+    end
+    return false
+end
+UserInputService.TouchStarted:Connect(function(touch, gp)
+    if gp then return end
+    activeTouches[touch.TouchId] = touch.Position
+end)
+UserInputService.TouchEnded:Connect(function(touch)
+    activeTouches[touch.TouchId] = nil
+    local count = 0; for _ in pairs(activeTouches) do count += 1 end
+    if count < 2 then pinch.active = false end
+end)
+UserInputService.TouchMoved:Connect(function(touch, gp)
+    if gp or not viewState.target then return end
+    local prev = activeTouches[touch.TouchId]
+    if not prev then return end
+    local count = 0; for _ in pairs(activeTouches) do count += 1 end
+    if count == 1 then
+        if not isOverGui(touch.Position) then
+            local dx = touch.Position.X - prev.X; local dy = touch.Position.Y - prev.Y
+            viewState.yaw   = viewState.yaw - dx * drag.sensitivity
+            viewState.pitch = math.clamp(viewState.pitch + dy * drag.sensitivity, viewState.minPitch, viewState.maxPitch)
+        end
+    elseif count == 2 then
+        local ids = {}; for id in pairs(activeTouches) do table.insert(ids, id) end
+        if #ids == 2 then
+            local posA = (ids[1] == touch.TouchId) and touch.Position or activeTouches[ids[1]]
+            local posB = (ids[2] == touch.TouchId) and touch.Position or activeTouches[ids[2]]
+            local dist = (posA - posB).Magnitude
+            if pinch.active then
+                viewState.zoom = math.clamp(viewState.zoom + (pinch.lastDist - dist) * 0.05, viewState.minZoom, viewState.maxZoom)
+                updateZoomHandle()
+            else pinch.active = true end
+            pinch.lastDist = dist
+        end
+    end
+    activeTouches[touch.TouchId] = touch.Position
+end)
+
+-- ── COMMANDS ─────────────────────────────────
+local function cmdView(args)
+    if not args[2] then showToast("Usage: view <n>", Color3.fromRGB(255, 180, 50)); return end
+    local target = findPlayer(args[2])
+    if not target then showToast("❌ Player not found: " .. args[2], Color3.fromRGB(255, 80, 80)); return end
+    if target == localPlayer then stopViewing(); return end
+    startViewing(target)
+end
+
+local function cmdUnview()
+    if viewState.target then stopViewing() else showToast("Not viewing anyone.", Color3.fromRGB(200, 200, 100)) end
+end
+
+local function cmdTp(args)
+    if not args[2] then showToast("Usage: tp <n>", Color3.fromRGB(255, 180, 50)); return end
+    local target = findPlayer(args[2])
+    if not target then showToast("❌ Player not found: " .. args[2], Color3.fromRGB(255, 80, 80)); return end
+    local root = getRoot(target)
+    local myRoot = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if root and myRoot then
+        myRoot.CFrame = root.CFrame + Vector3.new(2, 0, 0)
+        showToast("✈ Teleported to " .. target.Name, Color3.fromRGB(80, 200, 255))
+    else showToast("❌ Cannot teleport (missing character)", Color3.fromRGB(255, 80, 80)) end
+end
+
+local function cmdInfo(args)
+    local target = (args[2] and findPlayer(args[2])) or viewState.target
+    if not target then showToast("Usage: info <n>", Color3.fromRGB(255, 180, 50)); return end
+    local char = target.Character
+    local hum  = char and char:FindFirstChildOfClass("Humanoid")
+    local root = getRoot(target)
+    local hp    = hum  and math.floor(hum.Health)    or "?"
+    local maxHp = hum  and math.floor(hum.MaxHealth) or "?"
+    local pos   = root and string.format("%.0f, %.0f, %.0f", root.Position.X, root.Position.Y, root.Position.Z) or "unknown"
+    local team  = target.Team and target.Team.Name or "None"
+    infoBody.Text = string.format("Name: %s\nDisplay: %s\nHP: %s / %s\nTeam: %s\nPos: %s\nAcct Age: ~%d days",
+        target.Name, target.DisplayName, hp, maxHp, team, pos, target.AccountAge)
+    infoTitle.Text = "📋 " .. target.Name
+    infoPanel.Visible = true
+    showToast("ℹ Info for " .. target.Name, Color3.fromRGB(80, 200, 255))
+end
+
+local function cmdList()
+    for _, child in ipairs(listScroll:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+    local plist = Players:GetPlayers()
+    listScroll.CanvasSize = UDim2.new(0, 0, 0, #plist * 32)
+    for _, p in ipairs(plist) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -6, 0, 28); btn.BackgroundColor3 = Color3.fromRGB(20, 25, 40)
+        btn.TextColor3 = Color3.fromRGB(200, 220, 255); btn.Font = Enum.Font.GothamMedium
+        btn.TextSize = 13; btn.Text = (p == localPlayer and "★ " or "   ") .. p.Name
+        btn.TextXAlignment = Enum.TextXAlignment.Left; btn.BorderSizePixel = 0; btn.Parent = listScroll
+        local bc = Instance.new("UICorner"); bc.CornerRadius = UDim.new(0,6); bc.Parent = btn
+        local bp = Instance.new("UIPadding"); bp.PaddingLeft = UDim.new(0, 8); bp.Parent = btn
+        btn.MouseButton1Click:Connect(function()
+            listPanel.Visible = false
+            if p ~= localPlayer then startViewing(p) end
+        end)
+    end
+    listPanel.Visible = true
+    showToast("👥 " .. #plist .. " player(s) online", Color3.fromRGB(80, 200, 255))
+end
+
+local function cmdZoom(args)
+    local n = tonumber(args[2])
+    if not n then showToast("Usage: zoom <1-50>", Color3.fromRGB(255, 180, 50)); return end
+    viewState.zoom = math.clamp(n, viewState.minZoom, viewState.maxZoom)
+    updateZoomHandle()
+    showToast("🔍 Zoom set to " .. viewState.zoom, Color3.fromRGB(80, 200, 255))
+end
+
+local function cmdHelp()
+    showToast("view/unview/tp/info/list/zoom — type a command!", Color3.fromRGB(80, 200, 255), 5)
+    print("╔══════════════════════════════════════╗")
+    print("║       VIEWER SCRIPT COMMANDS         ║")
+    print("╠══════════════════════════════════════╣")
+    print("║ view <n>    → View a player's cam    ║")
+    print("║ unview      → Restore own camera     ║")
+    print("║ tp <n>      → Teleport to player     ║")
+    print("║ info <n>    → Show player stats      ║")
+    print("║ list        → Show player list       ║")
+    print("║ zoom <1-50> → Set camera zoom        ║")
+    print("║ help        → Show this help         ║")
+    print("╠══════════════════════════════════════╣")
+    print("║ MOBILE: drag to orbit, pinch zoom    ║")
+    print("║ PC: right-drag to orbit, scroll zoom ║")
+    print("╚══════════════════════════════════════╝")
+end
+
+local commands = {
+    view = cmdView, unview = cmdUnview, stopview 
+view = cmdView, unview = cmdUnview, stopview = cmdUnview,
+    tp = cmdTp, teleport = cmdTp, info = cmdInfo,
+    list = cmdList, players = cmdList, zoom = cmdZoom,
+    help = cmdHelp, ["?"] = cmdHelp,
+}
+
+local function handleInput(raw)
+    raw = raw:match("^%s*(.-)%s*$")
+    if raw == "" then return end
+    local args = {}
+    for w in raw:gmatch("%S+") do table.insert(args, w) end
+    local fn = commands[args[1] and args[1]:lower()]
+    if fn then fn(args) else showToast('Unknown: "' .. (args[1] or "") .. '". Try: help', Color3.fromRGB(255, 80, 80)) end
+    textBox.Text = ""
+end
+
+textBox.FocusLost:Connect(function(enter) if enter then handleInput(textBox.Text) end end)
+
+UserInputService.InputBegan:Connect(function(inp, gp)
+    if gp then return end
+    if inp.KeyCode == Enum.KeyCode.Return and not textBox:IsFocused() then textBox:CaptureFocus() end
+end)
+
+Players.PlayerRemoving:Connect(function(p)
+    if p == viewState.target then stopViewing(); showToast("⚠ Viewed player left", Color3.fromRGB(255, 180, 50)) end
+end)
+
+showToast("✅ ViewerScript loaded! Type 'help'", Color3.fromRGB(80, 200, 255), 4)
+print("[ViewerScript] Ready. Type 'help' in the bar.")
