@@ -1,0 +1,56 @@
+{
+    "resource_pack_name": "Black Knight Bedrock",
+    "texture_name": "atlas.terrain",
+    "padding": 8,
+    "num_mip_levels": 4,
+    "texture_data": {
+        "ancient_debris_side": {
+            "textures": "textures/blocks/ancient_debris_side"
+        },
+        "ancient_debris_top": {
+            "textures": "textures/blocks/ancient_debris_top"
+        },
+        "crying_obsidian": {
+            "textures": "textures/blocks/crying_obsidian"
+        },
+        "fire_0": {
+            "textures": "textures/blocks/fire_0"
+        },
+        "fire_1": {
+            "textures": "textures/blocks/fire_1"
+        },
+        "glowstone": {
+            "textures": "textures/blocks/glowstone"
+        },
+        "netherite_block": {
+            "textures": "textures/blocks/netherite_block"
+        },
+        "obsidian": {
+            "textures": "textures/blocks/obsidian"
+        },
+        "respawn_anchor_bottom": {
+            "textures": "textures/blocks/respawn_anchor_bottom"
+        },
+        "respawn_anchor_side0": {
+            "textures": "textures/blocks/respawn_anchor_side0"
+        },
+        "respawn_anchor_side1": {
+            "textures": "textures/blocks/respawn_anchor_side1"
+        },
+        "respawn_anchor_side2": {
+            "textures": "textures/blocks/respawn_anchor_side2"
+        },
+        "respawn_anchor_side3": {
+            "textures": "textures/blocks/respawn_anchor_side3"
+        },
+        "respawn_anchor_side4": {
+            "textures": "textures/blocks/respawn_anchor_side4"
+        },
+        "respawn_anchor_top": {
+            "textures": "textures/blocks/respawn_anchor_top"
+        },
+        "respawn_anchor_top_off": {
+            "textures": "textures/blocks/respawn_anchor_top_off"
+        }
+    }
+}

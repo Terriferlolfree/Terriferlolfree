@@ -1,0 +1,17 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "§0Black §fKnight",
+        "description": "§fEdited by Felposs §r- Bedrock/PE Edition",
+        "uuid": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+        "version": [1, 0, 0],
+        "min_engine_version": [1, 16, 0]
+    },
+    "modules": [
+        {
+            "type": "resources",
+            "uuid": "d4c3b2a1-6f5e-4b7a-9d8c-1e0f3a2b5c4d",
+            "version": [1, 0, 0]
+        }
+    ]
+}
