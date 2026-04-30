@@ -1,0 +1,54 @@
+{
+    "resource_pack_name": "Black Knight Bedrock",
+    "texture_name": "atlas.items",
+    "texture_data": {
+        "apple": {
+            "textures": "textures/items/apple"
+        },
+        "diamond_sword": {
+            "textures": "textures/items/diamond_sword"
+        },
+        "end_crystal": {
+            "textures": "textures/items/end_crystal"
+        },
+        "ender_pearl": {
+            "textures": "textures/items/ender_pearl"
+        },
+        "experience_bottle": {
+            "textures": "textures/items/experience_bottle"
+        },
+        "golden_apple": {
+            "textures": "textures/items/golden_apple"
+        },
+        "netherite_axe": {
+            "textures": "textures/items/netherite_axe"
+        },
+        "netherite_boots": {
+            "textures": "textures/items/netherite_boots"
+        },
+        "netherite_chestplate": {
+            "textures": "textures/items/netherite_chestplate"
+        },
+        "netherite_helmet": {
+            "textures": "textures/items/netherite_helmet"
+        },
+        "netherite_hoe": {
+            "textures": "textures/items/netherite_hoe"
+        },
+        "netherite_leggings": {
+            "textures": "textures/items/netherite_leggings"
+        },
+        "netherite_pickaxe": {
+            "textures": "textures/items/netherite_pickaxe"
+        },
+        "netherite_shovel": {
+            "textures": "textures/items/netherite_shovel"
+        },
+        "netherite_sword": {
+            "textures": "textures/items/netherite_sword"
+        },
+        "totem_of_undying": {
+            "textures": "textures/items/totem_of_undying"
+        }
+    }
+}
