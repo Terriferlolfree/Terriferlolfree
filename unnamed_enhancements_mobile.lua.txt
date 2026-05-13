@@ -1,0 +1,1290 @@
+-- Unnamed Enhancements - Mobile Linoria Library Edition
+-- Converted from original to Mc4121ban's Mobile Linoria Library
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mc4121ban/Linoria-Library-Mobile/refs/heads/main/Gui%20Lib%20%5BLibrary%5D"))()
+local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mc4121ban/Linoria-Library-Mobile/refs/heads/main/Gui%20Lib%20%5BThemeManager%5D"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mc4121ban/Linoria-Library-Mobile/refs/heads/main/Gui%20Lib%20%5BSaveManager%5D"))()
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ContextActionService = game:GetService("ContextActionService")
+local TweenService = game:GetService("TweenService")
+local TextService = game:GetService("TextService")
+local Lighting = game:GetService("Lighting")
+local Teams = game:GetService("Teams")
+local HttpService = game:GetService("HttpService")
+local GuiService = game:GetService("GuiService")
+local TextChatService = game:GetService("TextChatService")
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local cloneref = cloneref or function(inst) return inst end
+local gethui = gethui or function()
+    return (syn and syn.protect_gui and game:GetService("CoreGui")) or game:GetService("CoreGui")
+end
+local getsynasset = getcustomasset or getsynasset or function() return "" end
+local protect_gui = (syn and syn.protect_gui) or function() end
+
+if not getgenv then
+    getgenv = function() return _G end
+end
+
+if getgenv().UE_LOADED then
+    return
+end
+
+if not getgenv().Toggles then
+    getgenv().Toggles = {}
+end
+if not getgenv().Options then
+    getgenv().Options = {}
+end
+local Toggles = getgenv().Toggles
+local Options = getgenv().Options
+
+local State = {
+    lua = {
+        listen_for_command = {},
+    },
+    events = {
+        gradient_option_changed = Instance.new("BindableEvent"),
+        esp_color_changed = Instance.new("BindableEvent"),
+        esp_fill_changed = Instance.new("BindableEvent"),
+        esp_effects_changed = Instance.new("BindableEvent"),
+        esp_effects_color_changed = Instance.new("BindableEvent"),
+    },
+    characters = {},
+    customization = {
+        self = {
+            _data = {},
+            new = function(self, tag)
+                return {
+                    create = function(self2, char, val, kind) end,
+                    destroy = function(self2, kind) end,
+                    update = function(self2, kind) end,
+                }
+            end,
+            change = function(self, char, fn) end,
+            restore = function(self, char) end,
+            get = function(self, char) return nil end,
+        },
+    },
+    effects = {
+        self_effects = {
+            new = function(tag)
+                return {
+                    create = function(self, char, val, kind) end,
+                    destroy = function(self, kind) end,
+                    update = function(self, kind) end,
+                }
+            end,
+        },
+    },
+    gradients = {
+        healthbar = {},
+        fill = {},
+        box = {},
+        name = {},
+        weapon = {},
+        distance = {},
+        skeleton = {},
+    },
+    running = {},
+    drawings = {
+        silent = {},
+        aimbot = {},
+    },
+    manipulation = {
+        active = false,
+        targetPosition = nil,
+    },
+    raycastParams = RaycastParams.new(),
+    localFighter = nil,
+    Remotes = nil,
+}
+
+State.raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+State.raycastParams.FilterDescendantsInstances = { LocalPlayer.Character }
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    State.raycastParams.FilterDescendantsInstances = { char }
+end)
+
+-- Lighting Effects
+local BloomEffect = Instance.new("BloomEffect")
+BloomEffect.Parent = Lighting
+BloomEffect.Enabled = false
+
+local BloomDefaults = {
+    Enabled = BloomEffect.Enabled,
+    Size = BloomEffect.Size,
+    Intensity = BloomEffect.Intensity,
+    Threshold = BloomEffect.Threshold,
+}
+
+local ColorCorrectionEffect = Instance.new("ColorCorrectionEffect")
+ColorCorrectionEffect.Parent = Lighting
+ColorCorrectionEffect.Enabled = false
+
+local AtmosphereEffect = Instance.new("Atmosphere")
+
+local SunRaysEffect = Instance.new("SunRaysEffect")
+SunRaysEffect.Parent = Lighting
+SunRaysEffect.Enabled = false
+
+local SunRaysDefaults = {
+    Enabled = SunRaysEffect.Enabled,
+    Spread = SunRaysEffect.Spread,
+    Intensity = SunRaysEffect.Intensity,
+}
+
+-- ============================================================
+--  UI SETUP - Mobile Linoria Library
+-- ============================================================
+
+local Window = Library:CreateWindow({
+    Title = "Unnamed Enhancements",
+    Center = true,
+    AutoShow = true,
+    TabPadding = 8,
+    MenuFadeTime = 0.2,
+})
+
+local Tabs = {
+    Combat = Window:AddTab("Combat"),
+    Visuals = Window:AddTab("Visuals"),
+    World = Window:AddTab("World"),
+    Misc = Window:AddTab("Misc"),
+    Settings = Window:AddTab("UI Settings"),
+}
+
+-- ============================================================
+--  COMBAT TAB
+-- ============================================================
+
+-- Targeting Groupbox (Left)
+local TargetingGroupbox = Tabs.Combat:AddLeftGroupbox("Targeting")
+
+TargetingGroupbox:AddToggle("aimbot_toggle", {
+    Text = "Enabled",
+    Default = false,
+    Tooltip = "Main aimbot toggle",
+}):AddKeyPicker("aimbot_keybind", {
+    Default = "MB2",
+    Mode = "Hold",
+    Text = "Aimbot",
+    NoUI = false,
+})
+
+TargetingGroupbox:AddToggle("targeting_visibleonly", {
+    Text = "Visible Only",
+    Default = true,
+    Tooltip = "Only target visible players",
+})
+
+TargetingGroupbox:AddToggle("exploits_no_spread", {
+    Text = "No Spread",
+    Default = true,
+    Tooltip = "Removes weapon spread",
+})
+
+TargetingGroupbox:AddToggle("exploits_full_auto", {
+    Text = "Full Auto",
+    Default = false,
+    Tooltip = "Makes all guns automatic",
+})
+
+TargetingGroupbox:AddToggle("aimbot_fov_outline", {
+    Text = "Show FOV",
+    Default = false,
+    Tooltip = "Display aimbot FOV circle",
+}):AddColorPicker("aimbot_outline_color1", {
+    Default = Color3.new(1, 1, 1),
+    Title = "FOV Color",
+})
+
+TargetingGroupbox:AddToggle("aimbot_fov_moving", {
+    Text = "FOV Rotation",
+    Default = false,
+    Tooltip = "Rotate FOV circle",
+})
+
+TargetingGroupbox:AddSlider("aimbot_fov_rotation_speed", {
+    Text = "Rotation Speed",
+    Min = 0,
+    Max = 5,
+    Default = 1,
+    Rounding = 2,
+    Suffix = "",
+})
+
+TargetingGroupbox:AddSlider("silent_radius", {
+    Text = "Silent Radius",
+    Min = 0,
+    Max = 500,
+    Default = 100,
+    Rounding = 0,
+    Suffix = "px",
+})
+
+TargetingGroupbox:AddSlider("silent_hitchance", {
+    Text = "Hit Chance",
+    Min = 0,
+    Max = 100,
+    Default = 100,
+    Rounding = 0,
+    Suffix = "%",
+})
+
+TargetingGroupbox:AddToggle("silent_visualize", {
+    Text = "Visualize",
+    Default = false,
+    Tooltip = "Show silent aim circle",
+}):AddColorPicker("silent_fill_color1", {
+    Default = Color3.new(1, 1, 1),
+    Title = "Fill Color 1",
+}):AddColorPicker("silent_fill_color2", {
+    Default = Color3.new(0, 0, 0),
+    Title = "Fill Color 2",
+})
+
+TargetingGroupbox:AddToggle("silent_manipulation", {
+    Text = "Manipulation",
+    Default = false,
+    Tooltip = "Silent aim position manipulation",
+})
+
+TargetingGroupbox:AddToggle("target_highlight_fill", {
+    Text = "Target Highlight",
+    Default = false,
+    Tooltip = "Highlight current target",
+}):AddColorPicker("target_highlight_color", {
+    Default = Color3.new(1, 0, 0),
+    Transparency = 0.5,
+    Title = "Highlight Color",
+})
+
+TargetingGroupbox:AddToggle("selected_player_view", {
+    Text = "Selected Player View",
+    Default = false,
+    Tooltip = "View selected player",
+})
+
+-- Ragebot Groupbox (Left)
+local RagebotGroupbox = Tabs.Combat:AddLeftGroupbox("Ragebot")
+
+RagebotGroupbox:AddDropdown("ragebot_priority_targets", {
+    Text = "Priority",
+    Values = { "Head", "Body", "Closest" },
+    Default = "Head",
+    Multi = false,
+    Tooltip = "Target priority for ragebot",
+})
+
+RagebotGroupbox:AddSlider("ragebot_void_spam_hide", {
+    Text = "Void Spam Delay",
+    Min = 0,
+    Max = 1,
+    Default = 0.25,
+    Rounding = 2,
+    Suffix = "s",
+})
+
+RagebotGroupbox:AddToggle("indicator_ragebot", {
+    Text = "Ragebot Indicator",
+    Default = false,
+    Tooltip = "Show ragebot status indicator",
+}):AddColorPicker("indicator_ragebot_status_color", {
+    Default = Color3.fromRGB(255, 100, 100),
+    Title = "Status Color",
+}):AddColorPicker("indicator_ragebot_text_color", {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = "Text Color",
+})
+
+-- Triggerbot Groupbox (Right)
+local TriggerGroupbox = Tabs.Combat:AddRightGroupbox("Triggerbot")
+
+TriggerGroupbox:AddToggle("triggerbot_enabled", {
+    Text = "Enabled",
+    Default = false,
+    Tooltip = "Auto-shoot when hovering enemy",
+})
+
+TriggerGroupbox:AddDropdown("triggerbot_scoped", {
+    Text = "Mode",
+    Values = { "Always", "Scoped Only" },
+    Default = "Always",
+    Multi = false,
+    Tooltip = "When to activate triggerbot",
+})
+
+-- Anti Aim Groupbox (Right)
+local AntiAimGroupbox = Tabs.Combat:AddRightGroupbox("Anti Aim")
+
+AntiAimGroupbox:AddToggle("anti_aim_enabled", {
+    Text = "Enabled",
+    Default = false,
+    Tooltip = "Enable anti-aim",
+})
+
+AntiAimGroupbox:AddSlider("anti_aim_custom_yaw", {
+    Text = "Yaw Angle",
+    Min = -180,
+    Max = 180,
+    Default = 0,
+    Rounding = 0,
+    Suffix = "°",
+})
+
+AntiAimGroupbox:AddDropdown("anti_aim_pitch_mode", {
+    Text = "Pitch Mode",
+    Values = { "None", "Look Down", "Custom", "Offset" },
+    Default = "None",
+    Multi = false,
+    Tooltip = "Pitch anti-aim mode",
+})
+
+-- ============================================================
+--  VISUALS TAB
+-- ============================================================
+
+-- ESP Groupbox (Left)
+local ESPGroupbox = Tabs.Visuals:AddLeftGroupbox("ESP")
+
+ESPGroupbox:AddToggle("esp_name", {
+    Text = "Name",
+    Default = false,
+    Tooltip = "Show player names",
+})
+
+ESPGroupbox:AddToggle("esp_distance", {
+    Text = "Distance",
+    Default = false,
+    Tooltip = "Show distance to players",
+})
+
+ESPGroupbox:AddToggle("esp_weapon", {
+    Text = "Weapon",
+    Default = false,
+    Tooltip = "Show equipped weapon",
+})
+
+ESPGroupbox:AddToggle("esp_box", {
+    Text = "Box",
+    Default = false,
+    Tooltip = "Draw boxes around players",
+})
+
+ESPGroupbox:AddToggle("esp_fill", {
+    Text = "Fill",
+    Default = false,
+    Tooltip = "Fill boxes with color",
+})
+
+ESPGroupbox:AddToggle("esp_skeleton", {
+    Text = "Skeleton",
+    Default = false,
+    Tooltip = "Draw player skeletons",
+})
+
+ESPGroupbox:AddToggle("esp_healthbar", {
+    Text = "Healthbar",
+    Default = false,
+    Tooltip = "Show health bars",
+})
+
+ESPGroupbox:AddToggle("esp_show_team", {
+    Text = "Show Team",
+    Default = false,
+    Tooltip = "Show ESP for teammates",
+})
+
+ESPGroupbox:AddToggle("esp_chams", {
+    Text = "Chams",
+    Default = false,
+    Tooltip = "Enable chams",
+})
+
+ESPGroupbox:AddToggle("esp_skeleton_outline", {
+    Text = "Skeleton Outline",
+    Default = false,
+    Tooltip = "Outline skeleton ESP",
+})
+
+ESPGroupbox:AddToggle("esp_healthbar_resize", {
+    Text = "Healthbar Resize",
+    Default = false,
+    Tooltip = "Dynamic healthbar sizing",
+})
+
+ESPGroupbox:AddToggle("esp_override_appearance", {
+    Text = "Override Appearance",
+    Default = false,
+    Tooltip = "Override player appearance",
+})
+
+ESPGroupbox:AddToggle("esp_body_color", {
+    Text = "Body Color",
+    Default = false,
+    Tooltip = "Change body color",
+})
+
+ESPGroupbox:AddToggle("esp_material", {
+    Text = "Material",
+    Default = false,
+    Tooltip = "Change player material",
+})
+
+ESPGroupbox:AddDropdown("esp_bounds_type", {
+    Text = "Bounds Type",
+    Values = { "Dynamic", "Static" },
+    Default = "Dynamic",
+    Multi = false,
+    Tooltip = "ESP bounds calculation method",
+})
+
+ESPGroupbox:AddDropdown("esp_world_font", {
+    Text = "Font",
+    Values = { "Code", "Gotham", "GothamBold" },
+    Default = "Code",
+    Multi = false,
+    Tooltip = "ESP text font",
+})
+
+ESPGroupbox:AddSlider("esp_bounds_width_scale", {
+    Text = "Width Scale",
+    Min = 0,
+    Max = 200,
+    Default = 100,
+    Rounding = 0,
+    Suffix = "%",
+})
+
+ESPGroupbox:AddSlider("esp_skeleton_thickness", {
+    Text = "Skeleton Thickness",
+    Min = 1,
+    Max = 5,
+    Default = 1,
+    Rounding = 0,
+    Suffix = "px",
+})
+
+ESPGroupbox:AddSlider("esp_healthbar_health_lerp", {
+    Text = "Health Lerp",
+    Min = 0,
+    Max = 1,
+    Default = 0.1,
+    Rounding = 2,
+    Suffix = "",
+})
+
+ESPGroupbox:AddSlider("esp_world_object_scale", {
+    Text = "Object Scale",
+    Min = 0.5,
+    Max = 3,
+    Default = 1,
+    Rounding = 1,
+    Suffix = "x",
+})
+
+-- Crosshair Groupbox (Right)
+local CrosshairGroupbox = Tabs.Visuals:AddRightGroupbox("Crosshair")
+
+CrosshairGroupbox:AddDropdown("crosshair_settings", {
+    Text = "Settings",
+    Values = { "Default", "Custom" },
+    Default = "Default",
+    Multi = false,
+    Tooltip = "Crosshair style",
+})
+
+-- Indicators Groupbox (Right)
+local IndicatorsGroupbox = Tabs.Visuals:AddRightGroupbox("Indicators")
+
+IndicatorsGroupbox:AddSlider("indicator_lerp", {
+    Text = "Lerp",
+    Min = 0,
+    Max = 1,
+    Default = 0.1,
+    Rounding = 2,
+    Suffix = "",
+})
+
+-- Custom Tracers Groupbox (Right)
+local TracerGroupbox = Tabs.Visuals:AddRightGroupbox("Custom Tracers")
+
+TracerGroupbox:AddSlider("custom_tracer_lifetime", {
+    Text = "Lifetime",
+    Min = 0.1,
+    Max = 5,
+    Default = 1,
+    Rounding = 1,
+    Suffix = "s",
+})
+
+-- ============================================================
+--  WORLD TAB
+-- ============================================================
+
+-- Bloom Groupbox (Left)
+local BloomGroupbox = Tabs.World:AddLeftGroupbox("Bloom")
+
+BloomGroupbox:AddToggle("bloom_enabled", {
+    Text = "Enable",
+    Default = false,
+    Tooltip = "Enable bloom effect",
+})
+
+BloomGroupbox:AddSlider("bloom_intensity", {
+    Text = "Intensity",
+    Min = 0,
+    Max = 3,
+    Default = 0.4,
+    Rounding = 2,
+    Suffix = "",
+})
+
+BloomGroupbox:AddSlider("bloom_size", {
+    Text = "Size",
+    Min = 0,
+    Max = 56,
+    Default = 24,
+    Rounding = 0,
+    Suffix = "",
+})
+
+BloomGroupbox:AddSlider("bloom_threshold", {
+    Text = "Threshold",
+    Min = 0,
+    Max = 2,
+    Default = 0.95,
+    Rounding = 2,
+    Suffix = "",
+})
+
+-- Color Correction Groupbox (Left)
+local CCGroupbox = Tabs.World:AddLeftGroupbox("Color Correction")
+
+CCGroupbox:AddToggle("color_correction_enabled", {
+    Text = "Enable",
+    Default = false,
+    Tooltip = "Enable color correction",
+}):AddColorPicker("color_correction_tint", {
+    Default = Color3.new(1, 1, 1),
+    Title = "Tint Color",
+})
+
+CCGroupbox:AddSlider("color_correction_saturation", {
+    Text = "Saturation",
+    Min = -1,
+    Max = 1,
+    Default = 0,
+    Rounding = 2,
+    Suffix = "",
+})
+
+CCGroupbox:AddSlider("color_correction_contrast", {
+    Text = "Contrast",
+    Min = -1,
+    Max = 1,
+    Default = 0,
+    Rounding = 2,
+    Suffix = "",
+})
+
+CCGroupbox:AddSlider("color_correction_brightness", {
+    Text = "Brightness",
+    Min = -1,
+    Max = 1,
+    Default = 0,
+    Rounding = 2,
+    Suffix = "",
+})
+
+-- Atmosphere Groupbox (Right)
+local AtmoGroupbox = Tabs.World:AddRightGroupbox("Atmosphere")
+
+AtmoGroupbox:AddToggle("atmosphere_enabled", {
+    Text = "Enable",
+    Default = false,
+    Tooltip = "Enable atmosphere effects",
+})
+
+AtmoGroupbox:AddSlider("atmosphere_decay", {
+    Text = "Decay",
+    Min = 0,
+    Max = 1,
+    Default = 0,
+    Rounding = 2,
+    Suffix = "",
+})
+
+AtmoGroupbox:AddSlider("atmosphere_glare", {
+    Text = "Glare",
+    Min = 0,
+    Max = 1,
+    Default = 0,
+    Rounding = 2,
+    Suffix = "",
+})
+
+AtmoGroupbox:AddSlider("atmosphere_haze", {
+    Text = "Haze",
+    Min = 0,
+    Max = 10,
+    Default = 0,
+    Rounding = 1,
+    Suffix = "",
+})
+
+AtmoGroupbox:AddSlider("atmosphere_density", {
+    Text = "Density",
+    Min = 0,
+    Max = 1,
+    Default = 0.3,
+    Rounding = 2,
+    Suffix = "",
+})
+
+AtmoGroupbox:AddSlider("atmosphere_offset", {
+    Text = "Offset",
+    Min = 0,
+    Max = 1,
+    Default = 0,
+    Rounding = 2,
+    Suffix = "",
+})
+
+-- Sun Rays Groupbox (Right)
+local SunGroupbox = Tabs.World:AddRightGroupbox("Sun Rays")
+
+SunGroupbox:AddToggle("sunrays_enabled", {
+    Text = "Enable",
+    Default = false,
+    Tooltip = "Enable sun rays effect",
+})
+
+SunGroupbox:AddSlider("sunrays_spread", {
+    Text = "Spread",
+    Min = 0,
+    Max = 1,
+    Default = 0.5,
+    Rounding = 2,
+    Suffix = "",
+})
+
+SunGroupbox:AddSlider("sunrays_intensity", {
+    Text = "Intensity",
+    Min = 0,
+    Max = 1,
+    Default = 0.25,
+    Rounding = 2,
+    Suffix = "",
+})
+
+-- Lighting Groupbox (Right)
+local LightingGroupbox = Tabs.World:AddRightGroupbox("Lighting")
+
+LightingGroupbox:AddDropdown("lighting_technology", {
+    Text = "Technology",
+    Values = { "ShadowMap", "Future", "Legacy" },
+    Default = "ShadowMap",
+    Multi = false,
+    Tooltip = "Lighting rendering technology",
+})
+
+-- ============================================================
+--  MISC TAB
+-- ============================================================
+
+-- Camera Groupbox (Left)
+local CameraGroupbox = Tabs.Misc:AddLeftGroupbox("Camera")
+
+CameraGroupbox:AddToggle("camera_fov_changer", {
+    Text = "FOV Changer",
+    Default = false,
+    Tooltip = "Change field of view",
+})
+
+CameraGroupbox:AddSlider("camera_aspect_ratio_y", {
+    Text = "Ratio Y",
+    Min = 0.1,
+    Max = 3,
+    Default = 1,
+    Rounding = 2,
+    Suffix = "",
+})
+
+-- Animations Groupbox (Left)
+local AnimGroupbox = Tabs.Misc:AddLeftGroupbox("Animations")
+
+AnimGroupbox:AddDropdown("animation_player_value", {
+    Text = "Animation",
+    Values = { "Default" },
+    Default = "Default",
+    Multi = false,
+    Tooltip = "Player animation preset",
+})
+
+-- Viewmodel Groupbox (Left)
+local ViewmodelGroupbox = Tabs.Misc:AddLeftGroupbox("Viewmodel")
+
+ViewmodelGroupbox:AddToggle("viewmodel_offset", {
+    Text = "Offset",
+    Default = false,
+    Tooltip = "Enable viewmodel offset",
+})
+
+ViewmodelGroupbox:AddToggle("viewmodel_chams", {
+    Text = "Chams",
+    Default = false,
+    Tooltip = "Viewmodel chams",
+})
+
+-- Chat Groupbox (Right)
+local ChatGroupbox = Tabs.Misc:AddRightGroupbox("Chat")
+
+ChatGroupbox:AddToggle("chat_spam_enabled", {
+    Text = "Chat Spam",
+    Default = false,
+    Tooltip = "Enable chat spam",
+})
+
+-- Arcade Groupbox (Right)
+local ArcadeGroupbox = Tabs.Misc:AddRightGroupbox("Arcade")
+
+ArcadeGroupbox:AddToggle("arcade_auto_ammo", {
+    Text = "Auto Grab Drops",
+    Default = false,
+    Tooltip = "Automatically grab ammo drops",
+})
+
+-- Cosmetics Groupbox (Right)
+local CosmeticsGroupbox = Tabs.Misc:AddRightGroupbox("Cosmetics")
+
+CosmeticsGroupbox:AddToggle("cosmetics_changer_show", {
+    Text = "Show",
+    Default = false,
+    Tooltip = "Show cosmetics changer",
+})
+
+-- Sound Groupbox (Right)
+local SoundGroupbox = Tabs.Misc:AddRightGroupbox("Sound")
+
+SoundGroupbox:AddSlider("shoot_sound_speed", {
+    Text = "Speed",
+    Min = 0.1,
+    Max = 5,
+    Default = 1,
+    Rounding = 2,
+    Suffix = "x",
+})
+
+-- ============================================================
+--  SETTINGS TAB
+-- ============================================================
+
+local MenuGroup = Tabs.Settings:AddLeftGroupbox("Menu")
+
+MenuGroup:AddButton({
+    Text = "Unload",
+    Func = function()
+        Library:Unload()
+    end,
+    DoubleClick = false,
+    Tooltip = "Unload the script",
+})
+
+MenuGroup:AddLabel("Menu Bind"):AddKeyPicker("MenuKeybind", {
+    Default = "End",
+    NoUI = true,
+    Text = "Menu Keybind",
+})
+
+Library.ToggleKeybind = Options.MenuKeybind
+
+-- ============================================================
+--  MANAGERS
+-- ============================================================
+
+ThemeManager:SetLibrary(Library)
+ThemeManager:SetFolder("unnamed/themes")
+ThemeManager:ApplyToTab(Tabs.Settings)
+
+SaveManager:SetLibrary(Library)
+SaveManager:SetFolder("unnamed/rivals")
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({ "MenuKeybind" })
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+-- ============================================================
+--  FEATURE LOGIC
+-- ============================================================
+
+-- Bloom Update
+local function bloom_update()
+    local enabled = Toggles.bloom_enabled.Value
+    if enabled then
+        BloomEffect.Enabled = true
+        BloomEffect.Size = Options.bloom_size.Value
+        BloomEffect.Intensity = Options.bloom_intensity.Value
+        BloomEffect.Threshold = Options.bloom_threshold.Value
+    else
+        BloomEffect.Enabled = BloomDefaults.Enabled
+        BloomEffect.Size = BloomDefaults.Size
+        BloomEffect.Intensity = BloomDefaults.Intensity
+        BloomEffect.Threshold = BloomDefaults.Threshold
+    end
+end
+
+-- Color Correction Update
+local function cc_update()
+    ColorCorrectionEffect.Enabled = Toggles.color_correction_enabled.Value
+    if not ColorCorrectionEffect.Enabled then return end
+    ColorCorrectionEffect.TintColor = Options.color_correction_tint.Value
+    ColorCorrectionEffect.Saturation = Options.color_correction_saturation.Value
+    ColorCorrectionEffect.Contrast = Options.color_correction_contrast.Value
+    ColorCorrectionEffect.Brightness = Options.color_correction_brightness.Value
+end
+
+-- Atmosphere Update
+local function atmo_update()
+    AtmosphereEffect.Parent = Toggles.atmosphere_enabled.Value and Lighting or nil
+    if not AtmosphereEffect.Parent then return end
+    AtmosphereEffect.Color = Options.atmosphere_color and Options.atmosphere_color.Value or Color3.new(1, 1, 1)
+    AtmosphereEffect.Decay = Options.atmosphere_decay.Value
+    AtmosphereEffect.Glare = Options.atmosphere_glare.Value
+    AtmosphereEffect.Haze = Options.atmosphere_haze.Value
+    AtmosphereEffect.Density = Options.atmosphere_density.Value
+    AtmosphereEffect.Offset = Options.atmosphere_offset.Value
+end
+
+-- Sun Rays Update
+local function sun_update()
+    local enabled = Toggles.sunrays_enabled.Value
+    if enabled then
+        SunRaysEffect.Enabled = true
+        SunRaysEffect.Spread = Options.sunrays_spread.Value
+        SunRaysEffect.Intensity = Options.sunrays_intensity.Value
+    else
+        SunRaysEffect.Enabled = SunRaysDefaults.Enabled
+        SunRaysEffect.Spread = SunRaysDefaults.Spread
+        SunRaysEffect.Intensity = SunRaysDefaults.Intensity
+    end
+end
+
+-- Lighting Technology
+Options.lighting_technology:OnChanged(function()
+    pcall(function()
+        local tech = Options.lighting_technology.Value
+        if tech == "ShadowMap" then
+            Lighting.Technology = Enum.Technology.ShadowMap
+        elseif tech == "Future" then
+            Lighting.Technology = Enum.Technology.Future
+        elseif tech == "Legacy" then
+            Lighting.Technology = Enum.Technology.Legacy
+        end
+    end)
+end)
+
+-- Bind updates
+Toggles.bloom_enabled:OnChanged(bloom_update)
+Options.bloom_intensity:OnChanged(bloom_update)
+Options.bloom_size:OnChanged(bloom_update)
+Options.bloom_threshold:OnChanged(bloom_update)
+
+Toggles.color_correction_enabled:OnChanged(cc_update)
+Options.color_correction_saturation:OnChanged(cc_update)
+Options.color_correction_contrast:OnChanged(cc_update)
+Options.color_correction_brightness:OnChanged(cc_update)
+Options.color_correction_tint:OnChanged(cc_update)
+
+Toggles.atmosphere_enabled:OnChanged(atmo_update)
+Options.atmosphere_decay:OnChanged(atmo_update)
+Options.atmosphere_glare:OnChanged(atmo_update)
+Options.atmosphere_haze:OnChanged(atmo_update)
+Options.atmosphere_density:OnChanged(atmo_update)
+Options.atmosphere_offset:OnChanged(atmo_update)
+
+Toggles.sunrays_enabled:OnChanged(sun_update)
+Options.sunrays_spread:OnChanged(sun_update)
+Options.sunrays_intensity:OnChanged(sun_update)
+
+-- ============================================================
+--  GAME INTEGRATION
+-- ============================================================
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
+local RivalsModules = {}
+
+local origGetRawMetatable = clonefunction and clonefunction(getrawmetatable) or getrawmetatable
+local origSetThreadIdentity = clonefunction and clonefunction(setthreadidentity or setidentity or function() end) or function() end
+local origNewCClosure = newcclosure or function(f) return f end
+
+local localFighter = nil
+
+pcall(function()
+    for _, v in pairs(getgc(true)) do
+        if type(v) == "table" and rawget(v, "ClientFighter") and rawget(v, "IsLocalPlayer") then
+            localFighter = v
+            break
+        end
+    end
+end)
+State.localFighter = localFighter
+
+pcall(function()
+    local viewmodelsModule = ReplicatedStorage:FindFirstChild("ViewModels", true)
+        or ReplicatedStorage:FindFirstChild("Shared", true)
+    if viewmodelsModule then
+        RivalsModules.ViewModels = cloneref(require(viewmodelsModule))
+    end
+end)
+
+pcall(function()
+    local camModule = ReplicatedStorage:FindFirstChild("CameraController", true)
+    if camModule then
+        RivalsModules.CameraController = require(camModule)
+    end
+end)
+
+if Remotes then
+    State.Remotes = Remotes
+end
+
+-- Metatable Hook
+local function installMetatableHook()
+    local origMt = origGetRawMetatable(game)
+    if not origMt then return end
+
+    local origNamecall = origMt.__namecall
+    local origIndex = origMt.__index
+    local origNewIndex = origMt.__newindex
+
+    local proxyMt = {}
+    proxyMt.__index = origIndex
+
+    proxyMt.__namecall = origNewCClosure(function(self, ...)
+        local method = getnamecallmethod()
+        local args = {...}
+
+        if method == "FireServer" and self.Name and Remotes and self:IsDescendantOf(Remotes) then
+            local remoteName = self.Name
+
+            if remoteName == "ReplicateFromServer" or remoteName == "Shoot" or remoteName == "Fire" then
+                if Toggles.exploits_no_spread and Toggles.exploits_no_spread.Value then
+                    pcall(function()
+                        for _, arg in args do
+                            if type(arg) == "table" then
+                                if arg._ProjectileEffect then
+                                    arg._ProjectileEffect.Spread = Vector3.zero
+                                    arg._ProjectileEffect.SpreadAngle = 0
+                                end
+                                if arg.Spread then
+                                    arg.Spread = Vector3.zero
+                                end
+                                if arg.SpreadAngle then
+                                    arg.SpreadAngle = 0
+                                end
+                            end
+                        end
+                    end)
+                end
+
+                if Toggles.silent_manipulation and Toggles.silent_manipulation.Value then
+                    pcall(function()
+                        if State.manipulation.targetPosition then
+                            for _, arg in args do
+                                if type(arg) == "table" then
+                                    if arg.Direction then
+                                        local cam = workspace.CurrentCamera
+                                        arg.Direction = (State.manipulation.targetPosition - cam.CFrame.Position).Unit
+                                    end
+                                    if arg.Origin then
+                                        arg.Origin = workspace.CurrentCamera.CFrame.Position
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                end
+            end
+        end
+
+        return origNamecall(self, ...)
+    end)
+
+    proxyMt.__newindex = origNewCClosure(function(self, key, value)
+        return origNewIndex(self, key, value)
+    end)
+
+    local setRawMt = setrawmetatable or (debug and debug.setmetatable)
+    if setRawMt then
+        setRawMt(game, proxyMt)
+    end
+end
+
+pcall(installMetatableHook)
+
+-- Anti Aim Camera Hook
+if localFighter and RivalsModules.CameraController then
+    pcall(function()
+        local origEncode = RivalsModules.CameraController.EncodeCameraRotation
+        if origEncode then
+            RivalsModules.CameraController.EncodeCameraRotation = function(self, ...)
+                if Toggles.anti_aim_enabled and Toggles.anti_aim_enabled.Value then
+                    local yaw = Options.anti_aim_custom_yaw and Options.anti_aim_custom_yaw.Value or 0
+                    local pitchMode = Options.anti_aim_pitch_mode and Options.anti_aim_pitch_mode.Value or "none"
+                    local cam = workspace.CurrentCamera
+                    local cf = cam.CFrame
+
+                    cf = cf * CFrame.Angles(0, math.rad(yaw), 0)
+
+                    if pitchMode == "look down" then
+                        cf = cf * CFrame.Angles(math.rad(89), 0, 0)
+                    elseif pitchMode == "custom" then
+                        local pitch = Options.anti_aim_custom_pitch and Options.anti_aim_custom_pitch.Value or 0
+                        cf = cf * CFrame.Angles(math.rad(pitch), 0, 0)
+                    end
+
+                    return origEncode(self, cf)
+                end
+                return origEncode(self, ...)
+            end
+        end
+    end)
+end
+
+-- ============================================================
+--  DRAWING OBJECTS
+-- ============================================================
+
+local silentCircle = Drawing.new("Circle")
+silentCircle.Visible = false
+silentCircle.Radius = 100
+silentCircle.Color = Color3.new(1, 1, 1)
+silentCircle.Thickness = 1
+silentCircle.Filled = false
+silentCircle.Transparency = 1
+State.drawings.silent.circle = silentCircle
+
+local aimbotCircle = Drawing.new("Circle")
+aimbotCircle.Visible = false
+aimbotCircle.Radius = 100
+aimbotCircle.Color = Color3.new(1, 1, 1)
+aimbotCircle.Thickness = 1
+aimbotCircle.Filled = false
+aimbotCircle.Transparency = 1
+State.drawings.aimbot.circle = aimbotCircle
+
+-- ============================================================
+--  TOGGLE CALLBACKS
+-- ============================================================
+
+Toggles.silent_visualize:OnChanged(function()
+    silentCircle.Visible = Toggles.silent_visualize.Value and Toggles.aimbot_toggle.Value
+end)
+
+Options.silent_radius:OnChanged(function()
+    silentCircle.Radius = Options.silent_radius.Value
+end)
+
+Options.silent_fill_color1:OnChanged(function()
+    silentCircle.Color = Options.silent_fill_color1.Value
+end)
+
+Toggles.aimbot_fov_outline:OnChanged(function()
+    aimbotCircle.Visible = Toggles.aimbot_fov_outline.Value
+end)
+
+Options.aimbot_outline_color1:OnChanged(function()
+    aimbotCircle.Color = Options.aimbot_outline_color1.Value
+end)
+
+Toggles.aimbot_toggle:OnChanged(function()
+    if not Toggles.aimbot_toggle.Value then
+        silentCircle.Visible = false
+        State.manipulation.targetPosition = nil
+    end
+end)
+
+Toggles.silent_manipulation:OnChanged(function()
+    State.manipulation.active = Toggles.silent_manipulation.Value
+end)
+
+-- ============================================================
+--  MAIN LOOP
+-- ============================================================
+
+RunService.RenderStepped:Connect(function()
+    local screenCenter = workspace.CurrentCamera.ViewportSize / 2
+    silentCircle.Position = screenCenter
+    aimbotCircle.Position = screenCenter
+
+    if Toggles.aimbot_fov_moving.Value then
+        aimbotCircle.NumSides = 60
+    end
+
+    if Toggles.aimbot_toggle.Value and Options.aimbot_keybind:GetState() then
+        local closestPlayer = nil
+        local closestDist = Options.silent_radius.Value
+        local cam = workspace.CurrentCamera
+
+        for _, player in Players:GetPlayers() do
+            if player == LocalPlayer then continue end
+            local char = player.Character
+            if not char then continue end
+            local root = char:FindFirstChild("HumanoidRootPart")
+            local humanoid = char:FindFirstChild("Humanoid")
+            if not root or not humanoid or humanoid.Health <= 0 then continue end
+
+            if Toggles.targeting_visibleonly.Value then
+                local ray = workspace:Raycast(
+                    cam.CFrame.Position,
+                    (root.Position - cam.CFrame.Position).Unit * 1000,
+                    State.raycastParams
+                )
+                if ray and ray.Instance and not ray.Instance:IsDescendantOf(char) then
+                    continue
+                end
+            end
+
+            local screenPos, onScreen = cam:WorldToViewportPoint(root.Position)
+            if not onScreen then continue end
+            local dist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
+            if dist < closestDist then
+                closestDist = dist
+                closestPlayer = {
+                    player = player,
+                    character = char,
+                    root = root,
+                    screenPos = screenPos,
+                }
+            end
+        end
+
+        if closestPlayer then
+            local hitchance = Options.silent_hitchance.Value
+            if math.random(1, 100) <= hitchance then
+                State.manipulation.targetPosition = closestPlayer.root.Position
+            else
+                State.manipulation.targetPosition = nil
+            end
+        else
+            State.manipulation.targetPosition = nil
+        end
+    else
+        State.manipulation.targetPosition = nil
+    end
+end)
+
+-- ============================================================
+--  TRIGGERBOT
+-- ============================================================
+
+local triggerConn = nil
+
+Toggles.triggerbot_enabled:OnChanged(function()
+    if triggerConn then
+        triggerConn:Disconnect()
+        triggerConn = nil
+    end
+    if not Toggles.triggerbot_enabled.Value then return end
+
+    triggerConn = RunService.Heartbeat:Connect(function()
+        if not localFighter then return end
+        local equipped = pcall(function() return localFighter.EquippedItem end) and localFighter.EquippedItem
+        if not equipped then return end
+
+        local scopedMode = Options.triggerbot_scoped.Value
+        if scopedMode == "scoped only" then
+            local isAiming = pcall(function() return localFighter.IsAiming end) and localFighter.IsAiming
+            if not isAiming then return end
+        end
+
+        local mouseTarget = LocalPlayer:GetMouse().Target
+        if not mouseTarget then return end
+        local model = mouseTarget:FindFirstAncestorOfClass("Model")
+        if not model then return end
+        local humanoid = model:FindFirstChildOfClass("Humanoid")
+        if not humanoid or humanoid.Health <= 0 then return end
+        local player = Players:GetPlayerFromCharacter(model)
+        if not player or player == LocalPlayer then return end
+
+        pcall(function()
+            if equipped.shoot then equipped:shoot() end
+        end)
+    end)
+end)
+
+-- ============================================================
+--  FULL AUTO
+-- ============================================================
+
+Toggles.exploits_full_auto:OnChanged(function()
+    pcall(function()
+        if not localFighter or not localFighter.EquippedItem then return end
+        local weapon = localFighter.EquippedItem
+        if weapon.Info and weapon.Info.Type == "Gun" then
+            if Toggles.exploits_full_auto.Value then
+                weapon.Info.FireMode = "Auto"
+            end
+        end
+    end)
+end)
+
+-- ============================================================
+--  WATERMARK
+-- ============================================================
+
+Library:SetWatermarkVisibility(true)
+
+local FrameTimer = tick()
+local FrameCounter = 0
+local FPS = 60
+
+local WatermarkConnection = RunService.RenderStepped:Connect(function()
+    FrameCounter += 1
+    if (tick() - FrameTimer) >= 1 then
+        FPS = FrameCounter
+        FrameTimer = tick()
+        FrameCounter = 0
+    end
+
+    local ping = 0
+    pcall(function()
+        ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
+    end)
+
+    Library:SetWatermark(("Unnamed Enhancements | %s fps | %s ms"):format(
+        math.floor(FPS),
+        ping
+    ))
+end)
+
+Library.KeybindFrame.Visible = true
+
+Library:OnUnload(function()
+    WatermarkConnection:Disconnect()
+    if triggerConn then triggerConn:Disconnect() end
+    silentCircle:Remove()
+    aimbotCircle:Remove()
+    BloomEffect:Destroy()
+    ColorCorrectionEffect:Destroy()
+    AtmosphereEffect:Destroy()
+    SunRaysEffect:Destroy()
+    print("Unloaded!")
+    Library.Unloaded = true
+end)
+
+-- ============================================================
+--  AUTOLOAD
+-- ============================================================
+
+SaveManager:LoadAutoloadConfig()
+
+getgenv().UE_LOADED = true
