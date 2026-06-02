@@ -1,0 +1,568 @@
+local function PlayThatBitch()
+        local playerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+        local screenGui = Instance.new("ScreenGui")
+        screenGui.Name = "IntroScreen"
+        screenGui.Parent = playerGui
+
+        local frame = Instance.new("Frame")
+        frame.Name = "IntroFrame"
+        frame.Parent = screenGui
+        frame.Size = UDim2.new(1, 0, 1, 0)
+        frame.BackgroundTransparency = 1
+
+        local imageLabel = Instance.new("ImageLabel")
+        imageLabel.Name = "IntroImage"
+        imageLabel.Parent = frame
+        imageLabel.Size = UDim2.new(0.01, 0, 0.01, 0)  
+        imageLabel.Position = UDim2.new(0.5, -0.1, 0.5, -0.1) 
+        imageLabel.Image = "rbxassetid://98377156371290"
+        imageLabel.BackgroundTransparency = 1
+        imageLabel.ImageTransparency = 100
+        imageLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+
+        local sound = Instance.new("Sound")
+        sound.Name = "IntroSound"
+        sound.Parent = frame
+        sound.SoundId = "rbxassetid://6580172940"
+        sound.Volume = 50
+        sound:Play()
+
+        local tweenService = game:GetService("TweenService")
+
+        local blurEffect = Instance.new("BlurEffect")
+        blurEffect.Parent = game.Lighting
+        blurEffect.Size = 60
+
+        local zoomTweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)  
+        local blurTweenInfo = TweenInfo.new(4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)  
+
+        local fadeIn = tweenService:Create(imageLabel, zoomTweenInfo, {ImageTransparency = 0.5})
+        local fadeOut = tweenService:Create(imageLabel, zoomTweenInfo, {ImageTransparency = 1})
+        local blurTween = tweenService:Create(blurEffect, blurTweenInfo, {Size = 0})  
+        local zoomTween = tweenService:Create(imageLabel, zoomTweenInfo, {Size = UDim2.new(0.35, 0, 0.35, 0)})
+
+        fadeIn:Play()
+        fadeIn.Completed:Wait()
+
+        zoomTween:Play()
+        blurTween:Play()
+
+        wait(3)  
+
+        fadeOut:Play()
+        fadeOut.Completed:Wait()
+
+        blurTween:Play()
+        blurTween.Completed:Wait()
+
+        blurEffect:Destroy()
+        screenGui:Destroy()
+    end
+
+    PlayThatBitch()
+task.wait(0.5)
+getgenv().crosshair = {
+    enabled = true,
+    refreshrate = 0,
+    mode = 'center',
+    position = Vector2.new(0, 0),
+
+    width = 1.5,
+    length = 10,
+    radius = 11,
+    color = Color3.fromRGB(199, 110, 255),
+
+    spin = true,
+    spin_speed = 150,
+    spin_max = 340,
+    spin_style = Enum.EasingStyle.Sine,
+
+    resize = true,
+    resize_speed = 150,
+    resize_min = 5,
+    resize_max = 22,
+}
+
+local old; old = hookfunction(Drawing.new, function(class, properties)
+    local drawing = old(class)
+    for i, v in next, properties or {} do
+        drawing[i] = v
+    end
+    return drawing
+end)
+
+local runservice = game:GetService('RunService')
+local inputservice = game:GetService('UserInputService')
+local tweenservice = game:GetService('TweenService')
+local camera = workspace.CurrentCamera
+
+local last_render = 0
+
+local drawings = {
+    crosshair = {},
+    text = {
+        Drawing.new('Text', {Size = 13, Font = 2, Outline = true, Text = 'apex', Color = Color3.new(1, 1, 1)}),
+        Drawing.new('Text', {Size = 13, Font = 2, Outline = true, Text = ".wtf"}),
+    },
+}
+
+for idx = 1, 8 do
+    drawings.crosshair[idx] = Drawing.new('Line')
+end
+
+function solve(angle, radius)
+    return Vector2.new(
+        math.sin(math.rad(angle)) * radius,
+        math.cos(math.rad(angle)) * radius
+    )
+end
+
+runservice.PostSimulation:Connect(function()
+
+    local _tick = tick()
+
+    if _tick - last_render > crosshair.refreshrate then
+        last_render = _tick
+
+        local position = (
+            crosshair.mode == 'center' and camera.ViewportSize / 2 or
+            crosshair.mode == 'mouse' and inputservice:GetMouseLocation() or
+            crosshair.position
+        )
+
+        local text_x = drawings.text[1].TextBounds.X + drawings.text[2].TextBounds.X
+
+        drawings.text[1].Visible = crosshair.enabled
+        drawings.text[2].Visible = crosshair.enabled
+
+        if crosshair.enabled then
+            drawings.text[1].Position = position + Vector2.new(-text_x / 2, crosshair.radius + (crosshair.resize and crosshair.resize_max or crosshair.length) + 15)
+            drawings.text[2].Position = drawings.text[1].Position + Vector2.new(drawings.text[1].TextBounds.X)
+            drawings.text[2].Color = crosshair.color
+            
+            for idx = 1, 4 do
+                local outline = drawings.crosshair[idx]
+                local inline = drawings.crosshair[idx + 4]
+    
+                local angle = (idx - 1) * 90
+                local length = crosshair.length
+    
+                if crosshair.spin then
+                    local spin_angle = -_tick * crosshair.spin_speed % crosshair.spin_max
+                    angle = angle + tweenservice:GetValue(spin_angle / 360, crosshair.spin_style, Enum.EasingDirection.InOut) * 360
+                end
+    
+                if crosshair.resize then
+                    local resize_length = tick() * crosshair.resize_speed % 180
+                    length = crosshair.resize_min + math.sin(math.rad(resize_length)) * crosshair.resize_max
+                end
+    
+                inline.Visible = true
+                inline.Color = crosshair.color
+                inline.From = position + solve(angle, crosshair.radius)
+                inline.To = position + solve(angle, crosshair.radius + length)
+                inline.Thickness = crosshair.width
+    
+                outline.Visible = true
+                outline.From = position + solve(angle, crosshair.radius - 1)
+                outline.To = position + solve(angle, crosshair.radius + length + 1)
+                outline.Thickness = crosshair.width + 1.5    
+            end
+        else
+            for idx = 1, 8 do
+                drawings.crosshair[idx].Visible = false
+            end
+        end
+
+    end
+end)
+
+-- ===== apex.wtf Camlock (Final, Hitpart + Smooth System) =====
+-- Single-file. Paste into your executor. Requires HttpGet.
+
+-- ----------------- LOAD LIBRARY -----------------
+local repo = 'https://raw.githubusercontent.com/LionTheGreatRealFrFr/MobileLinoriaLib/main/'
+
+local ok, Library = pcall(function()
+    return loadstring(game:HttpGet(repo .. 'Library.lua', true))()
+end)
+if not ok or not Library then
+    warn("apex.wtf: Failed to load MobileLinoriaLib. Enable HttpGet or use compatible executor.")
+    return
+end
+
+local ThemeManager = nil
+local SaveManager = nil
+pcall(function() ThemeManager = loadstring(game:HttpGet(repo .. 'addons/ThemeManager.lua', true))() end)
+pcall(function() SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua', true))() end)
+
+-- ----------------- WINDOW & UI -----------------
+local Window = Library:CreateWindow({
+    Title = 'apex.wtf | @rexconfigs on discord!',
+    Center = true,
+    AutoShow = true,
+    TabPadding = 8,
+    MenuFadeTime = 0.12
+})
+
+if ThemeManager then ThemeManager:SetLibrary(Library) end
+if SaveManager then SaveManager:SetLibrary(Library); SaveManager:IgnoreThemeSettings() end
+
+local Tabs = {
+    Main = Window:AddTab('Main'),
+    ['UI Settings'] = Window:AddTab('UI Settings')
+}
+local LeftGroupBox = Tabs.Main:AddLeftGroupbox('apex.wtf Camlock')
+
+-- defaults
+local DEFAULTS = {
+    Prediction = "0",
+    Smoothness = "0.8",
+    JumpOffset = "0.09",
+    Keybind = Enum.KeyCode.Q,
+    FOV = 120,
+    MaxDistance = 1000,
+    DotSize = 14,
+    ButtonSize = 100,
+}
+
+-- Add UI elements
+LeftGroupBox:AddToggle('CamlockEnabled', { Text = "Enable Camlock", Default = false })
+LeftGroupBox:AddLabel("Settings")
+LeftGroupBox:AddInput('PredictionBox', { Default = DEFAULTS.Prediction, Numeric = true, Finished = false, Text = "Prediction (s)", Placeholder = "e.g. 0.05" })
+LeftGroupBox:AddInput('SmoothnessBox', { Default = DEFAULTS.Smoothness, Numeric = true, Finished = false, Text = "Smoothness (0-1)", Placeholder = "e.g. 0.8" })
+LeftGroupBox:AddInput('JumpOffsetBox', { Default = DEFAULTS.JumpOffset, Numeric = true, Finished = false, Text = "Jump Offset", Placeholder = "e.g. 0.09" })
+LeftGroupBox:AddDropdown('HitPartDropdown', {
+    Values = {"Head","HumanoidRootPart","Torso","UpperTorso"},
+    Default = 2,
+    Text = "Hitpart"
+})
+LeftGroupBox:AddToggle('WallCheckToggle', { Text = "Wall Check", Default = true })
+LeftGroupBox:AddToggle('DotToggle', { Text = "Dot Indicator", Default = true })
+
+LeftGroupBox:AddDivider()
+LeftGroupBox:AddLabel("Visuals")
+LeftGroupBox:AddSlider('DotSizeSlider', { Text = "Dot Size", Default = DEFAULTS.DotSize, Min = 5, Max = 50, Rounding = 0 })
+LeftGroupBox:AddSlider('ButtonSizeSlider', { Text = "Button Size", Default = DEFAULTS.ButtonSize, Min = 50, Max = 150, Rounding = 0 })
+
+LeftGroupBox:AddDivider()
+LeftGroupBox:AddLabel("Controls: PC = Q  •  Mobile = Button (drag to reposition)")
+
+-- SaveManager config (if available)
+if SaveManager and ThemeManager then
+    ThemeManager:ApplyToTab(Tabs['UI Settings'])
+    SaveManager:SetFolder('apex.wtf')
+    SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
+    SaveManager:BuildConfigSection(Tabs['UI Settings'])
+end
+
+-- Grab refs
+local CamlockEnabled = Toggles.CamlockEnabled
+local PredictionBox = Options.PredictionBox
+local SmoothnessBox = Options.SmoothnessBox
+local JumpOffsetBox = Options.JumpOffsetBox
+local WallCheckToggle = Toggles.WallCheckToggle
+local DotToggle = Toggles.DotToggle
+local DotSizeSlider = Options.DotSizeSlider
+local ButtonSizeSlider = Options.ButtonSizeSlider
+local HitPartDropdown = Options.HitPartDropdown
+
+-- ----------------- Services -----------------
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+-- safe tonumber
+local function ton(v, fallback)
+    local n = tonumber(v)
+    if n == nil then return fallback end
+    return n
+end
+
+-- notify
+local function notify(title, text, duration)
+    duration = duration or 2
+    pcall(function()
+        StarterGui:SetCore("SendNotification", { Title = title or "apex.wtf"; Text = text or ""; Duration = duration; })
+    end)
+end
+
+-- ----------------- Mobile Button (draggable & resizable) -----------------
+if CoreGui:FindFirstChild("ApexCamlockButton") then CoreGui.ApexCamlockButton:Destroy() end
+local MobileButtonGui = Instance.new("ScreenGui")
+MobileButtonGui.Name = "ApexCamlockButton"
+MobileButtonGui.DisplayOrder = 50
+MobileButtonGui.ResetOnSpawn = false
+MobileButtonGui.Parent = CoreGui
+
+local ButtonFrame = Instance.new("Frame")
+ButtonFrame.Name = "Frame"
+ButtonFrame.Size = UDim2.new(0, DEFAULTS.ButtonSize, 0, DEFAULTS.ButtonSize)
+ButtonFrame.Position = UDim2.new(0.86, 0, 0.78, 0)
+ButtonFrame.BackgroundTransparency = 0.12
+ButtonFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+ButtonFrame.BorderSizePixel = 0
+ButtonFrame.Parent = MobileButtonGui
+
+local Btn = Instance.new("TextButton")
+Btn.Name = "LockBtn"
+Btn.Size = UDim2.new(1, -6, 1, -6)
+Btn.Position = UDim2.new(0, 3, 0, 3)
+Btn.Font = Enum.Font.SourceSansBold
+Btn.TextSize = 20
+Btn.Text = "LOCK"
+Btn.AutoButtonColor = true
+Btn.TextColor3 = Color3.fromRGB(255,255,255)
+Btn.BackgroundTransparency = 0.15
+Btn.Parent = ButtonFrame
+
+local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(0,12); corner.Parent = ButtonFrame
+local innerCorner = Instance.new("UICorner"); innerCorner.CornerRadius = UDim.new(0,10); innerCorner.Parent = Btn
+
+-- draggable logic
+local dragging = false
+local dragInput, dragStart, startPos
+local function updateButtonPos(input)
+    local delta = input.Position - dragStart
+    ButtonFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+ButtonFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = ButtonFrame.Position
+        dragInput = input
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+ButtonFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input == dragInput then pcall(function() updateButtonPos(input) end) end
+end)
+
+ButtonSizeSlider:OnChanged(function()
+    local s = ton(ButtonSizeSlider.Value, DEFAULTS.ButtonSize)
+    ButtonFrame.Size = UDim2.new(0, s, 0, s)
+    if s >= 120 then Btn.TextSize = 22 elseif s >= 90 then Btn.TextSize = 20 else Btn.TextSize = 18 end
+end)
+
+-- ----------------- Targeting state -----------------
+local locked = false
+local lockedTarget = nil
+
+local function cleanupDotFromCharacter(char)
+    if not char then return end
+    for _, v in pairs(char:GetDescendants()) do
+        if v:IsA("BillboardGui") and v.Name == "apex_cam_dot" then v:Destroy() end
+    end
+end
+
+local function setLockedTarget(plr)
+    if lockedTarget and lockedTarget ~= plr and lockedTarget.Character then cleanupDotFromCharacter(lockedTarget.Character) end
+    if plr and plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
+        locked = true
+        lockedTarget = plr
+        Btn.Text = "UNLOCK"
+        notify("apex.wtf", "Locked: "..plr.Name, 2)
+    else
+        locked = false
+        lockedTarget = nil
+        Btn.Text = "LOCK"
+        notify("apex.wtf", "Unlocked", 1.3)
+    end
+end
+
+local function isAlive(p)
+    if not p or not p.Character then return false end
+    local hum = p.Character:FindFirstChildOfClass("Humanoid")
+    return hum and hum.Health > 0
+end
+
+-- get aim part based on dropdown
+local function getAimPart(char)
+    if not char then return nil end
+    local selected = HitPartDropdown.Value
+    if selected == "Head" and char:FindFirstChild("Head") then return char.Head end
+    if selected == "HumanoidRootPart" and char:FindFirstChild("HumanoidRootPart") then return char.HumanoidRootPart end
+    if selected == "Torso" and char:FindFirstChild("Torso") then return char.Torso end
+    if selected == "UpperTorso" and char:FindFirstChild("UpperTorso") then return char.UpperTorso end
+    return char.PrimaryPart or char:FindFirstChildWhichIsA("BasePart")
+end
+
+local function calculateTargetPos(aimPart)
+    local pred = tonumber(PredictionBox.Value) or 0
+    local smooth = tonumber(SmoothnessBox.Value) or 0.8
+    local jump = tonumber(JumpOffsetBox.Value) or 0.09
+    local vel = aimPart.Velocity or Vector3.new(0,0,0)
+    local predictedPos = aimPart.Position + vel * pred + Vector3.new(0, jump, 0)
+    return predictedPos, smooth
+end
+
+local function screenDistanceFromCenter(vec2)
+    local vsize = Camera.ViewportSize
+    local center = Vector2.new(vsize.X/2, vsize.Y/2)
+    return (vec2 - center).Magnitude
+end
+
+local function findBestTarget()
+    local best, bestDist = nil, math.huge
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and isAlive(p) then
+            local char = p.Character
+            local aim = getAimPart(char)
+            if aim then
+                local proj, onScreen = Camera:WorldToViewportPoint(aim.Position)
+                if onScreen then
+                    local dist = screenDistanceFromCenter(Vector2.new(proj.X, proj.Y))
+                    local viewportSize = Camera.ViewportSize
+                    local maxDist = math.max(viewportSize.X, viewportSize.Y) * (DEFAULTS.FOV / 180)
+                    if dist <= maxDist then
+                        if WallCheckToggle.Value then
+                            local origin = Camera.CFrame.Position
+                            local dir = aim.Position - origin
+                            local rp = RaycastParams.new()
+                            rp.FilterDescendantsInstances = {LocalPlayer.Character}
+                            rp.FilterType = Enum.RaycastFilterType.Blacklist
+                            rp.IgnoreWater = true
+                            local rc = Workspace:Raycast(origin, dir, rp)
+                            if rc and rc.Instance and rc.Instance:IsDescendantOf(char) then
+                                if dist < bestDist then best = p; bestDist = dist end
+                            end
+                        else
+                            if dist < bestDist then best = p; bestDist = dist end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return best
+end
+
+-- ----------------- Lock/Unlock logic -----------------
+Btn.MouseButton1Click:Connect(function()
+    if locked then setLockedTarget(nil)
+    else
+        local t = findBestTarget()
+        if t then setLockedTarget(t) else notify("apex.wtf","No valid target",1.2) end
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == DEFAULTS.Keybind then
+        if locked then setLockedTarget(nil)
+        else
+            local t = findBestTarget()
+            if t then setLockedTarget(t) else notify("apex.wtf","No valid target",1.2) end
+        end
+    end
+end)
+
+CamlockEnabled:OnChanged(function()
+    if not CamlockEnabled.Value then setLockedTarget(nil) end
+end)
+
+-- ----------------- Dot -----------------
+local function ensureDotOnCharacter(char)
+    if not char then return nil end
+    local anchor = char:FindFirstChild("HumanoidRootPart") or char.PrimaryPart or char:FindFirstChildWhichIsA("BasePart")
+    if not anchor then return nil end
+    for _, v in pairs(anchor:GetChildren()) do
+        if v:IsA("BillboardGui") and v.Name == "apex_cam_dot" then return v, anchor end
+    end
+    local bp = Instance.new("BillboardGui")
+    bp.Name = "apex_cam_dot"
+    bp.Size = UDim2.new(0, 14, 0, 14)
+    bp.StudsOffset = Vector3.new(0, 2.4, 0)
+    bp.AlwaysOnTop = true
+    bp.Parent = anchor
+    local dot = Instance.new("Frame")
+    dot.Name = "dotframe"
+    dot.Size = UDim2.new(1,0,1,0)
+    dot.AnchorPoint = Vector2.new(0.5,0.5)
+    dot.Position = UDim2.new(0.5,0.5,0.5,0)
+    dot.BackgroundColor3 = Color3.fromRGB(255,0,0)
+    dot.BorderSizePixel = 0
+    dot.Parent = bp
+    local uic = Instance.new("UICorner"); uic.CornerRadius = UDim.new(1,0); uic.Parent = dot
+    return bp, anchor
+end
+
+-- ----------------- RenderStepped Loop -----------------
+local lastTick = tick()
+local conn = RunService.RenderStepped:Connect(function(dt)
+    -- button size update
+    local bs = ton(ButtonSizeSlider.Value, DEFAULTS.ButtonSize)
+    if ButtonFrame.Size.X.Offset ~= bs then ButtonFrame.Size = UDim2.new(0, bs, 0, bs) end
+
+    if not CamlockEnabled.Value then
+        if locked then setLockedTarget(nil) end
+        return
+    end
+    if not locked or not lockedTarget or not isAlive(lockedTarget) then
+        if locked then setLockedTarget(nil) end
+        return
+    end
+
+    local char = lockedTarget.Character
+    if not char then setLockedTarget(nil); return end
+    local aim = getAimPart(char)
+    if not aim then setLockedTarget(nil); return end
+
+    -- wall check
+    if WallCheckToggle.Value then
+        local origin = Camera.CFrame.Position
+        local dir = aim.Position - origin
+        local rp = RaycastParams.new()
+        rp.FilterDescendantsInstances = {LocalPlayer.Character}
+        rp.FilterType = Enum.RaycastFilterType.Blacklist
+        rp.IgnoreWater = true
+        local rc = Workspace:Raycast(origin, dir, rp)
+        if rc and rc.Instance and not rc.Instance:IsDescendantOf(char) then return end
+    end
+
+    -- prediction + jump offset + smoothness
+    local predictedPos, smooth = calculateTargetPos(aim)
+    local alpha = math.clamp(smooth * dt * 60, 0, 1)
+    Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, predictedPos), alpha)
+
+    -- dot
+    if DotToggle.Value then
+        local bp, anchor = ensureDotOnCharacter(char)
+        if bp and anchor then
+            local dotframe = bp:FindFirstChild("dotframe")
+            if dotframe then
+                local ds = ton(DotSizeSlider.Value, DEFAULTS.DotSize)
+                if bp.Size.X.Offset ~= ds then bp.Size = UDim2.new(0, ds, 0, ds) end
+                local t = tick()
+                local hue = (t * 0.15) % 1
+                dotframe.BackgroundColor3 = Color3.fromHSV(hue,0.9,1)
+            end
+        end
+    else
+        cleanupDotFromCharacter(char)
+    end
+end)
+
+-- ----------------- Cleanup -----------------
+Library:OnUnload(function()
+    if conn then conn:Disconnect() end
+    if MobileButtonGui and MobileButtonGui.Parent then MobileButtonGui:Destroy() end
+    if lockedTarget and lockedTarget.Character then cleanupDotFromCharacter(lockedTarget.Character) end
+    setLockedTarget(nil)
+    notify("apex.wtf", "Unloaded", 2)
+end)
+
+-- boot notification
+notify("apex.wtf", "UI loaded. Toggle the camlock in the menu or press Q / use the mobile button.", 3)
