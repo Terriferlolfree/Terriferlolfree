@@ -1,9 +1,9 @@
 local ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/Daffy734/code/refs/heads/main/yep"))()
 
 local win = ui:Create({
-    Name = "Smoll's GUI (Bite By Night)",
-    ThemeColor = Color3.fromRGB(22, 22, 44),
-    ThemeGradient = Color3.fromRGB(255, 22, 22),
+    Name = "EL Unamed Enchantments",
+    ThemeColor = Color3.fromRGB(126, 126, 250),
+    ThemeGradient = Color3.fromRGB(126, 126, 250),
     StartupSound = "rbxassetid://6958727243",
     ThemeFont = Enum.Font.GothamBold,
     ToggledSideBar = true
