@@ -1,0 +1,1459 @@
+local ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/Daffy734/code/refs/heads/main/yep"))()
+
+local win = ui:Create({
+    Name = "Smoll's GUI (Bite By Night)",
+    ThemeColor = Color3.fromRGB(22, 22, 44),
+    ThemeGradient = Color3.fromRGB(255, 22, 22),
+    StartupSound = "rbxassetid://6958727243",
+    ThemeFont = Enum.Font.GothamBold,
+    ToggledSideBar = true
+})
+
+local hometab = win:Tab("Home")
+local maintab = win:Tab("Main")
+local survivor = win:Tab("Survivor")
+local vistab = win:Tab("Visual")
+local tpstab = win:Tab("Teleport")
+local misctab = win:Tab("Others")
+local helptab = win:Tab("Info")
+
+hometab:Label("Script Made By Smoll!")
+tpstab:Label("Teleport Features.")
+hometab:Label("If you see this. than mean you have eyes.")
+maintab:Label("Character Movement Features.")
+vistab:Label("Visual Features.")
+misctab:Label("Other Features.")
+helptab:Label("GUI Controls Are Below, Script Credits Are At The Bottom!")
+helptab:Label("Show / Hide GUI: Right Alt")
+
+if math.random(1,50) == 1 then
+    hometab:Banner("74915027647950", 385)
+else
+    hometab:Banner("94289879629715", 225)
+end
+
+local pp = Instance.new("Part")
+pp.Name = "pp"
+pp.Size = Vector3.new(50, 2, 50)
+pp.Position = Vector3.new(0, 1000, 0)
+pp.Anchored = true
+pp.CanCollide = true
+pp.Material = Enum.Material.ForceField
+pp.Color = Color3.fromRGB(0, 170, 255)
+pp.Transparency = 0.3
+pp.Parent = workspace
+
+local StarterGui = game:GetService("StarterGui")
+
+local function notify2(title, text)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {Title = title, Text = text, Duration = 4})
+    end)
+end
+
+local infiniteSprint = false
+local sprintConn = nil
+local UserInputService = game:GetService("UserInputService")
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+
+maintab:Toggle("Infinite Sprint", "Allows You To Sprint Forever.", function(state)
+    infiniteSprint = state
+
+    if state then
+        notify2("Infinite Sprint", "Enabled.")
+
+        sprintConn = game:GetService("RunService").Heartbeat:Connect(function()
+            if not infiniteSprint then return end
+
+            local char = game.Players.LocalPlayer.Character
+            if not char then return end
+
+            if workspace:FindFirstChild("PLAYERS") and workspace.PLAYERS:FindFirstChild("LOBBY") then
+                local lobbyFolder = workspace.PLAYERS.LOBBY
+                if char.Parent == lobbyFolder then
+                    char:SetAttribute("WalkSpeed", 12)
+                    return
+                end
+            end
+
+            if isMobile then
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if hum and hum.MoveDirection.Magnitude > 0 then
+                    char:SetAttribute("WalkSpeed", 24)
+                else
+                    char:SetAttribute("WalkSpeed", 12)
+                end
+            else
+                if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift) then
+                    char:SetAttribute("WalkSpeed", 25)
+                else
+                    char:SetAttribute("WalkSpeed", 12)
+                end
+            end
+        end)
+    else
+        notify2("Infinite Sprint", "Disabled.")
+
+        if sprintConn then
+            sprintConn:Disconnect()
+            sprintConn = nil
+        end
+
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            char:SetAttribute("WalkSpeed", 12)
+        end
+    end
+end)
+
+local jumpBoost = false
+local jpLoop = nil
+local jpCA = nil
+
+maintab:Toggle("Allow Jumping", "Allows You To Jump.", function(state)
+    jumpBoost = state
+    if jumpBoost then
+        local function applyJumpPower()
+            local char = game.Players.LocalPlayer.Character
+            if not char then return end
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if not hum then return end
+            if hum.UseJumpPower then
+                hum.JumpPower = 1.5
+            else
+                hum.JumpHeight = 1.5
+            end
+        end
+        applyJumpPower()
+        if jpLoop then jpLoop:Disconnect() end
+        local currentHum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if currentHum then
+            jpLoop = currentHum:GetPropertyChangedSignal("JumpPower"):Connect(applyJumpPower)
+        end
+        if jpCA then jpCA:Disconnect() end
+        jpCA = game.Players.LocalPlayer.CharacterAdded:Connect(function(newChar)
+            local hum = newChar:WaitForChild("Humanoid")
+            applyJumpPower()
+            if jpLoop then jpLoop:Disconnect() end
+            jpLoop = hum:GetPropertyChangedSignal("JumpPower"):Connect(applyJumpPower)
+        end)
+        notify2("Allow Jumping", "Enabled.")
+    else
+        if jpLoop then jpLoop:Disconnect() end
+        if jpCA then jpCA:Disconnect() end
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum then
+                if hum.UseJumpPower then
+                    hum.JumpPower = 0
+                else
+                    hum.JumpHeight = 0
+                end
+            end
+        end
+        notify2("Allow Jumping", "Disabled.")
+    end
+end)
+
+local aimlockEnabled = false
+local lockedTarget = nil
+
+local inputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+local player = game:GetService("Players").LocalPlayer
+
+local inputConn = nil
+local renderConn = nil
+
+local aimlockBind = Enum.UserInputType.MouseButton2
+
+local function getMyTeamFolder()
+    local char = player.Character
+    if not char then return nil end
+    local aliveFolder = workspace:FindFirstChild("PLAYERS") and workspace.PLAYERS:FindFirstChild("ALIVE")
+    local killerFolder = workspace:FindFirstChild("PLAYERS") and workspace.PLAYERS:FindFirstChild("KILLER")
+    
+    if aliveFolder and char.Parent == aliveFolder then
+        return "ALIVE"
+    elseif killerFolder and char.Parent == killerFolder then
+        return "KILLER"
+    end
+    return nil
+end
+
+maintab:Toggle("Aimlock", "Locks Onto The Closest Player When Clicking Bind.", function(state)
+    aimlockEnabled = state
+    
+    if aimlockEnabled then
+        notify2("Aimlock", "Enabled.")
+
+        inputConn = inputService.InputBegan:Connect(function(input, gp)
+            if gp then return end
+            if input.UserInputType ~= aimlockBind and input.KeyCode ~= aimlockBind then return end
+
+            if lockedTarget then
+                lockedTarget = nil
+                return
+            end
+
+            local myTeam = getMyTeamFolder()
+            if not myTeam then return end
+
+            local myChar = player.Character
+            if not myChar then return end
+            local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+            if not myRoot then return end
+
+            local closest = nil
+            local shortest = math.huge
+
+            local targetFolderName = (myTeam == "ALIVE") and "KILLER" or "ALIVE"
+            local targetFolder = workspace:FindFirstChild("PLAYERS") and workspace.PLAYERS:FindFirstChild(targetFolderName)
+
+            if not targetFolder then return end
+
+            for _, other in ipairs(game.Players:GetPlayers()) do
+                if other ~= player and other.Character and other.Character.Parent == targetFolder then
+                    local root = other.Character:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        local dist = (myRoot.Position - root.Position).Magnitude
+                        if dist < shortest then
+                            shortest = dist
+                            closest = root
+                        end
+                    end
+                end
+            end
+
+            if closest then
+                lockedTarget = closest
+            end
+        end)
+
+        renderConn = runService.RenderStepped:Connect(function()
+            if lockedTarget and lockedTarget.Parent then
+                camera.CFrame = CFrame.new(camera.CFrame.Position, lockedTarget.Position)
+            else
+                lockedTarget = nil
+            end
+        end)
+    else
+        notify2("Aimlock", "Disabled.")
+        lockedTarget = nil
+        
+        if inputConn then
+            inputConn:Disconnect()
+            inputConn = nil
+        end
+        if renderConn then
+            renderConn:Disconnect()
+            renderConn = nil
+        end
+    end
+end)
+
+maintab:Textbox("Aimlock Bind", "Enter Key (Example: Z, X). Must Be Capitalized.", function(text)
+    if typeof(text) ~= "string" then
+        aimlockBind = Enum.UserInputType.MouseButton2
+        notify2("Aimlock Bind", "Invalid Input. Bind Is Now M2.")
+        return
+    end
+
+    local formatted = text:gsub("%s+", "")
+
+    local success, key = pcall(function()
+        return Enum.KeyCode[formatted]
+    end)
+
+    if success and key then
+        aimlockBind = key
+        notify2("Aimlock Bind", "Bind Set To: " .. key.Name)
+        return
+    end
+
+    local success2, inputType = pcall(function()
+        return Enum.UserInputType[formatted]
+    end)
+
+    if success2 and inputType then
+        aimlockBind = inputType
+        notify2("Aimlock Bind", "Bind Set To: " .. inputType.Name)
+    else
+        aimlockBind = Enum.UserInputType.MouseButton2
+        notify2("Aimlock Bind", "Invalid Input. Bind Is Now M2.")
+    end
+end)
+
+local noclipEnabled = false
+local noclipConn = nil
+
+maintab:Toggle("Noclip", "Allows You To Clip Through Walls.", function(state)
+    noclipEnabled = state
+    if state then
+        noclipConn = game:GetService("RunService").Stepped:Connect(function()
+            if not noclipEnabled then return end
+            local char = game.Players.LocalPlayer.Character
+            if not char then return end
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then part.CanCollide = false end
+            end
+        end)
+        notify2("Noclip", "Enabled.")
+    else
+        if noclipConn then noclipConn:Disconnect() end
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then part.CanCollide = true end
+            end
+        end
+        notify2("Noclip", "Disabled.")
+    end
+end)
+
+local oldLighting = {}
+
+maintab:Toggle("Full Bright", "WHO TURNED ON THE LIGHTS?!!", function(state)
+    local lighting = game:GetService("Lighting")
+    if state then
+        oldLighting.Brightness = lighting.Brightness
+        oldLighting.ClockTime = lighting.ClockTime
+        oldLighting.FogEnd = lighting.FogEnd
+        oldLighting.GlobalShadows = lighting.GlobalShadows
+        oldLighting.Ambient = lighting.Ambient
+        lighting.Brightness = 5
+        lighting.ClockTime = 14
+        lighting.FogEnd = 100000
+        lighting.GlobalShadows = false
+        lighting.Ambient = Color3.fromRGB(255,255,255)
+    else
+        if next(oldLighting) then
+            lighting.Brightness = oldLighting.Brightness
+            lighting.ClockTime = oldLighting.ClockTime
+            lighting.FogEnd = oldLighting.FogEnd
+            lighting.GlobalShadows = oldLighting.GlobalShadows
+            lighting.Ambient = oldLighting.Ambient
+        end
+    end
+end)
+
+survivor:Label("Survivor Features.")
+
+local autogen = false
+local genconn = nil
+local firingconn = nil
+local lastfiretime = 0
+local mode = "Blatant"
+
+survivor:Dropdown("Generator Mode", {"Blatant", "Silent"}, function(selected)
+	mode = selected
+	if autogen then
+		notify2("Auto Generator", "Current Mode: " .. mode)
+	end
+end)
+
+survivor:Toggle("Auto Generator", "Automatically Does Generator Tasks.", function(v)
+	autogen = v
+	
+	if autogen then
+		notify2("Auto Generator", "Enabled.")
+		
+		genconn = game:GetService("RunService").Heartbeat:Connect(function()
+			local plr = game.Players.LocalPlayer
+			local gengui = plr.PlayerGui:FindFirstChild("Gen")
+			
+			if gengui and not firingconn then
+				if mode == "Silent" then
+					task.wait(7.5)
+				end
+				
+				if gengui and gengui.Parent and autogen then
+					firingconn = game:GetService("RunService").Heartbeat:Connect(function()
+						if mode == "Blatant" then
+							if plr.PlayerGui:FindFirstChild("Gen") then
+								local args = {{
+									Wires = true,
+									Switches = true,
+									Lever = true
+								}}
+								plr.PlayerGui.Gen.GeneratorMain.Event:FireServer(unpack(args))
+							else
+								if firingconn then
+									firingconn:Disconnect()
+									firingconn = nil
+								end
+							end
+						else
+							local currenttime = tick()
+							if plr.PlayerGui:FindFirstChild("Gen") and (currenttime - lastfiretime >= 7.5) then
+								local args = {{
+									Wires = true,
+									Switches = true,
+									Lever = true
+								}}
+								plr.PlayerGui.Gen.GeneratorMain.Event:FireServer(unpack(args))
+								lastfiretime = currenttime
+							elseif not plr.PlayerGui:FindFirstChild("Gen") then
+								if firingconn then
+									firingconn:Disconnect()
+									firingconn = nil
+								end
+							end
+						end
+					end)
+				end
+			end
+		end)
+		
+	else
+		notify2("Auto's Generator", "Disabled.")
+		
+		if genconn then
+			genconn:Disconnect()
+			genconn = nil
+		end
+		if firingconn then
+			firingconn:Disconnect()
+			firingconn = nil
+		end
+		lastfiretime = 0
+	end
+end)
+
+local speed = 25
+
+local function getRoot(char)
+    if not char then return nil end
+    return char:FindFirstChild("HumanoidRootPart")
+end
+
+local function lerpMove(root, targetCF)
+    if not root then return end
+    local startCF = root.CFrame
+    local dist = (startCF.Position - targetCF.Position).Magnitude
+    if dist < 1 then 
+        root.CFrame = targetCF
+        return 
+    end
+    local duration = dist / speed
+    local t = 0
+    while t < duration do
+        t += game:GetService("RunService").Heartbeat:Wait()
+        local alpha = math.clamp(t / duration, 0, 1)
+        root.CFrame = startCF:Lerp(targetCF, alpha)
+    end
+    root.CFrame = targetCF
+end
+
+local autoEscape = false
+local autoEscapeConn
+
+survivor:Toggle("Auto Escape", "Automatically Escapes The Map.", function(state)
+    autoEscape = state
+    local player = game.Players.LocalPlayer
+    if state then
+        notify2("Auto Escape", "Enabled (Smooth Movement)")
+        local teleported = false
+        autoEscapeConn = game:GetService("RunService").RenderStepped:Connect(function()
+            if teleported or not autoEscape then return end
+            local char = player.Character
+            if not char then return end
+            local root = getRoot(char)
+            if not root then return end
+            if not workspace.GAME.CAN_ESCAPE.Value then return end
+            local playersFolder = workspace:FindFirstChild("PLAYERS")
+            if not playersFolder or char.Parent ~= playersFolder:FindFirstChild("ALIVE") then return end
+            local gameMap = workspace.MAPS:FindFirstChild("GAME MAP")
+            if not gameMap then return end
+            local escapes = gameMap:FindFirstChild("Escapes")
+            if not escapes then return end
+            for _, part in pairs(escapes:GetChildren()) do
+                if part:IsA("BasePart") and part:GetAttribute("Enabled") then
+                    local highlight = part:FindFirstChildOfClass("Highlight")
+                    if highlight and highlight.Enabled then
+                        teleported = true
+                        root.Anchored = true
+                        lerpMove(root, part.CFrame)
+                        task.delay(0.5, function()
+                            if root then root.Anchored = false end
+                        end)
+                        task.delay(10, function()
+                            teleported = false
+                        end)
+                        return
+                    end
+                end
+            end
+        end)
+    else
+        if autoEscapeConn then 
+            autoEscapeConn:Disconnect() 
+            autoEscapeConn = nil
+        end
+        notify2("Auto Escape", "Disabled.")
+    end
+end)
+
+local dotEnabled = false
+local dotConn
+
+survivor:Toggle("Auto Barricade","Make your Dot In The Middle.",function(state)
+    dotEnabled = state
+    local player = game:GetService("Players").LocalPlayer
+    local gui = player:WaitForChild("PlayerGui")
+    if state then
+        dotConn = game:GetService("RunService").RenderStepped:Connect(function()
+            local dot = gui:FindFirstChild("Dot")
+            if dot and dot:IsA("ScreenGui") then
+                local container = dot:FindFirstChild("Container")
+                if container then
+                    local frame = container:FindFirstChild("Frame")
+                    if frame and frame:IsA("GuiObject") then
+                        if not dot.Enabled then
+                            dot:Destroy()
+                            return
+                        end
+                        frame.AnchorPoint = Vector2.new(0.5,0.5)
+                        frame.Position = UDim2.new(0.5,0,0.5,0)
+                    end
+                end
+            end
+        end)
+        notify2("Auto Barricade", "Enabled.")
+    else
+        if dotConn then dotConn:Disconnect() end
+        notify2("Auto Barricade", "Disabled.")
+    end
+end)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+local safeTeleport = false
+local safePart = nil
+
+local speed = 25
+
+local function getRoot()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+local function lerpMove(targetCF)
+    local root = getRoot()
+    local startCF = root.CFrame
+    local dist = (startCF.Position - targetCF.Position).Magnitude
+    local duration = dist / speed
+
+    local t = 0
+
+    while t < duration do
+        t += RunService.Heartbeat:Wait()
+        local alpha = math.clamp(t / duration,0,1)
+        root.CFrame = startCF:Lerp(targetCF,alpha)
+    end
+
+    root.CFrame = targetCF
+end
+
+survivor:Toggle("Safety Area", "Teleports To A Safe Area.", function(state)
+    safeTeleport = state
+
+    local char = player.Character
+    if not char then return end
+
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    if state then
+        local pos = root.Position
+
+        safePart = Instance.new("Part")
+        safePart.Size = Vector3.new(50,1,50)
+        safePart.Anchored = true
+        safePart.Position = pos - Vector3.new(0,100,0)
+        safePart.Name = "SafetyPlate"
+        safePart.Parent = workspace
+
+        task.spawn(function()
+            lerpMove(CFrame.new(pos - Vector3.new(0,95,0)))
+        end)
+
+        notify2("Safety Area","Enabled.")
+
+    else
+        local pos = root.Position
+
+        if safePart then
+            safePart:Destroy()
+            safePart = nil
+        end
+
+        task.spawn(function()
+            lerpMove(CFrame.new(pos + Vector3.new(0,100,0)))
+        end)
+
+        notify2("Safety Area","Disabled.")
+    end
+end)
+
+local viewKiller = false
+local killerAddedConn
+local killerRemovedConn
+
+survivor:Toggle("View Killer","Views The Killer.",function(state)
+    viewKiller = state
+    local camera = workspace.CurrentCamera
+    local player = game:GetService("Players").LocalPlayer
+    if state then
+        local function setKillerCamera(killerChar)
+            local hum = killerChar:FindFirstChildOfClass("Humanoid")
+            if hum then camera.CameraSubject = hum end
+        end
+        local playersFolder = workspace:FindFirstChild("PLAYERS")
+        local killerFolder = playersFolder and playersFolder:FindFirstChild("KILLER")
+        if killerFolder then
+            local currentKiller = killerFolder:GetChildren()[1]
+            if currentKiller then setKillerCamera(currentKiller) end
+            killerAddedConn = killerFolder.ChildAdded:Connect(setKillerCamera)
+            killerRemovedConn = killerFolder.ChildRemoved:Connect(function()
+                if viewKiller then
+                    local char = player.Character
+                    local hum = char and char:FindFirstChildOfClass("Humanoid")
+                    if hum then camera.CameraSubject = hum end
+                end
+            end)
+        end
+        notify2("View Killer", "Enabled.")
+    else
+        if killerAddedConn then killerAddedConn:Disconnect() end
+        if killerRemovedConn then killerRemovedConn:Disconnect() end
+        local char = player.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if hum then camera.CameraSubject = hum end
+        notify2("View Killer", "Disabled.")
+    end
+end)
+
+survivor:Label("Auto Parry Features.")
+
+getgenv().AutoParryEnabled = false
+
+survivor:Toggle("Auto Parry", "Automatically Attempts To Parry Killer Attacks.", function(v)
+    getgenv().AutoParryEnabled = v
+
+    local attackAnimIds = {
+        "rbxassetid://70869035406359",
+        "rbxassetid://106673226682917",
+        "rbxassetid://112503015929213",
+        "rbxassetid://120428956410756",
+        "rbxassetid://102810363618918",
+        "rbxassetid://133752270724243",
+        "rbxassetid://71147082224885"
+    }
+
+    local connection
+
+    local function isAttackAnimation(track)
+        if not track or not track.Animation then return false end
+        local id = track.Animation.AnimationId
+        for _, aid in ipairs(attackAnimIds) do
+            if id == aid then return true end
+        end
+        return false
+    end
+
+    local function getParryRange(track)
+        if not track or not track.Animation then 
+            return getgenv().BasicAttackRange or 30 
+        end
+        if track.Animation.AnimationId == "rbxassetid://133752270724243" then
+            return getgenv().PullAttackRange or 50
+        end
+        return getgenv().BasicAttackRange or 30
+    end
+
+    if getgenv().AutoParryEnabled then
+        notify2("Auto Parry", "Enabled.")
+
+        connection = game:GetService("RunService").Heartbeat:Connect(function()
+            if not getgenv().AutoParryEnabled then return end
+
+            local lp = game.Players.LocalPlayer
+            local char = lp.Character
+            if not char then return end
+
+            local myRoot = char:FindFirstChild("HumanoidRootPart")
+            if not myRoot then return end
+
+            for _, plr in ipairs(game.Players:GetPlayers()) do
+                if plr == lp then continue end
+
+                local pchar = plr.Character
+                if not pchar then continue end
+
+                local attackerRoot = pchar:FindFirstChild("HumanoidRootPart")
+                if not attackerRoot then continue end
+
+                local diff = attackerRoot.Position - myRoot.Position
+                local distSq = diff:Dot(diff)
+
+                local defaultRange = getgenv().BasicAttackRange or 30
+                if distSq > defaultRange * defaultRange then continue end
+
+                local hum = pchar:FindFirstChildOfClass("Humanoid")
+                if not hum then continue end
+
+                local animator = hum:FindFirstChildOfClass("Animator")
+                if not animator then continue end
+
+                for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                    if not track.IsPlaying then continue end
+                    if not isAttackAnimation(track) then continue end
+
+                    local actualRange = getParryRange(track)
+
+                    if distSq > actualRange * actualRange then continue end
+
+                    local args = {
+                        buffer.fromstring("\a"),
+                        buffer.fromstring("\254\001\000\254\002\000\006\aAbility\001\002")
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Warp"):WaitForChild("Index"):WaitForChild("Event"):WaitForChild("Reliable"):FireServer(unpack(args))
+                    break
+                end
+            end
+        end)
+    else
+        notify2("Auto Parry", "Disabled.")
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+    end
+end)
+
+survivor:Slider("Main Attacks", 20, 10, 35, 1, function(v)
+    getgenv().BasicAttackRange = v
+end)
+
+survivor:Slider("Ennard Pull Attack", 50, 10, 60, 1, function(v)
+    getgenv().PullAttackRange = v
+end)
+
+survivor:Label("Anti Death Features.")
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+
+local antiDeath = {
+    enabled = false,
+    threshold = 30,
+    conn = nil,
+    lastPos = nil,
+    teleported = false,
+    debounce = false,
+    plate = nil
+}
+
+local speed = 25
+
+local function getRoot()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+local function lerpMove(targetCF)
+    local root = getRoot()
+    local startCF = root.CFrame
+    local dist = (startCF.Position - targetCF.Position).Magnitude
+    local duration = dist / speed
+
+    local t = 0
+
+    while t < duration do
+        t += RunService.Heartbeat:Wait()
+        local alpha = math.clamp(t/duration,0,1)
+        root.CFrame = startCF:Lerp(targetCF,alpha)
+    end
+
+    root.CFrame = targetCF
+end
+
+local function returnToLastPos()
+    if antiDeath.plate then
+        antiDeath.plate:Destroy()
+        antiDeath.plate = nil
+    end
+
+    if antiDeath.lastPos then
+        task.spawn(function()
+            lerpMove(antiDeath.lastPos)
+        end)
+    end
+
+    antiDeath.lastPos = nil
+    antiDeath.teleported = false
+end
+
+survivor:Toggle("Anti Death", "Automatically Detects Low Health And Teleports To A Safe Zone.", function(state)
+
+    antiDeath.enabled = state
+
+    if state then
+
+        antiDeath.conn = RunService.Heartbeat:Connect(function()
+
+            local char = player.Character
+            if not char then return end
+
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if not hum then return end
+
+            local root = char:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+
+            if hum.Health < antiDeath.threshold and hum.Health > 0 and not antiDeath.teleported and not antiDeath.debounce then
+
+                antiDeath.debounce = true
+                antiDeath.teleported = true
+                antiDeath.lastPos = root.CFrame
+
+                local pos = root.Position
+
+                antiDeath.plate = Instance.new("Part")
+                antiDeath.plate.Size = Vector3.new(50,1,50)
+                antiDeath.plate.Anchored = true
+                antiDeath.plate.Position = pos - Vector3.new(0,100,0)
+                antiDeath.plate.Name = "AntiDeathPlate"
+                antiDeath.plate.Parent = workspace
+
+                task.spawn(function()
+                    lerpMove(CFrame.new(pos - Vector3.new(0,95,0)))
+                end)
+
+                task.delay(1,function()
+                    antiDeath.debounce = false
+                end)
+
+            elseif hum.Health >= antiDeath.threshold and antiDeath.teleported and antiDeath.lastPos and not antiDeath.debounce then
+
+                antiDeath.debounce = true
+
+                returnToLastPos()
+
+                task.delay(1,function()
+                    antiDeath.debounce = false
+                end)
+
+            end
+
+        end)
+
+        notify2("Anti Death","Enabled.")
+
+    else
+
+        if antiDeath.conn then
+            antiDeath.conn:Disconnect()
+        end
+
+        if antiDeath.teleported then
+            returnToLastPos()
+        end
+
+        antiDeath.debounce = false
+
+        notify2("Anti Death","Disabled.")
+
+    end
+end)
+
+survivor:Slider("Health Threshold", 30, 25, 80, 0.5, function(v)
+    antiDeath.threshold = v
+end)
+
+local espMethod = "Highlight"
+local esp = { survivors = {}, killers = {}, generators = {} }
+
+local batteryHighlights = {}
+local fuseHighlights = {}
+local trapHighlights = {}
+local minionHighlights = {}
+
+local healthLabels = {}
+
+local function newHighlight(obj, color)
+    if not obj then return end
+    local h = Instance.new("Highlight")
+    h.FillColor = color
+    h.FillTransparency = 0.5
+    h.OutlineColor = color
+    h.OutlineTransparency = 0
+    h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    h.Adornee = obj
+    h.Parent = obj
+    return h
+end
+
+local function createDrawingBox()
+    local box = Drawing.new("Square")
+    box.Thickness = 2
+    box.Filled = false
+    box.Transparency = 1
+    return box
+end
+
+local function updateDrawingBox(box, obj)
+    if not box or not obj then return end
+    local root = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
+    if not root then return end
+    local camera = workspace.CurrentCamera
+    local vector, onScreen = camera:WorldToViewportPoint(root.Position)
+    if onScreen then
+        local size = (camera:WorldToViewportPoint(root.Position + Vector3.new(0, 3, 0)) - vector).Y * 2.5
+        box.Size = Vector2.new(size * 1.2, size)
+        box.Position = Vector2.new(vector.X - box.Size.X / 2, vector.Y - box.Size.Y / 2)
+        box.Visible = true
+    else
+        box.Visible = false
+    end
+end
+
+local function createHealthLabel(char)
+    if not char or healthLabels[char] then return end
+
+    local humanoid = char:FindFirstChild("Humanoid")
+    if not humanoid then return end
+
+    local labelGui = Instance.new("BillboardGui")
+    labelGui.Adornee = char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart")
+    labelGui.Size = UDim2.new(3, 0, 1, 0)
+    labelGui.StudsOffset = Vector3.new(0, 3, 0)
+    labelGui.AlwaysOnTop = true
+    labelGui.LightInfluence = 0
+    labelGui.Parent = char
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.TextSize = 16
+    textLabel.Text = "100 / 100"
+    textLabel.Parent = labelGui
+
+    healthLabels[char] = {
+        gui = labelGui,
+        text = textLabel,
+        humanoid = humanoid,
+        connection = nil
+    }
+
+    local conn = humanoid.HealthChanged:Connect(function()
+        if not healthLabels[char] then 
+            conn:Disconnect()
+            return 
+        end
+        local hp = math.floor(humanoid.Health)
+        local maxHp = math.floor(humanoid.MaxHealth)
+        healthLabels[char].text.Text = hp .. " / " .. maxHp
+    end)
+
+    healthLabels[char].connection = conn
+
+    local hp = math.floor(humanoid.Health)
+    local maxHp = math.floor(humanoid.MaxHealth)
+    textLabel.Text = hp .. " / " .. maxHp
+end
+
+local function add(tbl, obj, color)
+    if not obj or tbl[obj] then return end
+
+    if espMethod == "Dual" then
+        tbl[obj] = {
+            highlight = newHighlight(obj, color),
+            drawing = createDrawingBox()
+        }
+        tbl[obj].drawing.Color = color
+    elseif espMethod == "Highlight" then
+        tbl[obj] = newHighlight(obj, color)
+    else
+        local box = createDrawingBox()
+        box.Color = color
+        tbl[obj] = box
+    end
+
+    if tbl == esp.survivors then
+        createHealthLabel(obj)
+    end
+end
+
+local function remove(tbl, obj)
+    if tbl[obj] then
+        if typeof(tbl[obj]) == "table" then
+            if tbl[obj].highlight then tbl[obj].highlight:Destroy() end
+            if tbl[obj].drawing then tbl[obj].drawing:Remove() end
+        elseif typeof(tbl[obj]) == "Instance" then
+            tbl[obj]:Destroy()
+        else
+            tbl[obj]:Remove()
+        end
+        tbl[obj] = nil
+    end
+
+    if healthLabels[obj] then
+        if healthLabels[obj].connection then
+            healthLabels[obj].connection:Disconnect()
+        end
+        if healthLabels[obj].gui then
+            healthLabels[obj].gui:Destroy()
+        end
+        healthLabels[obj] = nil
+    end
+end
+
+local function clear(tbl)
+    for obj, v in pairs(tbl) do
+        if v then
+            if typeof(v) == "table" then
+                if v.highlight then v.highlight:Destroy() end
+                if v.drawing then v.drawing:Remove() end
+            elseif typeof(v) == "Instance" then
+                v:Destroy()
+            else
+                v:Remove()
+            end
+        end
+        tbl[obj] = nil
+
+        if healthLabels[obj] then
+            if healthLabels[obj].connection then
+                healthLabels[obj].connection:Disconnect()
+            end
+            if healthLabels[obj].gui then
+                healthLabels[obj].gui:Destroy()
+            end
+            healthLabels[obj] = nil
+        end
+    end
+end
+
+vistab:Dropdown("ESP Method", {"Highlight", "Drawing", "Dual"}, function(selected)
+    espMethod = selected
+    notify2("ESP Method", "Changed to: " .. selected)
+end)
+
+vistab:Toggle("Survivor ESP", "Highlight All Survivors.", function(state)
+    local playersFolder = workspace:FindFirstChild("PLAYERS")
+    local alive = playersFolder and playersFolder:FindFirstChild("ALIVE")
+    if not alive then notify2("error", "wait for match to start or wait for ur game to load fully.") return end
+    if state then
+        notify2("Survivor ESP", "Enabled.")
+        for _, v in ipairs(alive:GetChildren()) do
+            if v:IsA("Model") then add(esp.survivors, v, Color3.fromRGB(80,180,255)) end
+        end
+        esp.survivorAdd = alive.ChildAdded:Connect(function(v)
+            if v:IsA("Model") then add(esp.survivors, v, Color3.fromRGB(80,180,255)) end
+        end)
+        esp.survivorRemove = alive.ChildRemoved:Connect(function(v) remove(esp.survivors, v) end)
+    else
+        notify2("Survivor ESP", "Disabled.")
+        if esp.survivorAdd then esp.survivorAdd:Disconnect() end
+        if esp.survivorRemove then esp.survivorRemove:Disconnect() end
+        clear(esp.survivors)
+    end
+end)
+
+vistab:Toggle("Killer ESP", "Highlights The Killer.", function(state)
+    local playersFolder = workspace:FindFirstChild("PLAYERS")
+    local killers = playersFolder and playersFolder:FindFirstChild("KILLER")
+    if not killers then notify2("error", "wait for match to start or wait for ur game to load fully.") return end
+    if state then
+        notify2("Killer ESP", "Enabled.")
+        for _, v in ipairs(killers:GetChildren()) do
+            if v:IsA("Model") then add(esp.killers, v, Color3.fromRGB(255,80,80)) end
+        end
+        esp.killerAdd = killers.ChildAdded:Connect(function(v)
+            if v:IsA("Model") then add(esp.killers, v, Color3.fromRGB(255,80,80)) end
+        end)
+        esp.killerRemove = killers.ChildRemoved:Connect(function(v) remove(esp.killers, v) end)
+    else
+        notify2("Killer ESP", "Disabled.")
+        if esp.killerAdd then esp.killerAdd:Disconnect() end
+        if esp.killerRemove then esp.killerRemove:Disconnect() end
+        clear(esp.killers)
+    end
+end)
+
+vistab:Toggle("Generator ESP", "Highlights All Generators.", function(state)
+    if state then
+        notify2("Generator ESP", "Enabled.")
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("Model") and v.Name == "Generator" then
+                add(esp.generators, v, Color3.fromRGB(245, 205, 48))
+            end
+        end
+        esp.genAdd = workspace.DescendantAdded:Connect(function(v)
+            if v:IsA("Model") and v.Name == "Generator" then add(esp.generators, v, Color3.fromRGB(0,255,100)) end
+        end)
+        esp.genRemove = workspace.DescendantRemoving:Connect(function(v)
+            if esp.generators[v] then remove(esp.generators, v) end
+        end)
+    else
+        notify2("Generator ESP", "Disabled.")
+        if esp.genAdd then esp.genAdd:Disconnect() end
+        if esp.genRemove then esp.genRemove:Disconnect() end
+        clear(esp.generators)
+    end
+end)
+
+vistab:Toggle("Battery ESP", "Highlights All Batteries.", function(state)
+    if state then
+        notify2("Battery ESP", "Enabled.")
+        local ignore = workspace:FindFirstChild("IGNORE")
+        if ignore then
+            for _, v in ipairs(ignore:GetDescendants()) do
+                if v:IsA("MeshPart") and v.Name == "Battery" then
+                    local h = newHighlight(v, Color3.fromRGB(255, 0, 255))
+                    if h then batteryHighlights[v] = h end
+                end
+            end
+        end
+        batteryConn = workspace.DescendantAdded:Connect(function(v)
+            if v:IsA("MeshPart") and v.Name == "Battery" then
+                local h = newHighlight(v, Color3.fromRGB(255, 0, 255))
+                if h then batteryHighlights[v] = h end
+            end
+        end)
+    else
+        notify2("Battery ESP", "Disabled.")
+        if batteryConn then batteryConn:Disconnect() batteryConn = nil end
+        for _, h in pairs(batteryHighlights) do if h then h:Destroy() end end
+        batteryHighlights = {}
+    end
+end)
+
+vistab:Toggle("Fuse Box ESP", "Highlights All Fuse Boxes.", function(state)
+    if state then
+        notify2("Fuse Box ESP", "Enabled.")
+        local mapsFolder = workspace:FindFirstChild("MAPS")
+        if mapsFolder then
+            local gameMap = mapsFolder:FindFirstChild("GAME MAP")
+            if gameMap then
+                local fuseBoxes = gameMap:FindFirstChild("FuseBoxes")
+                if fuseBoxes then
+                    for _, fuseBox in ipairs(fuseBoxes:GetChildren()) do
+                        local battery = fuseBox:FindFirstChild("Battery")
+                        if battery then
+                            local h = newHighlight(battery, Color3.fromRGB(0, 255, 255))
+                            if h then fuseHighlights[battery] = h end
+                        end
+                    end
+                end
+            end
+        end
+        fuseConn = workspace.DescendantAdded:Connect(function(v)
+            if v:IsA("BasePart") and v.Name == "Battery" and v.Parent and v.Parent.Name == "FuseBox" then
+                task.wait(0.1)
+                local h = newHighlight(v, Color3.fromRGB(0, 255, 255))
+                if h then fuseHighlights[v] = h end
+            end
+        end)
+    else
+        notify2("Fuse Box ESP", "Disabled.")
+        if fuseConn then fuseConn:Disconnect() fuseConn = nil end
+        for _, h in pairs(fuseHighlights) do if h then h:Destroy() end end
+        fuseHighlights = {}
+    end
+end)
+
+vistab:Toggle("Bear Trap ESP", "Highlights All Bear Traps.", function(state)
+    if state then
+        notify2("Trap ESP", "Enabled.")
+        local ignore = workspace:FindFirstChild("IGNORE")
+        if ignore then
+            for _, obj in ipairs(ignore:GetChildren()) do
+                if obj:IsA("Model") and obj.Name == "Trap" then
+                    local h = newHighlight(obj, Color3.fromRGB(255, 100, 0))
+                    if h then trapHighlights[obj] = h end
+                end
+            end
+        end
+        descendantConn = workspace.DescendantAdded:Connect(function(v)
+            if v:IsA("Model") and v.Name == "Trap" then
+                task.wait(0.1)
+                local h = newHighlight(v, Color3.fromRGB(255, 100, 0))
+                if h then trapHighlights[v] = h end
+            end
+        end)
+    else
+        notify2("Trap ESP", "Disabled.")
+        if descendantConn then descendantConn:Disconnect() descendantConn = nil end
+        for _, h in pairs(trapHighlights) do if h then h:Destroy() end end
+        trapHighlights = {}
+    end
+end)
+
+vistab:Toggle("Minion ESP", "Highlights All Minions.", function(state)
+    if state then
+        notify2("Minion ESP", "Enabled.")
+        local ignore = workspace:FindFirstChild("IGNORE")
+        if ignore then
+            for _, obj in ipairs(ignore:GetDescendants()) do
+                if obj:IsA("Model") and obj.Name == "Minion" then
+                    local h = newHighlight(obj, Color3.fromRGB(255, 165, 0))
+                    if h then minionHighlights[obj] = h end
+                end
+            end
+        end
+        minionConn = workspace.DescendantAdded:Connect(function(obj)
+            if obj:IsA("Model") and obj.Name == "Minion" then
+                local h = newHighlight(obj, Color3.fromRGB(255, 165, 0))
+                if h then minionHighlights[obj] = h end
+            end
+        end)
+    else
+        notify2("Minion ESP", "Disabled.")
+        if minionConn then minionConn:Disconnect() minionConn = nil end
+        for _, h in pairs(minionHighlights) do if h then h:Destroy() end end
+        minionHighlights = {}
+    end
+end)
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if espMethod ~= "Drawing" and espMethod ~= "Dual" then return end
+    for _, tbl in pairs({esp.survivors, esp.killers, esp.generators}) do
+        for obj, data in pairs(tbl) do
+            if typeof(data) == "table" and data.drawing then
+                updateDrawingBox(data.drawing, obj)
+            elseif typeof(data) ~= "Instance" then
+                updateDrawingBox(data, obj)
+            end
+        end
+    end
+end)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+local speed = 25
+local lerping = false
+local currentTarget = nil
+
+local function getRoot()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char, char:WaitForChild("HumanoidRootPart")
+end
+
+local function lerpTo(targetCFrame)
+    local _, root = getRoot()
+    local targetPos = targetCFrame.Position
+
+    if currentTarget and (currentTarget - targetPos).Magnitude < 0.5 then
+        lerping = false
+        currentTarget = nil
+        return
+    end
+
+    currentTarget = targetPos
+    lerping = true
+
+    while lerping and root.Parent do
+        local currentPos = root.Position
+        local direction = (targetPos - currentPos)
+        local distance = direction.Magnitude
+        
+        if distance <= 0.5 then
+            break
+        end
+        
+        local step = math.min(speed * RunService.RenderStepped:Wait(), distance)
+        root.CFrame = CFrame.new(currentPos + direction.Unit * step, targetPos)
+    end
+
+    if lerping and root.Parent then
+        root.CFrame = CFrame.new(targetPos)
+    end
+
+    lerping = false
+    currentTarget = nil
+end
+
+local function TeleportTo(model)
+    if not model then return end
+    local part = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+    if not part then return end
+    local frontCFrame = part.CFrame * CFrame.new(0, 0, -5)
+    lerpTo(frontCFrame)
+end
+
+local function getOrderedGenerators()
+    local mapsFolder = workspace:FindFirstChild("MAPS")
+    if not mapsFolder then return {} end
+    local gameMap = mapsFolder:FindFirstChild("GAME MAP")
+    if not gameMap then return {} end
+    local generators = gameMap:FindFirstChild("Generators")
+    if not generators then return {} end
+    local models = {}
+    for _,v in ipairs(generators:GetChildren()) do
+        if v:IsA("Model") then table.insert(models,v) end
+    end
+    table.sort(models,function(a,b)
+        local ao = a:GetAttribute("Order") or 0
+        local bo = b:GetAttribute("Order") or 0
+        return ao < bo
+    end)
+    return models
+end
+
+local generatorIndex = 1
+tpstab:Button("Generator TP", "Teleports To A Generator. Click Again To Cancel.", function()
+    local models = getOrderedGenerators()
+    if #models == 0 then
+        notify2("error","wait for match to start or wait for ur game to load fully.")
+        return
+    end
+
+    local model = models[generatorIndex]
+    if not model then return end
+
+    TeleportTo(model)
+    
+    generatorIndex += 1
+    if generatorIndex > #models then 
+        generatorIndex = 1 
+    end
+end)
+
+local batteryIndex = 1
+tpstab:Button("Battery TP", "Teleports To A Battery. Click Again To Cancel.", function()
+    local char = player.Character
+    if not char then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local ignore = workspace:FindFirstChild("IGNORE")
+    if not ignore then
+        notify2("error","wait for match to start or wait for ur game to load fully. if loaded, there are no batteries.")
+        return
+    end
+
+    local batteries = {}
+    for _, v in ipairs(ignore:GetDescendants()) do
+        if v:IsA("MeshPart") and v.Name == "Battery" then
+            table.insert(batteries, v)
+        end
+    end
+
+    if #batteries == 0 then
+        notify2("error","wait for match to start or wait for ur game to load fully. if loaded, there are no batteries.")
+        return
+    end
+
+    for i, v in ipairs(batteries) do
+        v:SetAttribute("Order", i)
+    end
+    table.sort(batteries, function(a, b)
+        return (a:GetAttribute("Order") or 0) < (b:GetAttribute("Order") or 0)
+    end)
+
+    local battery = batteries[batteryIndex]
+    if not battery then return end
+
+    local targetCFrame = battery.CFrame * CFrame.new(0, 3, 0)
+
+    lerpTo(targetCFrame)
+
+    batteryIndex += 1
+    if batteryIndex > #batteries then 
+        batteryIndex = 1 
+    end
+end)
+
+local fuseIndex = 1
+
+tpstab:Button("Fuse Box TP", "Teleports To A Fuse Box. Click Again To Cancel.", function()
+    local char = player.Character
+    if not char then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local mapsFolder = workspace:FindFirstChild("MAPS")
+    if not mapsFolder then
+        notify2("error","wait for match to start or wait for ur game to load fully. if loaded, there is no fusebox.")
+        return
+    end
+
+    local gameMap = mapsFolder:FindFirstChild("GAME MAP")
+    if not gameMap then
+        notify2("error","wait for match to start or wait for ur game to load fully. if loaded, there is no fusebox.")
+        return
+    end
+
+    local fuseBoxes = gameMap:FindFirstChild("FuseBoxes")
+    if not fuseBoxes then
+        notify2("error","wait for match to start or wait for ur game to load fully. if loaded, there is no fusebox.")
+        return
+    end
+
+    local batteries = {}
+    for _, fuseBox in ipairs(fuseBoxes:GetChildren()) do
+        local battery = fuseBox:FindFirstChild("Battery")
+        if battery and battery:IsA("BasePart") then
+            table.insert(batteries, battery)
+        end
+    end
+
+    if #batteries == 0 then
+        notify2("error","wait for match to start or wait for ur game to load fully. if loaded, there is no fusebox.")
+        return
+    end
+
+    for i, v in ipairs(batteries) do
+        v:SetAttribute("Order", i)
+    end
+    table.sort(batteries, function(a, b)
+        return (a:GetAttribute("Order") or 0) < (b:GetAttribute("Order") or 0)
+    end)
+
+    local battery = batteries[fuseIndex]
+    if not battery then return end
+
+    local targetCFrame = battery.CFrame * CFrame.new(0, 3, 0)
+
+    lerpTo(targetCFrame)
+
+    fuseIndex += 1
+    if fuseIndex > #batteries then 
+        fuseIndex = 1 
+    end
+end)
+
+misctab:Button("Infinite Yield", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+end)
+
+helptab:Button("Copy Owner Discord Username", function()
+    local StarterGui = game:GetService("StarterGui")
+    StarterGui:SetCore("SendNotification", {Title = "Discord Username", Text = "Copied to your clipboard!", Duration = 3, Button1 = "alright fella"})
+    setclipboard("ghostofcelleron")
+end)
+
+helptab:Button("Copy Discord Server Invite", function()
+    local StarterGui = game:GetService("StarterGui")
+    StarterGui:SetCore("SendNotification", {Title = "Discord Invite", Text = "Copied to your clipboard!", Duration = 3, Button1 = "alright fella"})
+    setclipboard("https://discord.gg/mFusYUmyry")
+end)
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ghostofcelleron/Scripts/refs/heads/main/oldthingyep",true))()
+loadstring(game:HttpGet("https://pastebin.com/raw/rQMS2B9R",true))()
