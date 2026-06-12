@@ -1,4 +1,4 @@
-if game.PlaceId~=2788229376 then game.Players.LocalPlayer:Kick("Da Hood - only") return end
+
 local ok1,a=pcall(function() return game:GetService("MarketplaceService"):GetProductInfo(2788229376).Name end)
 local ok2,b=pcall(function() return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name end)
 setfpscap(999)
