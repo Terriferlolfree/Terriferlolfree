@@ -1,0 +1,1882 @@
+
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local TextService = game:GetService("TextService")
+local Players = game:GetService("Players")
+
+local screenGui
+local success, _ = pcall(function()
+    screenGui = game:GetService("CoreGui"):FindFirstChild("BankrollGui")
+end)
+if screenGui then
+    screenGui:Destroy()
+end
+
+screenGui = Instance.new("ScreenGui")
+screenGui.Name = "BankrollGui"
+screenGui.ResetOnSpawn = false
+
+local runSuccess, parent = pcall(function()
+    screenGui.Parent = game:GetService("CoreGui")
+end)
+if not runSuccess or not screenGui.Parent then
+    screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local state = {
+    aimbot          = true,
+    backtrack       = false,
+    triggerbot      = false,
+    magnet          = false,
+    penetration     = false,
+    override_shared = false,
+    hitbox_sel      = 1, -- head (1-indexed for Luau)
+    hitgroup_sel    = 1, -- head, chest...
+    weapon_sel      = 1, -- shared
+    silent          = false,
+    recoil_ctrl     = false,
+    fov             = 90.0,
+    smooth          = 0.0,
+    seed_pred       = false,
+    delay           = 0.0,
+    hitchance       = 0.0,
+    active_tab      = 1, -- aim (1-indexed for Luau)
+    visuals_subtab  = 1, -- enemy
+    box             = true,
+    box_color       = Color3.fromRGB(255, 255, 255),
+    box_alpha       = 1.0,
+    health          = true,
+    health_color    = Color3.fromRGB(255, 102, 178),
+    health_color2   = Color3.fromRGB(255, 255, 255),
+    health_alpha    = 1.0,
+    health_alpha2   = 1.0,
+    name            = true,
+    name_color      = Color3.fromRGB(255, 255, 255),
+    name_alpha      = 1.0,
+    weapon          = true,
+    weapon_color    = Color3.fromRGB(255, 255, 255),
+    weapon_alpha    = 1.0,
+    ammo            = false,
+    ammo_color      = Color3.fromRGB(255, 102, 178),
+    ammo_color2     = Color3.fromRGB(255, 255, 255),
+    ammo_alpha      = 1.0,
+    ammo_alpha2     = 1.0,
+    out_of_view     = false,
+    oov_color       = Color3.fromRGB(76, 127, 255),
+    oov_alpha       = 1.0,
+    skeleton        = false,
+    skeleton_color  = Color3.fromRGB(255, 255, 255),
+    skeleton_alpha  = 1.0,
+    flags_esp       = false,
+    flags_color1    = Color3.fromRGB(255, 255, 255),
+    flags_color2    = Color3.fromRGB(255, 255, 255),
+    flags_color3    = Color3.fromRGB(255, 255, 255),
+    flags_alpha1    = 1.0,
+    flags_alpha2    = 1.0,
+    flags_alpha3    = 1.0,
+    visible         = false,
+    visible_color   = Color3.fromRGB(255, 255, 255),
+    visible_alpha   = 1.0,
+    occluded        = false,
+    occluded_color  = Color3.fromRGB(255, 255, 255),
+    occluded_alpha  = 1.0,
+    history         = false,
+    glow            = false,
+    glow_color1     = Color3.fromRGB(217, 25, 25),
+    glow_color2     = Color3.fromRGB(217, 25, 25),
+    glow_alpha1     = 1.0,
+    glow_alpha2     = 1.0,
+
+    edge_jump        = false,
+    ladder_edge_jump = false,
+    long_jump        = false,
+    long_jump_edge   = true,
+    mini_jump        = false,
+    null_strafe      = true,
+    mousespeed_lim   = false,
+
+    chat_logs        = true,
+    chat_logs_type   = 1,
+    healthshot       = false,
+    sounds           = true,
+    sounds_type      = 1,
+    sounds_volume    = 30.0,
+
+    ind_offset       = 67.0,
+    ind_keybinds     = false,
+    keybinds_col1    = Color3.fromRGB(51, 217, 51),
+    keybinds_col2    = Color3.fromRGB(255, 255, 255),
+    keybinds_alpha1  = 1.0,
+    keybinds_alpha2  = 1.0,
+    vel_text         = false,
+    vel_text_col1    = Color3.fromRGB(230, 89, 102),
+    vel_text_col2    = Color3.fromRGB(255, 178, 51),
+    vel_text_col3    = Color3.fromRGB(51, 217, 51),
+    vel_text_alpha1  = 1.0,
+    vel_text_alpha2  = 1.0,
+    vel_text_alpha3  = 1.0,
+    keystrokes       = false,
+    keystrokes_col   = Color3.fromRGB(255, 255, 255),
+    keystrokes_alpha = 1.0,
+    vel_graph        = false,
+    vel_graph_col1   = Color3.fromRGB(255, 255, 255),
+    vel_graph_col2   = Color3.fromRGB(255, 255, 255),
+    vel_graph_alpha1 = 1.0,
+    vel_graph_alpha2 = 1.0,
+
+    toggle_menu      = false,
+    menu_color       = Color3.fromRGB(175, 100, 200),
+}
+
+-- Keybind states mapping
+local binds = {
+    aimbot = "M1",
+    triggerbot = "ALT",
+    penetration = "ALT",
+    edge_jump = "none",
+    ladder_edge_jump = "none",
+    long_jump = "none",
+    long_jump_edge = "M3",
+    mini_jump = "M3",
+    null_strafe = "always on",
+    mousespeed_lim = "none",
+    toggle_menu = "INS"
+}
+
+-- Dropdown Option definitions
+local k_hitboxes  = { "head", "neck", "chest", "stomach", "pelvis" }
+local k_hitgroups = { "head, chest...", "head only", "all", "chest, arms" }
+local k_weapons   = { "shared", "pistols", "rifles", "snipers", "smg" }
+local k_tabs      = { "aim", "visuals", "skins", "misc", "config", "lua" }
+local k_visuals_subtabs = { "enemy", "friendly", "world", "extra" }
+local k_chat_types      = { "edgebug", "killfeed", "both" }
+local k_sound_types     = { "hit", "kill", "hurt" }
+
+-- Configurations State
+local s_cfg_list = {"default", "legit", "rage"}
+local s_cfg_sel = 1
+local s_cfg_input = ""
+
+-- Design constants matching ImGui Colors
+local Colors = {
+    Bg            = Color3.fromRGB(9,   9,   9),
+    TitleBg       = Color3.fromRGB(7,   7,   7),
+    Text          = Color3.fromRGB(168, 165, 178),
+    TextBright    = Color3.fromRGB(205, 202, 215),
+    TextDim       = Color3.fromRGB(82,  79,  95),
+    TextBind      = Color3.fromRGB(64,  61,  75),
+    Section       = Color3.fromRGB(78,  74,  90),
+    Accent        = function() return state.menu_color end,
+    AccentHover   = function() 
+        local h, s, v = Color3.toHSV(state.menu_color)
+        return Color3.fromHSV(h, s, math.min(v * 1.09, 1.0))
+    end,
+    AccentDark    = function() 
+        local h, s, v = Color3.toHSV(state.menu_color)
+        return Color3.fromHSV(h, s, v * 0.32)
+    end,
+    CbBg          = Color3.fromRGB(18,  16,  20),
+    CbBorder      = Color3.fromRGB(52,  49,  60),
+    CbBorderHov   = function()
+        local h, s, v = Color3.toHSV(state.menu_color)
+        return Color3.fromHSV(h, s, v * 0.82)
+    end,
+    SliderTrack   = Color3.fromRGB(26,  24,  30),
+    DropdownBg    = Color3.fromRGB(16,  14,  18),
+    DropdownBord  = Color3.fromRGB(50,  47,  58),
+    Divider       = Color3.fromRGB(46,  44,  55),
+    TabBg         = Color3.fromRGB(13,  13,  13),
+    ColHdr        = Color3.fromRGB(85,  82,  98),
+    SectionBorder = Color3.fromRGB(22,  22,  22),
+}
+
+-- Global Registries
+local UI_Updates = {}
+local active_color_picker = nil
+local active_dropdown = nil
+local waiting_for_bind = nil
+local menu_visible = true
+local toggle_key = Enum.KeyCode.Insert
+
+-- Window drag helper
+local function makeDraggable(frame, titleBar)
+    local dragging = false
+    local dragInput, dragStart, startPos
+
+    titleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    titleBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+-- Dynamic GUI Update Dispatcher
+local function update_all_ui()
+    for _, update in pairs(UI_Updates) do
+        update()
+    end
+end
+
+-- Instance construction helper
+local function create(class, props, children)
+    local obj = Instance.new(class)
+    for k, v in pairs(props or {}) do
+        obj[k] = v
+    end
+    for _, child in ipairs(children or {}) do
+        child.Parent = obj
+    end
+    return obj
+end
+
+-- Bottom TabBar implementation
+local function createTabBar(parent, tabList)
+    local tabContainer = create("Frame", {
+        Size = UDim2.new(1, 0, 0, 26),
+        Position = UDim2.new(0, 0, 0, 420),
+        BackgroundColor3 = Colors.TabBg,
+        BorderSizePixel = 0
+    }, {
+        create("Frame", {
+            Size = UDim2.new(1, 0, 0, 1),
+            BackgroundColor3 = Colors.Accent(),
+            BorderSizePixel = 0
+        }, {
+            create("UIGradient", {
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.0, Color3.new(0,0,0)),
+                    ColorSequenceKeypoint.new(0.5, Colors.Accent()),
+                    ColorSequenceKeypoint.new(1.0, Color3.new(0,0,0))
+                })
+            })
+        })
+    })
+
+    -- Rounded corners at the bottom to match the main window frame
+    create("UICorner", { CornerRadius = UDim.new(0, 4) }).Parent = tabContainer
+    -- Cover the top half of the tab bar with a square frame of the same color
+    create("Frame", {
+        Size = UDim2.new(1, 0, 0, 6),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = Colors.TabBg,
+        BorderSizePixel = 0,
+        ZIndex = 0
+    }).Parent = tabContainer
+
+    local buttons = {}
+    local tab_w = 1 / #tabList
+    for i, tabName in ipairs(tabList) do
+        local isLast = (i == #tabList)
+        local btn = create("TextButton", {
+            Size = UDim2.new(tab_w, 0, 1, 0),
+            Position = UDim2.new((i - 1) * tab_w, 0, 0, 0),
+            BackgroundTransparency = 1,
+            Text = tabName,
+            Font = Enum.Font.SourceSans,
+            TextSize = 13,
+            TextColor3 = (i == state.active_tab) and Colors.TextBright or Colors.TextDim,
+            AutoButtonColor = false,
+            ZIndex = 2
+        })
+
+        if not isLast then
+            create("Frame", {
+                Size = UDim2.new(0, 1, 0, 14),
+                Position = UDim2.new(1, -1, 0.5, -7),
+                BackgroundColor3 = Color3.fromRGB(32, 30, 38),
+                BorderSizePixel = 0,
+                ZIndex = 3
+            }).Parent = btn
+        end
+
+        btn.MouseButton1Click:Connect(function()
+            state.active_tab = i
+            update_all_ui()
+        end)
+
+        buttons[i] = btn
+        btn.Parent = tabContainer
+    end
+
+    table.insert(UI_Updates, function()
+        for i, btn in ipairs(buttons) do
+            btn.TextColor3 = (i == state.active_tab) and Colors.TextBright or Colors.TextDim
+        end
+    end)
+
+    tabContainer.Parent = parent
+end
+
+-- Top SubTabBar (for visuals tab)
+local function createSubTabBar(parent, subtabList)
+    local subtabContainer = create("Frame", {
+        Size = UDim2.new(1, 0, 0, 20),
+        Position = UDim2.new(0, 0, 0, 26),
+        BackgroundTransparency = 1,
+        Visible = false
+    })
+
+    local UIListLayout = create("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 20)
+    })
+    UIListLayout.Parent = subtabContainer
+    create("UIPadding", {
+        PaddingLeft = UDim.new(0, 10),
+        PaddingTop = UDim.new(0, 4)
+    }).Parent = subtabContainer
+
+    local buttons = {}
+    for i, stName in ipairs(subtabList) do
+        local btn = create("TextButton", {
+            AutomaticSize = Enum.AutomaticSize.X,
+            Size = UDim2.new(0, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Text = stName,
+            Font = Enum.Font.SourceSans,
+            TextSize = 13,
+            TextColor3 = Colors.TextDim,
+            LayoutOrder = i,
+            AutoButtonColor = false
+        })
+
+        btn.MouseButton1Click:Connect(function()
+            state.visuals_subtab = i
+            update_all_ui()
+        end)
+
+        buttons[i] = btn
+        btn.Parent = subtabContainer
+    end
+
+    table.insert(UI_Updates, function()
+        subtabContainer.Visible = (state.active_tab == 2) -- Active tab 2 is Visuals
+        for i, btn in ipairs(buttons) do
+            btn.TextColor3 = (i == state.visuals_subtab) and Colors.Accent() or Colors.TextDim
+        end
+    end)
+
+    subtabContainer.Parent = parent
+end
+
+-- Main Window Creation
+local mainFrame = create("Frame", {
+    Size = UDim2.new(0, 448, 0, 446),
+    Position = UDim2.new(0.5, -224, 0.5, -223),
+    BackgroundColor3 = Colors.Bg,
+    BorderSizePixel = 0
+})
+create("UICorner", { CornerRadius = UDim.new(0, 4) }).Parent = mainFrame
+create("UIStroke", { Color = Colors.SectionBorder, Thickness = 1 }).Parent = mainFrame
+
+-- Title bar
+local titleBar = create("Frame", {
+    Size = UDim2.new(1, 0, 0, 22),
+    BackgroundColor3 = Colors.TitleBg,
+    BorderSizePixel = 0
+}, {
+    create("UIGradient", {
+        Rotation = 90,
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0.0, Color3.fromRGB(20, 20, 20)),
+            ColorSequenceKeypoint.new(1.0, Color3.fromRGB(7, 7, 7))
+        })
+    }),
+    create("TextLabel", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Text = "bankroll mafia",
+        Font = Enum.Font.SourceSans,
+        TextSize = 13,
+        TextColor3 = Color3.fromRGB(185, 182, 196)
+    }),
+    create("Frame", {
+        Size = UDim2.new(1, 0, 0, 1),
+        Position = UDim2.new(0, 0, 1, -1),
+        BackgroundColor3 = Colors.Accent(),
+        BorderSizePixel = 0
+    }, {
+        create("UIGradient", {
+            Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0.0, Color3.new(0,0,0)),
+                ColorSequenceKeypoint.new(0.5, Colors.Accent()),
+                ColorSequenceKeypoint.new(1.0, Color3.new(0,0,0))
+            })
+        })
+    })
+})
+titleBar.Parent = mainFrame
+makeDraggable(mainFrame, titleBar)
+
+createTabBar(mainFrame, k_tabs)
+createSubTabBar(mainFrame, k_visuals_subtabs)
+
+-- Columns containers
+local tabPanels = {}
+for tabIdx = 1, 6 do
+    local panel = create("Frame", {
+        Size = UDim2.new(1, 0, 1, -48),
+        Position = UDim2.new(0, 0, 0, 22),
+        BackgroundTransparency = 1,
+        Visible = false
+    })
+
+    local isVisuals = (tabIdx == 2)
+    local colY = isVisuals and 31 or 10
+    local colH = isVisuals and 357 or 378
+
+    -- Add columns (Left column width 200, Right column width 214)
+    local leftCol = create("Frame", {
+        Size = UDim2.new(0, 200, 0, colH),
+        Position = UDim2.new(0, 10, 0, colY),
+        BackgroundTransparency = 1
+    }, {
+        create("UIListLayout", {
+            FillDirection = Enum.FillDirection.Vertical,
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            Padding = UDim.new(0, 10)
+        })
+    })
+    
+    local rightCol = create("Frame", {
+        Size = UDim2.new(0, 214, 0, colH),
+        Position = UDim2.new(0, 224, 0, colY),
+        BackgroundTransparency = 1
+    }, {
+        create("UIListLayout", {
+            FillDirection = Enum.FillDirection.Vertical,
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            Padding = UDim.new(0, 10)
+        })
+    })
+
+    leftCol.Parent = panel
+    rightCol.Parent = panel
+
+    tabPanels[tabIdx] = { panel = panel, left = leftCol, right = rightCol }
+    panel.Parent = mainFrame
+end
+
+table.insert(UI_Updates, function()
+    for tabIdx, item in ipairs(tabPanels) do
+        item.panel.Visible = (state.active_tab == tabIdx)
+    end
+end)
+
+-- Float Custom Dropdown overlay
+local dropdownOverlay = create("Frame", {
+    Size = UDim2.new(0, 100, 0, 100),
+    BackgroundColor3 = Colors.Bg,
+    Visible = false,
+    ZIndex = 1000
+}, {
+    create("UICorner", { CornerRadius = UDim.new(0, 3) }),
+    create("UIStroke", { Color = Colors.DropdownBord, Thickness = 1 })
+})
+dropdownOverlay.Parent = screenGui
+
+local dropdownScroll = create("ScrollingFrame", {
+    Size = UDim2.new(1, -2, 1, -2),
+    Position = UDim2.new(0, 1, 0, 1),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    ScrollBarThickness = 2,
+    ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80),
+    ZIndex = 1001
+}, {
+    create("UIListLayout", {
+        FillDirection = Enum.FillDirection.Vertical,
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+})
+dropdownScroll.Parent = dropdownOverlay
+
+-- Float ColorPicker overlay
+local pickerOverlay = create("Frame", {
+    Size = UDim2.new(0, 220, 0, 215),
+    BackgroundColor3 = Colors.Bg,
+    Visible = false,
+    ZIndex = 2000
+}, {
+    create("UICorner", { CornerRadius = UDim.new(0, 4) }),
+    create("UIStroke", { Color = Colors.SectionBorder, Thickness = 1 })
+})
+pickerOverlay.Parent = screenGui
+
+-- Saturation-Value box
+local svBox = create("Frame", {
+    Size = UDim2.new(0, 180, 0, 180),
+    Position = UDim2.new(0, 10, 0, 10),
+    BackgroundColor3 = Color3.new(1,0,0),
+    BorderSizePixel = 0,
+    ZIndex = 2001
+})
+svBox.Parent = pickerOverlay
+
+local svWhite = create("Frame", {
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundColor3 = Color3.new(1, 1, 1),
+    BorderSizePixel = 0,
+    ZIndex = 2002
+}, {
+    create("UIGradient", {
+        Rotation = 0,
+        Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0.0, 0.0),
+            NumberSequenceKeypoint.new(1.0, 1.0)
+        })
+    })
+})
+svWhite.Parent = svBox
+
+local svBlack = create("Frame", {
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundColor3 = Color3.new(0, 0, 0),
+    BorderSizePixel = 0,
+    ZIndex = 2003
+}, {
+    create("UIGradient", {
+        Rotation = 90,
+        Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0.0, 1.0),
+            NumberSequenceKeypoint.new(1.0, 0.0)
+        })
+    })
+})
+svBlack.Parent = svBox
+
+local svCursor = create("Frame", {
+    Size = UDim2.new(0, 6, 0, 6),
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.new(1, 0, 0, 0),
+    BackgroundColor3 = Color3.new(1, 1, 1),
+    ZIndex = 2004
+}, {
+    create("UICorner", { CornerRadius = UDim.new(1, 0) }),
+    create("UIStroke", { Color = Color3.new(0,0,0), Thickness = 1 })
+})
+svCursor.Parent = svBox
+
+-- Hue strip
+local hueStrip = create("Frame", {
+    Size = UDim2.new(0, 14, 0, 180),
+    Position = UDim2.new(0, 198, 0, 10),
+    BackgroundColor3 = Color3.new(1, 1, 1),
+    BorderSizePixel = 0,
+    ZIndex = 2001
+}, {
+    create("UIGradient", {
+        Rotation = 90,
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0.0, Color3.fromRGB(255, 0, 0)),
+            ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
+            ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
+            ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 255, 255)),
+            ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
+            ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
+            ColorSequenceKeypoint.new(1.0, Color3.fromRGB(255, 0, 0))
+        })
+    })
+})
+hueStrip.Parent = pickerOverlay
+
+local hueCursor = create("Frame", {
+    Size = UDim2.new(1, 4, 0, 2),
+    Position = UDim2.new(0, -2, 0, 0),
+    BackgroundColor3 = Color3.new(1, 1, 1),
+    BorderSizePixel = 0,
+    ZIndex = 2002
+}, {
+    create("UIStroke", { Color = Color3.new(0,0,0), Thickness = 1 })
+})
+hueCursor.Parent = hueStrip
+
+-- Alpha strip
+local alphaStrip = create("Frame", {
+    Size = UDim2.new(0, 180, 0, 11),
+    Position = UDim2.new(0, 10, 0, 196),
+    BackgroundColor3 = Color3.new(1, 1, 1),
+    BorderSizePixel = 0,
+    ZIndex = 2001
+})
+alphaStrip.Parent = pickerOverlay
+
+local alphaGrad = create("UIGradient", {
+    Rotation = 0,
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0.0, 1.0),
+        NumberSequenceKeypoint.new(1.0, 0.0)
+    })
+})
+alphaGrad.Parent = alphaStrip
+
+local alphaCursor = create("Frame", {
+    Size = UDim2.new(0, 2, 1, 4),
+    Position = UDim2.new(1, 0, 0, -2),
+    BackgroundColor3 = Color3.new(1, 1, 1),
+    BorderSizePixel = 0,
+    ZIndex = 2002
+}, {
+    create("UIStroke", { Color = Color3.new(0,0,0), Thickness = 1 })
+})
+alphaCursor.Parent = alphaStrip
+
+-- Close picker overlay on outside click
+UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if active_dropdown then
+            local pos = dropdownOverlay.AbsolutePosition
+            local size = dropdownOverlay.AbsoluteSize
+            local mouse = UserInputService:GetMouseLocation()
+            -- Account for CoreGui inset
+            mouse = mouse - Vector2.new(0, 36)
+            local inside = (mouse.X >= pos.X and mouse.X <= pos.X + size.X and
+                            mouse.Y >= pos.Y and mouse.Y <= pos.Y + size.Y)
+            if not inside then
+                active_dropdown = nil
+                dropdownOverlay.Visible = false
+            end
+        end
+
+        if active_color_picker then
+            local pos = pickerOverlay.AbsolutePosition
+            local size = pickerOverlay.AbsoluteSize
+            local mouse = UserInputService:GetMouseLocation()
+            mouse = mouse - Vector2.new(0, 36)
+            local inside = (mouse.X >= pos.X and mouse.X <= pos.X + size.X and
+                            mouse.Y >= pos.Y and mouse.Y <= pos.Y + size.Y)
+            if not inside then
+                active_color_picker = nil
+                pickerOverlay.Visible = false
+            end
+        end
+    end
+end)
+
+-- Section box construction helper (renders C++ custom section outlines)
+local function createSection(parent, title, layoutOrder)
+    local sectionContainer = create("Frame", {
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundTransparency = 1,
+        LayoutOrder = layoutOrder
+    })
+
+    local outline = create("Frame", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+    }, {
+        create("UIStroke", { Color = Colors.SectionBorder, Thickness = 1 }),
+        create("UIPadding", {
+            PaddingLeft = UDim.new(0, 8),
+            PaddingRight = UDim.new(0, 8),
+            PaddingTop = UDim.new(0, 12),
+            PaddingBottom = UDim.new(0, 8)
+        })
+    })
+    outline.Parent = sectionContainer
+
+    local contentLayout = create("UIListLayout", {
+        FillDirection = Enum.FillDirection.Vertical,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 4)
+    })
+    contentLayout.Parent = outline
+
+    -- Masked top header text label
+    local headerLabel = create("TextLabel", {
+        AutomaticSize = Enum.AutomaticSize.X,
+        Size = UDim2.new(0, 0, 0, 12),
+        Position = UDim2.new(0.5, 0, 0, 0),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = Colors.Bg,
+        BorderSizePixel = 0,
+        Text = title,
+        TextColor3 = Colors.ColHdr,
+        Font = Enum.Font.SourceSans,
+        TextSize = 12,
+        ZIndex = 5
+    }, {
+        create("UIPadding", {
+            PaddingLeft = UDim.new(0, 5),
+            PaddingRight = UDim.new(0, 5)
+        })
+    })
+    headerLabel.Parent = sectionContainer
+
+    sectionContainer.Parent = parent
+
+    -- Elements Builder Interface inside Section
+    local sectionInterface = {}
+
+    -- Row Checkbox + Keybind + ColorPickers
+    function sectionInterface:Checkbox(label, key, colorKeys, bindKey)
+        local row = create("Frame", {
+            Size = UDim2.new(1, 0, 0, 16),
+            BackgroundTransparency = 1
+        })
+
+        -- Checkbox square 9x9
+        local boxFrame = create("Frame", {
+            Size = UDim2.new(0, 9, 0, 9),
+            Position = UDim2.new(0, 0, 0.5, -4.5),
+            BackgroundColor3 = Colors.CbBg
+        }, {
+            create("UICorner", { CornerRadius = UDim.new(0, 1) }),
+            create("UIStroke", { Color = Colors.CbBorder, Thickness = 1 })
+        })
+        boxFrame.Parent = row
+
+        -- Checkbox hover/click area
+        local rowButton = create("TextButton", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Text = "",
+            AutoButtonColor = false
+        })
+        rowButton.Parent = row
+
+        -- Label
+        local textLabel = create("TextLabel", {
+            Size = UDim2.new(1, -15, 1, 0),
+            Position = UDim2.new(0, 15, 0, 0),
+            BackgroundTransparency = 1,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Text = label,
+            TextColor3 = Colors.Text,
+            Font = Enum.Font.SourceSans,
+            TextSize = 13
+        })
+        textLabel.Parent = row
+
+        rowButton.MouseButton1Click:Connect(function()
+            state[key] = not state[key]
+            update_all_ui()
+        end)
+
+        rowButton.MouseEnter:Connect(function()
+            boxFrame:FindFirstChildOfClass("UIStroke").Color = Colors.CbBorderHov()
+            textLabel.TextColor3 = Colors.TextBright
+        end)
+        rowButton.MouseLeave:Connect(function()
+            boxFrame:FindFirstChildOfClass("UIStroke").Color = state[key] and Colors.Accent() or Colors.CbBorder
+            textLabel.TextColor3 = Colors.Text
+        end)
+
+        local bindBtn
+        if bindKey then
+            bindBtn = create("TextButton", {
+                Size = UDim2.new(0, 40, 1, 0),
+                Position = UDim2.new(1, -40, 0, 0),
+                BackgroundTransparency = 1,
+                Text = binds[bindKey] ~= "none" and "[" .. binds[bindKey] .. "]" or "[]",
+                TextColor3 = Colors.TextBind,
+                Font = Enum.Font.SourceSans,
+                TextSize = 13,
+                TextXAlignment = Enum.TextXAlignment.Right
+            })
+            bindBtn.MouseButton1Click:Connect(function()
+                waiting_for_bind = bindKey
+                bindBtn.Text = "[press key]"
+                bindBtn.TextColor3 = Colors.Accent()
+            end)
+            bindBtn.Parent = row
+        end
+
+        if colorKeys then
+            local offset = bindKey and 45 or 0
+            for index, colorKey in ipairs(colorKeys) do
+                local pickerBtn = create("TextButton", {
+                    Size = UDim2.new(0, 18, 0, 12),
+                    Position = UDim2.new(1, -offset - 18, 0.5, -6),
+                    BackgroundColor3 = state[colorKey],
+                    AutoButtonColor = false,
+                    Text = ""
+                }, {
+                    create("UICorner", { CornerRadius = UDim.new(0, 2) }),
+                    create("UIStroke", { Color = Colors.CbBorder, Thickness = 1 })
+                })
+                pickerBtn.Parent = row
+                offset = offset + 22
+
+                pickerBtn.MouseButton1Click:Connect(function()
+                    active_color_picker = colorKey
+                    -- Position overlay relative to color box
+                    local abPos = pickerBtn.AbsolutePosition
+                    pickerOverlay.Position = UDim2.new(0, abPos.X + 22, 0, abPos.Y - 50)
+
+                    local h, s, v = Color3.toHSV(state[colorKey])
+                    svBox.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                    svCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+                    hueCursor.Position = UDim2.new(0, -2, h, 0)
+
+                    local alphaKey = colorKey:gsub("color", "alpha")
+                    local alphaVal = state[alphaKey] or 1.0
+                    alphaGrad.Color = ColorSequence.new(state[colorKey])
+                    alphaCursor.Position = UDim2.new(alphaVal, 0, 0, -2)
+                    
+                    pickerOverlay.Visible = true
+                end)
+                
+                table.insert(UI_Updates, function()
+                    pickerBtn.BackgroundColor3 = state[colorKey]
+                end)
+            end
+        end
+
+        local function update()
+            local enabled = state[key]
+            boxFrame.BackgroundColor3 = enabled and Colors.Accent() or Colors.CbBg
+            boxFrame:FindFirstChildOfClass("UIStroke").Color = enabled and Colors.Accent() or Colors.CbBorder
+            
+            if bindBtn then
+                if waiting_for_bind == bindKey then
+                    bindBtn.Text = "[press key]"
+                    bindBtn.TextColor3 = Colors.Accent()
+                else
+                    bindBtn.Text = binds[bindKey] ~= "none" and "[" .. binds[bindKey] .. "]" or "[]"
+                    bindBtn.TextColor3 = Colors.TextBind
+                end
+            end
+        end
+
+        table.insert(UI_Updates, update)
+        update()
+        row.Parent = outline
+    end
+
+    function sectionInterface:Slider(label, key, vmin, vmax, suffix, format)
+        suffix = suffix or ""
+        format = format or "%.0f"
+
+        local row = create("Frame", {
+            Size = UDim2.new(1, 0, 0, 26),
+            BackgroundTransparency = 1
+        })
+
+        local textLabel = create("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 12),
+            BackgroundTransparency = 1,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Text = label,
+            TextColor3 = Colors.TextDim,
+            Font = Enum.Font.SourceSans,
+            TextSize = 13
+        })
+        textLabel.Parent = row
+
+        local minusBtn = create("TextButton", {
+            Size = UDim2.new(0, 12, 0, 12),
+            Position = UDim2.new(0, 0, 0, 13),
+            BackgroundTransparency = 1,
+            Text = "-",
+            TextColor3 = Colors.TextBind,
+            Font = Enum.Font.SourceSansBold,
+            TextSize = 14
+        })
+        minusBtn.Parent = row
+
+        local plusBtn = create("TextButton", {
+            Size = UDim2.new(0, 12, 0, 12),
+            Position = UDim2.new(1, -12, 0, 13),
+            BackgroundTransparency = 1,
+            Text = "+",
+            TextColor3 = Colors.TextBind,
+            Font = Enum.Font.SourceSansBold,
+            TextSize = 14
+        })
+        plusBtn.Parent = row
+
+        local track = create("Frame", {
+            Size = UDim2.new(1, -36, 0, 3),
+            Position = UDim2.new(0, 18, 0, 17),
+            BackgroundColor3 = Colors.SliderTrack,
+            BorderSizePixel = 0
+        })
+        track.Parent = row
+
+        local fill = create("Frame", {
+            Size = UDim2.new(0, 0, 1, 0),
+            BorderSizePixel = 0
+        }, {
+            create("UIGradient", {
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.0, Colors.AccentDark()),
+                    ColorSequenceKeypoint.new(0.5, Colors.Accent()),
+                    ColorSequenceKeypoint.new(1.0, Colors.AccentDark())
+                })
+            })
+        })
+        fill.Parent = track
+
+        local valLabel = create("TextLabel", {
+            Size = UDim2.new(0, 40, 0, 12),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            BackgroundTransparency = 1,
+            Text = "",
+            TextColor3 = Colors.TextBright,
+            Font = Enum.Font.SourceSans,
+            TextSize = 12,
+            ZIndex = 5
+        }, {
+            create("UIStroke", { Color = Color3.new(0,0,0), Thickness = 1 })
+        })
+        valLabel.Parent = track
+
+        local function setValue(val)
+            state[key] = math.clamp(val, vmin, vmax)
+            update_all_ui()
+        end
+
+        local isDragging = false
+        track.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                isDragging = true
+                local function dragUpdate()
+                    local width = track.AbsoluteSize.X
+                    local posX = input.Position.X - track.AbsolutePosition.X
+                    local t = math.clamp(posX / width, 0, 1)
+                    setValue(vmin + t * (vmax - vmin))
+                end
+                dragUpdate()
+
+                local dragConnection
+                dragConnection = UserInputService.InputChanged:Connect(function(changedInput)
+                    if changedInput.UserInputType == Enum.UserInputType.MouseMovement and isDragging then
+                        local width = track.AbsoluteSize.X
+                        local posX = changedInput.Position.X - track.AbsolutePosition.X
+                        local t = math.clamp(posX / width, 0, 1)
+                        setValue(vmin + t * (vmax - vmin))
+                    elseif not isDragging then
+                        dragConnection:Disconnect()
+                    end
+                end)
+                
+                UserInputService.InputEnded:Connect(function(endedInput)
+                    if endedInput.UserInputType == Enum.UserInputType.MouseButton1 then
+                        isDragging = false
+                        if dragConnection then dragConnection:Disconnect() end
+                    end
+                end)
+            end
+        end)
+
+        minusBtn.MouseButton1Click:Connect(function()
+            local step = (vmax - vmin) * 0.01
+            setValue(state[key] - step)
+        end)
+        plusBtn.MouseButton1Click:Connect(function()
+            local step = (vmax - vmin) * 0.01
+            setValue(state[key] + step)
+        end)
+
+        local function update()
+            local currentVal = state[key]
+            local pct = (vmax > vmin) and math.clamp((currentVal - vmin) / (vmax - vmin), 0, 1) or 0
+            fill.Size = UDim2.new(pct, 0, 1, 0)
+            valLabel.Text = string.format(format, currentVal) .. suffix
+            valLabel.Position = UDim2.new(pct, 0, 0.5, 0)
+        end
+
+        table.insert(UI_Updates, update)
+        update()
+        row.Parent = outline
+    end
+
+    function sectionInterface:Dropdown(label, key, options)
+        local row = create("Frame", {
+            Size = UDim2.new(1, 0, 0, 17),
+            BackgroundTransparency = 1
+        })
+
+        local dropFrame = create("Frame", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundColor3 = Color3.fromRGB(16, 14, 18),
+            BorderSizePixel = 0
+        }, {
+            create("UICorner", { CornerRadius = UDim.new(0, 2) }),
+            create("UIStroke", { Color = Colors.DropdownBord, Thickness = 1 }),
+            create("UIGradient", {
+                Rotation = 90,
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.0, Color3.fromRGB(20, 20, 20)),
+                    ColorSequenceKeypoint.new(1.0, Color3.fromRGB(9, 9, 9))
+                })
+            })
+        })
+        dropFrame.Parent = row
+
+        local dropText = create("TextLabel", {
+            Size = UDim2.new(1, -20, 1, 0),
+            Position = UDim2.new(0, 7, 0, 0),
+            BackgroundTransparency = 1,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Text = options[state[key]] or "",
+            TextColor3 = Colors.Text,
+            Font = Enum.Font.SourceSans,
+            TextSize = 13
+        })
+        dropText.Parent = dropFrame
+
+        local arrow = create("TextLabel", {
+            Size = UDim2.new(0, 14, 1, 0),
+            Position = UDim2.new(1, -14, 0, 0),
+            BackgroundTransparency = 1,
+            Text = "▼",
+            TextColor3 = Colors.TextBind,
+            Font = Enum.Font.SourceSans,
+            TextSize = 9
+        })
+        arrow.Parent = dropFrame
+
+        local dropBtn = create("TextButton", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Text = "",
+            AutoButtonColor = false
+        })
+        dropBtn.Parent = row
+
+        dropBtn.MouseButton1Click:Connect(function()
+            active_dropdown = key
+            for _, child in ipairs(dropdownScroll:GetChildren()) do
+                if child:IsA("TextButton") then child:Destroy() end
+            end
+
+            for index, option in ipairs(options) do
+                local optBtn = create("TextButton", {
+                    Size = UDim2.new(1, 0, 0, 16),
+                    BackgroundTransparency = 1,
+                    Text = option,
+                    TextColor3 = (index == state[key]) and Colors.Accent() or Colors.Text,
+                    Font = Enum.Font.SourceSans,
+                    TextSize = 13,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    AutoButtonColor = false
+                }, {
+                    create("UIPadding", { PaddingLeft = UDim.new(0, 7) })
+                })
+                
+                optBtn.MouseEnter:Connect(function()
+                    optBtn.TextColor3 = Colors.TextBright
+                    optBtn.BackgroundTransparency = 0.9
+                    optBtn.BackgroundColor3 = Colors.Accent()
+                end)
+                optBtn.MouseLeave:Connect(function()
+                    optBtn.TextColor3 = (index == state[key]) and Colors.Accent() or Colors.Text
+                    optBtn.BackgroundTransparency = 1
+                end)
+
+                optBtn.MouseButton1Click:Connect(function()
+                    state[key] = index
+                    active_dropdown = nil
+                    dropdownOverlay.Visible = false
+                    update_all_ui()
+                end)
+
+                optBtn.Parent = dropdownScroll
+            end
+
+            local itemH = 16
+            local totalH = #options * itemH + 4
+            dropdownOverlay.Size = UDim2.new(0, dropFrame.AbsoluteSize.X, 0, totalH)
+            
+            local abPos = dropFrame.AbsolutePosition
+            dropdownOverlay.Position = UDim2.new(0, abPos.X, 0, abPos.Y + 17)
+            dropdownOverlay.Visible = true
+        end)
+
+        local function update()
+            dropText.Text = options[state[key]] or ""
+            arrow.TextColor3 = (active_dropdown == key) and Colors.Accent() or Colors.TextBind
+        end
+
+        table.insert(UI_Updates, update)
+        update()
+        row.Parent = outline
+    end
+
+    function sectionInterface:Separator(title)
+        local sep = create("Frame", {
+            Size = UDim2.new(1, 0, 0, 17),
+            BackgroundTransparency = 1
+        })
+
+        local label = create("TextLabel", {
+            AutomaticSize = Enum.AutomaticSize.X,
+            Size = UDim2.new(0, 0, 1, 0),
+            Position = UDim2.new(0.5, 0, 0, 0),
+            AnchorPoint = Vector2.new(0.5, 0),
+            BackgroundTransparency = 0,
+            BackgroundColor3 = Colors.Bg,
+            Text = title,
+            TextColor3 = Colors.Section,
+            Font = Enum.Font.SourceSans,
+            TextSize = 12,
+            ZIndex = 5
+        }, {
+            create("UIPadding", {
+                PaddingLeft = UDim.new(0, 5),
+                PaddingRight = UDim.new(0, 5)
+            })
+        })
+        label.Parent = sep
+
+        local line = create("Frame", {
+            Size = UDim2.new(1, 0, 0, 1),
+            Position = UDim2.new(0, 0, 0.5, 0),
+            BackgroundColor3 = Colors.SectionBorder,
+            BorderSizePixel = 0
+        })
+        line.Parent = sep
+
+        sep.Parent = outline
+    end
+
+    function sectionInterface:Button(label, callback)
+        local btnRow = create("Frame", {
+            Size = UDim2.new(1, 0, 0, 18),
+            BackgroundTransparency = 1
+        })
+
+        local btnFrame = create("Frame", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundColor3 = Color3.fromRGB(22, 20, 26),
+            BorderSizePixel = 0
+        }, {
+            create("UICorner", { CornerRadius = UDim.new(0, 2) }),
+            create("UIStroke", { Color = Color3.fromRGB(42, 38, 50), Thickness = 1, Enabled = false }),
+            create("UIGradient", {
+                Rotation = 90,
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.0, Color3.fromRGB(22, 20, 26)),
+                    ColorSequenceKeypoint.new(1.0, Color3.fromRGB(10, 9, 11))
+                })
+            })
+        })
+        btnFrame.Parent = btnRow
+
+        local accentLine = create("Frame", {
+            Size = UDim2.new(0, 1.5, 1, -6),
+            Position = UDim2.new(0, 1, 0.5, -3),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundColor3 = Colors.Accent(),
+            Visible = false
+        })
+        accentLine.Parent = btnFrame
+
+        local textLabel = create("TextLabel", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Text = label,
+            TextColor3 = Colors.Text,
+            Font = Enum.Font.SourceSans,
+            TextSize = 13
+        })
+        textLabel.Parent = btnFrame
+
+        local dropBtn = create("TextButton", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Text = "",
+            AutoButtonColor = false
+        })
+        dropBtn.Parent = btnRow
+
+        dropBtn.MouseEnter:Connect(function()
+            btnFrame:FindFirstChildOfClass("UIStroke").Enabled = true
+            accentLine.Visible = true
+            textLabel.TextColor3 = Colors.TextBright
+        end)
+        dropBtn.MouseLeave:Connect(function()
+            btnFrame:FindFirstChildOfClass("UIStroke").Enabled = false
+            accentLine.Visible = false
+            textLabel.TextColor3 = Colors.Text
+        end)
+
+        dropBtn.MouseButton1Down:Connect(function()
+            btnFrame:FindFirstChildOfClass("UIGradient").Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(6, 5, 7)),
+                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(12, 10, 14))
+            })
+        end)
+        dropBtn.MouseButton1Up:Connect(function()
+            btnFrame:FindFirstChildOfClass("UIGradient").Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(22, 20, 26)),
+                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(10, 9, 11))
+            })
+        end)
+
+        dropBtn.MouseButton1Click:Connect(callback)
+
+        btnRow.Parent = outline
+    end
+
+    function sectionInterface:TextInput(key, placeholder, onEnter)
+        local row = create("Frame", {
+            Size = UDim2.new(1, 0, 0, 17),
+            BackgroundTransparency = 1
+        })
+
+        local textFrame = create("Frame", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundColor3 = Color3.fromRGB(9, 8, 10),
+            BorderSizePixel = 0
+        }, {
+            create("UICorner", { CornerRadius = UDim.new(0, 2) }),
+            create("UIStroke", { Color = Colors.CbBorder, Thickness = 1 }),
+            create("UIGradient", {
+                Rotation = 90,
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.0, Color3.fromRGB(20, 18, 23)),
+                    ColorSequenceKeypoint.new(1.0, Color3.fromRGB(9, 8, 10))
+                })
+            })
+        })
+        textFrame.Parent = row
+
+        local textBox = create("TextBox", {
+            Size = UDim2.new(1, -12, 1, 0),
+            Position = UDim2.new(0, 6, 0, 0),
+            BackgroundTransparency = 1,
+            Text = state[key] or "",
+            PlaceholderText = placeholder or "...",
+            PlaceholderColor3 = Colors.TextDim,
+            TextColor3 = Colors.TextBright,
+            Font = Enum.Font.SourceSans,
+            TextSize = 13,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ClearTextOnFocus = false
+        })
+        textBox.Parent = textFrame
+
+        textBox:GetPropertyChangedSignal("Text"):Connect(function()
+            state[key] = textBox.Text
+            if onEnter then onEnter(textBox.Text) end
+        end)
+
+        textBox.Focused:Connect(function()
+            textFrame:FindFirstChildOfClass("UIStroke").Color = Colors.Accent()
+        end)
+
+        textBox.FocusLost:Connect(function()
+            textFrame:FindFirstChildOfClass("UIStroke").Color = Colors.CbBorder
+        end)
+
+        local function update()
+            if textBox.Text ~= state[key] then
+                textBox.Text = state[key] or ""
+            end
+        end
+
+        table.insert(UI_Updates, update)
+
+        row.Parent = outline
+    end
+
+    function sectionInterface:Dummy(height)
+        local dum = create("Frame", {
+            Size = UDim2.new(1, 0, 0, height),
+            BackgroundTransparency = 1
+        })
+        dum.Parent = outline
+    end
+
+    return sectionInterface
+end
+
+do
+    local columns = tabPanels[1]
+    
+    -- Left Box: weapon group
+    local wpnGroup = createSection(columns.left, "weapon group", 1)
+    wpnGroup:Dropdown("##wpn", "weapon_sel", k_weapons)
+    wpnGroup:Checkbox("override shared", "override_shared")
+    wpnGroup:Separator("general")
+    wpnGroup:Checkbox("aimbot", "aimbot", nil, "aimbot")
+    wpnGroup:Dropdown("##htbx", "hitbox_sel", k_hitboxes)
+    wpnGroup:Checkbox("backtrack", "backtrack")
+    wpnGroup:Checkbox("triggerbot", "triggerbot", nil, "triggerbot")
+    wpnGroup:Dropdown("##htgr", "hitgroup_sel", k_hitgroups)
+    wpnGroup:Checkbox("magnet", "magnet")
+    wpnGroup:Checkbox("penetration", "penetration", nil, "penetration")
+
+    local aimParams = createSection(columns.right, "aimbot params", 1)
+    aimParams:Checkbox("silent", "silent")
+    aimParams:Slider("field of view", "fov", 0, 180, "", "%.1f")
+    aimParams:Slider("smooth", "smooth", 0, 100, "%", "%.0f")
+    aimParams:Checkbox("recoil control", "recoil_ctrl")
+
+    local trigParams = createSection(columns.right, "triggerbot params", 2)
+    trigParams:Checkbox("seed prediction", "seed_pred")
+    trigParams:Slider("delay", "delay", 0, 500, "ms", "%.0f")
+    trigParams:Slider("hitchance", "hitchance", 0, 100, "%", "%.0f")
+end
+
+do
+    local columns = tabPanels[2]
+    
+    -- We can group enemy boxes into enemy subtab container
+    local enemyContainerL = create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, LayoutOrder = 1 })
+    local enemyContainerR = create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, LayoutOrder = 1 })
+    enemyContainerL.Parent = columns.left
+    enemyContainerR.Parent = columns.right
+
+    create("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 10) }).Parent = enemyContainerL
+    create("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 10) }).Parent = enemyContainerR
+
+    local enemyEsp = createSection(enemyContainerL, "enemy esp", 1)
+    enemyEsp:Checkbox("box", "box", { "box_color" })
+    enemyEsp:Checkbox("health", "health", { "health_color2", "health_color" })
+    enemyEsp:Checkbox("name", "name", { "name_color" })
+    enemyEsp:Checkbox("weapon", "weapon", { "weapon_color" })
+    enemyEsp:Checkbox("ammo", "ammo", { "ammo_color2", "ammo_color" })
+    enemyEsp:Checkbox("out of view indicator", "out_of_view", { "oov_color" })
+    enemyEsp:Checkbox("skeleton", "skeleton", { "skeleton_color" })
+    enemyEsp:Checkbox("flags", "flags_esp", { "flags_color3", "flags_color2", "flags_color1" })
+
+    local enemyChams = createSection(enemyContainerR, "enemy chams", 1)
+    enemyChams:Checkbox("visible", "visible", { "visible_color" })
+    enemyChams:Checkbox("occluded", "occluded", { "occluded_color" })
+    enemyChams:Checkbox("history", "history")
+    enemyChams:Checkbox("glow", "glow", { "glow_color2", "glow_color1" })
+
+    local friendlyContainer = create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, LayoutOrder = 2 })
+    friendlyContainer.Parent = columns.left
+    local friendlyBox = createSection(friendlyContainer, "friendly", 1)
+    friendlyBox:Dummy(16)
+
+    local worldContainer = create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, LayoutOrder = 3 })
+    worldContainer.Parent = columns.left
+    local worldBox = createSection(worldContainer, "world", 1)
+    worldBox:Dummy(16)
+
+    local extraContainer = create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, LayoutOrder = 4 })
+    extraContainer.Parent = columns.left
+    local extraBox = createSection(extraContainer, "extra", 1)
+    extraBox:Dummy(16)
+
+    table.insert(UI_Updates, function()
+        enemyContainerL.Visible = (state.active_tab == 2 and state.visuals_subtab == 1)
+        enemyContainerR.Visible = (state.active_tab == 2 and state.visuals_subtab == 1)
+        friendlyContainer.Visible = (state.active_tab == 2 and state.visuals_subtab == 2)
+        worldContainer.Visible = (state.active_tab == 2 and state.visuals_subtab == 3)
+        extraContainer.Visible = (state.active_tab == 2 and state.visuals_subtab == 4)
+    end)
+end
+
+do
+    local columns = tabPanels[3]
+    local skinsBox = createSection(columns.left, "skins list", 1)
+    skinsBox:Dummy(16)
+end
+
+do
+    local columns = tabPanels[4]
+
+    local moveBox = createSection(columns.left, "movement", 1)
+    moveBox:Checkbox("edge jump", "edge_jump", nil, "edge_jump")
+    moveBox:Checkbox("ladder edge jump", "ladder_edge_jump", nil, "ladder_edge_jump")
+    moveBox:Checkbox("long jump", "long_jump", nil, "long_jump")
+    moveBox:Checkbox("long jump on edge", "long_jump_edge", nil, "long_jump_edge")
+    moveBox:Checkbox("mini jump", "mini_jump", nil, "mini_jump")
+    moveBox:Checkbox("null strafe", "null_strafe", nil, "null_strafe")
+    moveBox:Checkbox("mousespeed limiter", "mousespeed_lim", nil, "mousespeed_lim")
+
+    local miscBox = createSection(columns.left, "miscellaneous", 2)
+    miscBox:Checkbox("chat logs", "chat_logs")
+    miscBox:Dropdown("##chat_type", "chat_logs_type", k_chat_types)
+    miscBox:Checkbox("healthshot", "healthshot")
+    miscBox:Checkbox("sounds", "sounds")
+    miscBox:Dropdown("##sound_type", "sounds_type", k_sound_types)
+    miscBox:Slider("volume", "sounds_volume", 0, 100, "", "%.0f")
+
+    local indBox = createSection(columns.right, "indicators", 1)
+    indBox:Slider("offset", "ind_offset", 0, 200, "", "%.0f")
+    indBox:Checkbox("keybinds", "ind_keybinds", { "keybinds_col2", "keybinds_col1" })
+    indBox:Checkbox("velocity text", "vel_text", { "vel_text_col3", "vel_text_col2", "vel_text_col1" })
+    indBox:Checkbox("keystrokes", "keystrokes", { "keystrokes_col" })
+    indBox:Checkbox("velocity graph", "vel_graph", { "vel_graph_col2", "vel_graph_col1" })
+end
+
+local function get_config_folder()
+    if makefolder and isfolder then
+        if not isfolder("bankroll") then
+            makefolder("bankroll")
+        end
+        return "bankroll/"
+    end
+    return nil
+end
+
+local function save_config(name)
+    local data = {state = {}, binds = {}}
+    for k, v in pairs(state) do
+        if typeof(v) == "Color3" then
+            data.state[k] = {r = v.R, g = v.G, b = v.B, isColor = true}
+        else
+            data.state[k] = v
+        end
+    end
+    for k, v in pairs(binds) do
+        data.binds[k] = v
+    end
+    
+    local json = game:GetService("HttpService"):JSONEncode(data)
+    local folder = get_config_folder()
+    if folder and writefile then
+        writefile(folder .. name .. ".cfg", json)
+        print("Bankroll: Configuration saved successfully to " .. folder .. name .. ".cfg")
+    else
+        print("Bankroll memory save (Studio mock):", json)
+    end
+end
+
+local function load_config(name)
+    local folder = get_config_folder()
+    local json
+    if folder and readfile then
+        pcall(function()
+            json = readfile(folder .. name .. ".cfg")
+        end)
+    end
+    if json then
+        local success, data = pcall(function()
+            return game:GetService("HttpService"):JSONDecode(json)
+        end)
+        if success and data then
+            if data.state then
+                for k, v in pairs(data.state) do
+                    if type(v) == "table" and v.isColor then
+                        state[k] = Color3.new(v.r, v.g, v.b)
+                    else
+                        state[k] = v
+                    end
+                end
+            end
+            if data.binds then
+                for k, v in pairs(data.binds) do
+                    binds[k] = v
+                end
+            end
+
+            local menuBind = binds["toggle_menu"]
+            if menuBind then
+                local succ, code = pcall(function() return Enum.KeyCode[menuBind] end)
+                if succ then toggle_key = code end
+            end
+
+            update_all_ui()
+            print("Bankroll: Configuration " .. name .. " loaded successfully.")
+        end
+    else
+        print("Bankroll: Configuration " .. name .. " not found on disk.")
+    end
+end
+
+do
+    local columns = tabPanels[5]
+
+    local menuBox = createSection(columns.left, "menu", 1)
+    menuBox:Checkbox("toggle menu", "toggle_menu", nil, "toggle_menu")
+    menuBox:Separator("menu color")
+    
+    local colorRow = create("Frame", {
+        Size = UDim2.new(1, 0, 0, 16),
+        BackgroundTransparency = 1
+    })
+    create("TextLabel", {
+        Size = UDim2.new(1, -25, 1, 0),
+        BackgroundTransparency = 1,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Text = "menu color",
+        TextColor3 = Colors.Text,
+        Font = Enum.Font.SourceSans,
+        TextSize = 13
+    }).Parent = colorRow
+
+    local pickerBtn = create("TextButton", {
+        Size = UDim2.new(0, 18, 0, 12),
+        Position = UDim2.new(1, -18, 0.5, -6),
+        BackgroundColor3 = state.menu_color,
+        AutoButtonColor = false,
+        Text = ""
+    }, {
+        create("UICorner", { CornerRadius = UDim.new(0, 2) }),
+        create("UIStroke", { Color = Colors.CbBorder, Thickness = 1 })
+    })
+    pickerBtn.Parent = colorRow
+    colorRow.Parent = menuBox.outline
+
+    pickerBtn.MouseButton1Click:Connect(function()
+        active_color_picker = "menu_color"
+        local abPos = pickerBtn.AbsolutePosition
+        pickerOverlay.Position = UDim2.new(0, abPos.X + 22, 0, abPos.Y - 50)
+        
+        local h, s, v = Color3.toHSV(state.menu_color)
+        svBox.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+        svCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+        hueCursor.Position = UDim2.new(0, -2, h, 0)
+        
+        alphaGrad.Color = ColorSequence.new(state.menu_color)
+        alphaCursor.Position = UDim2.new(1, 0, 0, -2)
+        pickerOverlay.Visible = true
+    end)
+
+    table.insert(UI_Updates, function()
+        pickerBtn.BackgroundColor3 = state.menu_color
+    end)
+
+
+    local configBox = createSection(columns.right, "configs", 1)
+    
+    local listFrame = create("ScrollingFrame", {
+        Size = UDim2.new(1, 0, 0, 100),
+        BackgroundColor3 = Color3.fromRGB(6, 5, 7),
+        BorderSizePixel = 0,
+        ScrollBarThickness = 2
+    }, {
+        create("UICorner", { CornerRadius = UDim.new(0, 3) }),
+        create("UIStroke", { Color = Colors.SectionBorder, Thickness = 1 }),
+        create("UIListLayout", { FillDirection = Enum.FillDirection.Vertical })
+    })
+    listFrame.Parent = configBox.outline
+
+    local listButtons = {}
+    local function reloadConfigList()
+        -- clean old buttons
+        for _, btn in ipairs(listButtons) do btn:Destroy() end
+        listButtons = {}
+
+        local currentFiles = s_cfg_list
+        if isfolder and listfiles then
+            local folder = get_config_folder()
+            local files = listfiles(folder)
+            currentFiles = {}
+            for _, f in ipairs(files) do
+                local name = f:match("([^/\\]+)%.cfg$")
+                if name then table.insert(currentFiles, name) end
+            end
+        end
+
+        for i, cfgName in ipairs(currentFiles) do
+            local cfgBtn = create("TextButton", {
+                Size = UDim2.new(1, 0, 0, 17),
+                BackgroundTransparency = 1,
+                Text = cfgName,
+                TextColor3 = (i == s_cfg_sel) and Colors.Accent() or Colors.Text,
+                Font = Enum.Font.SourceSans,
+                TextSize = 13,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                AutoButtonColor = false
+            }, {
+                create("UIPadding", { PaddingLeft = UDim.new(0, 6) })
+            })
+
+            cfgBtn.MouseButton1Click:Connect(function()
+                s_cfg_sel = i
+                reloadConfigList()
+            end)
+
+            cfgBtn.Parent = listFrame
+            table.insert(listButtons, cfgBtn)
+        end
+    end
+    reloadConfigList()
+
+    configBox:TextInput("cfg_input_key", "Config name...", function(txt)
+        s_cfg_input = txt
+    end)
+    
+    configBox:Button("create", function()
+        if s_cfg_input and s_cfg_input ~= "" then
+            if isfolder and writefile then
+                save_config(s_cfg_input)
+            else
+                table.insert(s_cfg_list, s_cfg_input)
+            end
+            s_cfg_input = ""
+            state["cfg_input_key"] = ""
+            reloadConfigList()
+            update_all_ui()
+        end
+    end)
+
+    configBox:Button("save", function()
+        local currentFiles = s_cfg_list
+        if isfolder and listfiles then
+            local folder = get_config_folder()
+            local files = listfiles(folder)
+            currentFiles = {}
+            for _, f in ipairs(files) do
+                local name = f:match("([^/\\]+)%.cfg$")
+                if name then table.insert(currentFiles, name) end
+            end
+        end
+        local name = currentFiles[s_cfg_sel]
+        if name then
+            save_config(name)
+        end
+    end)
+
+    configBox:Button("load", function()
+        local currentFiles = s_cfg_list
+        if isfolder and listfiles then
+            local folder = get_config_folder()
+            local files = listfiles(folder)
+            currentFiles = {}
+            for _, f in ipairs(files) do
+                local name = f:match("([^/\\]+)%.cfg$")
+                if name then table.insert(currentFiles, name) end
+            end
+        end
+        local name = currentFiles[s_cfg_sel]
+        if name then
+            load_config(name)
+        end
+    end)
+
+    configBox:Button("open directory", function()
+        local folder = get_config_folder()
+        if setclipboard then
+            setclipboard(folder or "C:\\bankroll\\")
+            print("Bankroll: Config directory path copied to clipboard.")
+        else
+            print("Bankroll Config Path: " .. (folder or "C:\\bankroll\\"))
+        end
+    end)
+end
+
+do
+    local columns = tabPanels[6]
+    local luaBox = createSection(columns.left, "lua executor", 1)
+    luaBox:Dummy(16)
+end
+
+local draggingSV = false
+svBox.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingSV = true
+        local function updateSV()
+            if not active_color_picker then return end
+            local size = svBox.AbsoluteSize
+            local pos = input.Position - svBox.AbsolutePosition
+            local s = math.clamp(pos.X / size.X, 0, 1)
+            local v = 1 - math.clamp(pos.Y / size.Y, 0, 1)
+            
+            local curH = Color3.toHSV(state[active_color_picker])
+            state[active_color_picker] = Color3.fromHSV(curH, s, v)
+            
+            svCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+            alphaGrad.Color = ColorSequence.new(state[active_color_picker])
+            
+            update_all_ui()
+        end
+        updateSV()
+
+        local conn
+        conn = UserInputService.InputChanged:Connect(function(changedInput)
+            if changedInput.UserInputType == Enum.UserInputType.MouseMovement and draggingSV then
+                local size = svBox.AbsoluteSize
+                local pos = changedInput.Position - svBox.AbsolutePosition
+                local s = math.clamp(pos.X / size.X, 0, 1)
+                local v = 1 - math.clamp(pos.Y / size.Y, 0, 1)
+                
+                local curH = Color3.toHSV(state[active_color_picker])
+                state[active_color_picker] = Color3.fromHSV(curH, s, v)
+                
+                svCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+                alphaGrad.Color = ColorSequence.new(state[active_color_picker])
+                
+                update_all_ui()
+            elseif not draggingSV then
+                conn:Disconnect()
+            end
+        end)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingSV = false
+    end
+end)
+
+local draggingHue = false
+hueStrip.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingHue = true
+        local function updateHue()
+            if not active_color_picker then return end
+            local size = hueStrip.AbsoluteSize
+            local pos = input.Position - hueStrip.AbsolutePosition
+            local h = math.clamp(pos.Y / size.Y, 0, 1)
+            
+            local _, s, v = Color3.toHSV(state[active_color_picker])
+            svBox.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+            state[active_color_picker] = Color3.fromHSV(h, s, v)
+            
+            hueCursor.Position = UDim2.new(0, -2, h, 0)
+            alphaGrad.Color = ColorSequence.new(state[active_color_picker])
+            
+            update_all_ui()
+        end
+        updateHue()
+
+        local conn
+        conn = UserInputService.InputChanged:Connect(function(changedInput)
+            if changedInput.UserInputType == Enum.UserInputType.MouseMovement and draggingHue then
+                local size = hueStrip.AbsoluteSize
+                local pos = changedInput.Position - hueStrip.AbsolutePosition
+                local h = math.clamp(pos.Y / size.Y, 0, 1)
+                
+                local _, s, v = Color3.toHSV(state[active_color_picker])
+                svBox.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                state[active_color_picker] = Color3.fromHSV(h, s, v)
+                
+                hueCursor.Position = UDim2.new(0, -2, h, 0)
+                alphaGrad.Color = ColorSequence.new(state[active_color_picker])
+                
+                update_all_ui()
+            elseif not draggingHue then
+                conn:Disconnect()
+            end
+        end)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingHue = false
+    end
+end)
+
+local draggingAlpha = false
+alphaStrip.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingAlpha = true
+        local function updateAlpha()
+            if not active_color_picker then return end
+            local size = alphaStrip.AbsoluteSize
+            local pos = input.Position - alphaStrip.AbsolutePosition
+            local a = math.clamp(pos.X / size.X, 0, 1)
+            
+            local alphaKey = active_color_picker:gsub("color", "alpha")
+            state[alphaKey] = a
+            alphaCursor.Position = UDim2.new(a, 0, 0, -2)
+            
+            update_all_ui()
+        end
+        updateAlpha()
+
+        local conn
+        conn = UserInputService.InputChanged:Connect(function(changedInput)
+            if changedInput.UserInputType == Enum.UserInputType.MouseMovement and draggingAlpha then
+                local size = alphaStrip.AbsoluteSize
+                local pos = changedInput.Position - alphaStrip.AbsolutePosition
+                local a = math.clamp(pos.X / size.X, 0, 1)
+                
+                local alphaKey = active_color_picker:gsub("color", "alpha")
+                state[alphaKey] = a
+                alphaCursor.Position = UDim2.new(a, 0, 0, -2)
+                
+                update_all_ui()
+            elseif not draggingAlpha then
+                conn:Disconnect()
+            end
+        end)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingAlpha = false
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input, processed)
+    if waiting_for_bind then
+        local keyName = nil
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            if input.KeyCode == Enum.KeyCode.Escape then
+                binds[waiting_for_bind] = "none"
+                waiting_for_bind = nil
+                update_all_ui()
+                return
+            end
+            
+            keyName = input.KeyCode.Name:upper()
+            if keyName == "LEFTALT" or keyName == "RIGHTALT" then
+                keyName = "ALT"
+            elseif keyName == "LEFTCONTROL" or keyName == "RIGHTCONTROL" then
+                keyName = "CTRL"
+            elseif keyName == "LEFTSHIFT" or keyName == "RIGHTSHIFT" then
+                keyName = "SHIFT"
+            elseif keyName == "INSERT" then
+                keyName = "INS"
+            end
+        elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+            keyName = "M1"
+        elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+            keyName = "M2"
+        elseif input.UserInputType == Enum.UserInputType.MouseButton3 then
+            keyName = "M3"
+        end
+
+        if keyName then
+            binds[waiting_for_bind] = keyName
+            
+            if waiting_for_bind == "toggle_menu" then
+                local codeMap = {
+                    ALT = Enum.KeyCode.LeftAlt,
+                    CTRL = Enum.KeyCode.LeftControl,
+                    SHIFT = Enum.KeyCode.LeftShift,
+                    INS = Enum.KeyCode.Insert
+                }
+                toggle_key = codeMap[keyName] or pcall(function() return Enum.KeyCode[keyName] end) and Enum.KeyCode[keyName] or Enum.KeyCode.Insert
+            end
+
+            waiting_for_bind = nil
+            update_all_ui()
+        end
+    else
+        if not processed and input.KeyCode == toggle_key then
+            menu_visible = not menu_visible
+            mainFrame.Visible = menu_visible
+            -- Close overlays
+            pickerOverlay.Visible = false
+            dropdownOverlay.Visible = false
+        end
+    end
+end)
+
+update_all_ui()
+mainFrame.Parent = screenGui
