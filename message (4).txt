@@ -1,0 +1,1070 @@
+-- ================================================================
+-- Made By Wtflysy
+-- ================================================================
+
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService     = game:GetService("TweenService")
+local Camera           = workspace.CurrentCamera
+local LocalPlayer      = Players.LocalPlayer
+
+local guiParent
+local _ok, _cg = pcall(function() return game:GetService("CoreGui") end)
+guiParent = (_ok and _cg) or LocalPlayer:FindFirstChildOfClass("PlayerGui")
+
+-- ================================================================
+-- CONFIG  —  WSZYSTKO WYLACZONE DOMYSLNIE
+-- ================================================================
+local cfg = {
+    esp = {
+        enabled       = false,
+        box           = false,
+        box_style     = "corner",   -- "full" | "corner" | "circle"
+        box_thickness = 1,
+        name          = false,
+        distance      = false,
+        health_bar    = false,
+        armor_bar     = false,
+        weapon_name   = false,
+        snaplines     = false,
+        through_walls = false,
+        skip_team     = false,
+        max_dist      = 900,
+        alpha         = 255,
+        color_enemy   = {239, 68,  68},
+        color_visible = {34,  197, 94},
+    },
+    aimbot = {
+        enabled       = false,
+        mode          = "smooth",   -- "smooth" | "lock" | "silent"
+        key           = Enum.UserInputType.MouseButton2,
+        bone          = "Head",
+        smooth        = 8,
+        fov           = 130,
+        show_fov      = false,
+        prediction    = false,
+        pred_scale    = 1.8,
+        skip_downed   = false,
+    },
+    triggerbot = {
+        enabled       = false,
+        delay         = 0.05,
+        fov           = 30,
+    },
+    wallbang = {
+        enabled       = false,
+        color         = {255, 140, 0},
+        alpha         = 150,
+    },
+    tracer = {
+        enabled       = false,
+        origin        = "bottom",
+        thickness     = 1,
+        alpha         = 160,
+        rainbow       = false,
+        skip_team     = false,
+        color         = {168, 85, 247},
+    },
+    chams = {
+        enabled       = false,
+        color_vis     = Color3.fromRGB(34, 197, 94),
+        color_occ     = Color3.fromRGB(239, 68, 68),
+        alpha         = 0.5,
+    },
+    item_esp = {
+        enabled       = false,
+        weapons       = false,
+        health_packs  = false,
+        ammo          = false,
+        max_dist      = 60,
+    },
+    no_recoil = {
+        enabled       = false,
+        strength      = 1.0,
+    },
+    rapid_fire = {
+        enabled       = false,
+        cps           = 20,
+    },
+    speed = {
+        enabled       = false,
+        multiplier    = 1.5,
+        default       = 16,
+    },
+    misc = {
+        bhop          = false,
+        crosshair     = false,
+        crosshair_style = "cross",
+        fps_counter   = false,
+        watermark     = true,
+        fullbright    = false,
+        no_fog        = false,
+        third_person  = false,
+        tp_dist       = 8,
+        menu_key      = Enum.KeyCode.RightShift,
+    },
+}
+
+-- ================================================================
+-- DRAWING POOL
+-- ================================================================
+local function makePool(t)
+    local p = {_t=t,_o={},_i=0}
+    function p:get()
+        self._i=self._i+1
+        if self._i>#self._o then
+            local d=Drawing.new(self._t); d.Visible=false
+            table.insert(self._o,d)
+        end
+        return self._o[self._i]
+    end
+    function p:reset()
+        for i=self._i+1,#self._o do self._o[i].Visible=false end
+        self._i=0
+    end
+    return p
+end
+
+local LP=makePool("Line"); local QP=makePool("Square")
+local CP=makePool("Circle"); local TP=makePool("Text")
+
+local function resetPools() LP:reset();QP:reset();CP:reset();TP:reset() end
+
+local function dLine(x1,y1,x2,y2,r,g,b,a,th)
+    local d=LP:get(); d.From=Vector2.new(x1,y1); d.To=Vector2.new(x2,y2)
+    d.Color=Color3.fromRGB(r,g,b); d.Transparency=1-(a or 255)/255
+    d.Thickness=th or 1; d.Visible=true
+end
+local function dQuad(x,y,w,h,r,g,b,a,fill,th)
+    local d=QP:get(); d.Position=Vector2.new(x,y); d.Size=Vector2.new(w,h)
+    d.Color=Color3.fromRGB(r,g,b); d.Transparency=1-(a or 255)/255
+    d.Filled=fill or false; d.Thickness=th or 1; d.Visible=true
+end
+local function dCircle(x,y,rad,r,g,b,a,fill,th)
+    local d=CP:get(); d.Position=Vector2.new(x,y); d.Radius=math.max(1,rad)
+    d.Color=Color3.fromRGB(r,g,b); d.Transparency=1-(a or 255)/255
+    d.Filled=fill or false; d.Thickness=th or 1; d.NumSides=32; d.Visible=true
+end
+local function dText(txt,x,y,r,g,b,a,sz,center)
+    local d=TP:get(); d.Text=tostring(txt); d.Position=Vector2.new(x,y)
+    d.Color=Color3.fromRGB(r,g,b); d.Transparency=1-(a or 255)/255
+    d.Size=sz or 13; d.Center=center or false; d.Outline=true
+    d.OutlineColor=Color3.fromRGB(0,0,0)
+    d.Font=Drawing.Fonts.Monospace; d.Visible=true
+end
+
+-- ================================================================
+-- UTIL
+-- ================================================================
+local function lerp(a,b,t) return a+(b-a)*t end
+
+local function hue2rgb(h)
+    local i=math.floor(h*6); local f=h*6-i; local q=1-f; i=i%6
+    local r,g,b
+    if i==0 then r,g,b=1,f,0 elseif i==1 then r,g,b=q,1,0
+    elseif i==2 then r,g,b=0,1,f elseif i==3 then r,g,b=0,q,1
+    elseif i==4 then r,g,b=f,0,1 else r,g,b=1,0,q end
+    return math.floor(r*255),math.floor(g*255),math.floor(b*255)
+end
+
+local function isTeam(pl)
+    return pl.Team ~= nil and pl.Team == LocalPlayer.Team
+end
+
+local function getChar(pl) return pl.Character end
+
+local function getHP(char)
+    local h = char and char:FindFirstChildOfClass("Humanoid")
+    return h and h.Health or 0, h and h.MaxHealth or 100
+end
+
+local function getArmor(char)
+    if not char then return 0,0 end
+    for _,n in ipairs({"Armor","Shield","ArmorValue","armor"}) do
+        local v=char:FindFirstChild(n,true)
+        if v and (v:IsA("NumberValue") or v:IsA("IntValue")) then return v.Value,100 end
+    end
+    local pl=Players:GetPlayerFromCharacter(char)
+    if pl then
+        local ls=pl:FindFirstChild("leaderstats")
+        if ls then
+            local a=ls:FindFirstChild("Armor") or ls:FindFirstChild("Shield")
+            if a then return a.Value,100 end
+        end
+    end
+    return 0,0
+end
+
+local function getWeapon(char)
+    if not char then return nil end
+    local t=char:FindFirstChildOfClass("Tool")
+    return t and t.Name or nil
+end
+
+local _rayP=RaycastParams.new()
+_rayP.FilterType=Enum.RaycastFilterType.Exclude
+
+local function isVisible(char)
+    if not char then return false end
+    local root=char:FindFirstChild("HumanoidRootPart")
+    if not root then return false end
+    local lc=LocalPlayer.Character
+    _rayP.FilterDescendantsInstances={lc or workspace,char}
+    local orig=Camera.CFrame.Position
+    return workspace:Raycast(orig,root.Position-orig,_rayP)==nil
+end
+
+local function w2s(pos)
+    local s,vis=Camera:WorldToViewportPoint(pos)
+    return Vector2.new(s.X,s.Y),vis,s.Z
+end
+
+local function getBounds(char)
+    if not char then return nil end
+    local root=char:FindFirstChild("HumanoidRootPart")
+    if not root then return nil end
+    local sv,_,depth=w2s(root.Position)
+    if depth<=0 then return nil end
+    local head=char:FindFirstChild("Head")
+    local topP=head and head.Position+Vector3.new(0,head.Size.Y*0.6,0) or root.Position+Vector3.new(0,3.2,0)
+    local botP=root.Position-Vector3.new(0,2.8,0)
+    local topS=w2s(topP); local botS=w2s(botP)
+    local h=math.abs(botS.Y-topS.Y)
+    if h<5 then return nil end
+    local w=h*0.5
+    return {x=sv.X-w/2,y=topS.Y,w=w,h=h,cx=sv.X,cy=topS.Y+h/2,d=depth}
+end
+
+-- ================================================================
+-- CHAMS
+-- ================================================================
+local chamsT={}
+local function updateChams(pl)
+    local c=cfg.chams; local char=getChar(pl)
+    if chamsT[pl] then pcall(function() chamsT[pl]:Destroy() end); chamsT[pl]=nil end
+    if not c.enabled or not char then return end
+    local ok2,hl=pcall(function()
+        local h=Instance.new("SelectionBox")
+        h.Color3=c.color_vis; h.LineThickness=0.03
+        h.SurfaceTransparency=1-c.alpha; h.SurfaceColor3=c.color_vis
+        h.Adornee=char; h.Parent=char; return h
+    end)
+    if ok2 then chamsT[pl]=hl end
+end
+
+-- ================================================================
+-- ESP
+-- ================================================================
+local function drawCorner(x,y,w,h,r,g,b,a,th)
+    local cs=math.min(w,h)*0.22
+    dLine(x,y,x+cs,y,r,g,b,a,th);     dLine(x,y,x,y+cs,r,g,b,a,th)
+    dLine(x+w,y,x+w-cs,y,r,g,b,a,th); dLine(x+w,y,x+w,y+cs,r,g,b,a,th)
+    dLine(x,y+h,x+cs,y+h,r,g,b,a,th); dLine(x,y+h,x,y+h-cs,r,g,b,a,th)
+    dLine(x+w,y+h,x+w-cs,y+h,r,g,b,a,th); dLine(x+w,y+h,x+w,y+h-cs,r,g,b,a,th)
+end
+
+local function drawESP(pl,bounds)
+    local c=cfg.esp
+    local hp,maxHp=getHP(getChar(pl))
+    local vis=isVisible(getChar(pl))
+    local r,g,b
+    if vis then r,g,b=table.unpack(c.color_visible)
+    else       r,g,b=table.unpack(c.color_enemy) end
+
+    if not vis and cfg.wallbang.enabled then
+        local wr,wg,wb=table.unpack(cfg.wallbang.color)
+        drawCorner(bounds.x-2,bounds.y-2,bounds.w+4,bounds.h+4,wr,wg,wb,cfg.wallbang.alpha,1)
+    end
+
+    local x,y,w,h=bounds.x,bounds.y,bounds.w,bounds.h
+    local a=c.alpha; local th=c.box_thickness
+
+    if c.box then
+        if     c.box_style=="full"   then dQuad(x,y,w,h,r,g,b,a,false,th)
+        elseif c.box_style=="corner" then drawCorner(x,y,w,h,r,g,b,a,th)
+        else                              dCircle(x+w/2,y+h/2,math.max(w,h)/2+2,r,g,b,a,false,th)
+        end
+    end
+
+    if c.health_bar and maxHp>0 then
+        local pct=math.clamp(hp/maxHp,0,1)
+        local hr=math.floor(lerp(239,34,pct)); local hg=math.floor(lerp(68,197,pct)); local hb=math.floor(lerp(68,94,pct))
+        dQuad(x-6,y,3,h,0,0,0,130,true)
+        dQuad(x-6,y+h*(1-pct),3,h*pct,hr,hg,hb,230,true)
+        dText(math.floor(hp),x-6,y-11,255,255,255,150,9,true)
+    end
+
+    if c.armor_bar then
+        local arm,maxA=getArmor(getChar(pl))
+        if maxA>0 then
+            local pct=math.clamp(arm/maxA,0,1)
+            dQuad(x+w+3,y,3,h,0,0,0,130,true)
+            dQuad(x+w+3,y+h*(1-pct),3,h*pct,59,130,246,220,true)
+        end
+    end
+
+    if c.name then dText(pl.Name,x+w/2,y-14,255,255,255,220,12,true) end
+
+    if c.distance then
+        local lr=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local cr=getChar(pl) and getChar(pl):FindFirstChild("HumanoidRootPart")
+        if lr and cr then
+            local dist=math.floor((lr.Position-cr.Position).Magnitude)
+            if dist>c.max_dist then return end
+            dText(dist.."m",x+w/2,y+h+2,160,160,160,180,10,true)
+        end
+    end
+
+    if c.weapon_name then
+        local wep=getWeapon(getChar(pl))
+        if wep then dText("["..wep.."]",x+w/2,y+h+13,234,179,8,200,10,true) end
+    end
+
+    if c.snaplines then
+        local vp=Camera.ViewportSize
+        dLine(vp.X/2,vp.Y,x+w/2,y+h,r,g,b,math.floor(a*0.4),1)
+    end
+end
+
+-- ================================================================
+-- TRACER
+-- ================================================================
+local _rbH=0
+local function drawTracers(enemies)
+    local c=cfg.tracer; if not c.enabled then return end
+    _rbH=(_rbH+0.001)%1
+    local vp=Camera.ViewportSize
+    local ox=vp.X/2
+    local oy=c.origin=="top" and 0 or c.origin=="center" and vp.Y/2 or vp.Y
+    for i,pl in ipairs(enemies) do
+        local b=getBounds(getChar(pl)); if not b then continue end
+        local r,g,b2
+        if c.rainbow then r,g,b2=hue2rgb((_rbH+i*0.07)%1)
+        else r,g,b2=table.unpack(c.color) end
+        dLine(ox,oy,b.cx,b.y+b.h,r,g,b2,c.alpha,c.thickness)
+    end
+end
+
+-- ================================================================
+-- ITEM ESP
+-- ================================================================
+local _itemCache={}; local _itemCacheT=0
+local _ITEM_WEP={"Gun","Rifle","Pistol","SMG","Shotgun","Sniper","AK","M4","Uzi","Knife","Tool"}
+local _ITEM_HP ={"Health","MedKit","FirstAid","Bandage","Heal","Aid","Kit"}
+local _ITEM_AM ={"Ammo","Bullet","Magazine","Mag","Clip","Reload"}
+
+local function classItem(name)
+    local ln=name:lower()
+    for _,k in ipairs(_ITEM_HP)  do if ln:find(k:lower()) then return "hp"     end end
+    for _,k in ipairs(_ITEM_AM)  do if ln:find(k:lower()) then return "ammo"   end end
+    for _,k in ipairs(_ITEM_WEP) do if ln:find(k:lower()) then return "weapon" end end
+end
+
+local function drawItemESP()
+    local c=cfg.item_esp; if not c.enabled then return end
+    local now=tick()
+    if now-_itemCacheT>3 then
+        _itemCache={}; _itemCacheT=now
+        for _,obj in ipairs(workspace:GetDescendants()) do
+            if obj:IsA("BasePart") then
+                local kind=classItem(obj.Name)
+                if kind then table.insert(_itemCache,{name=obj.Name,pos=obj.Position,kind=kind}) end
+            end
+        end
+    end
+    local lr=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not lr then return end
+    for _,item in ipairs(_itemCache) do
+        local dist=(lr.Position-item.pos).Magnitude
+        if dist>c.max_dist then continue end
+        local sv,vis,depth=w2s(item.pos)
+        if not vis or depth<=0 then continue end
+        local r,g,b
+        if     item.kind=="weapon" and c.weapons     then r,g,b=255,215,0
+        elseif item.kind=="hp"     and c.health_packs then r,g,b=0,255,128
+        elseif item.kind=="ammo"   and c.ammo         then r,g,b=0,180,255
+        else continue end
+        dCircle(sv.X,sv.Y,4,r,g,b,220,true)
+        dText(item.name,sv.X,sv.Y-14,r,g,b,200,10,true)
+        dText(math.floor(dist).."m",sv.X,sv.Y+5,160,160,160,160,9,true)
+    end
+end
+
+-- ================================================================
+-- AIMBOT — 3 tryby: smooth / lock / silent
+-- ================================================================
+local function getBestTarget(enemies)
+    local c=cfg.aimbot
+    local vp=Camera.ViewportSize; local cx,cy=vp.X/2,vp.Y/2
+    local best,bestD=nil,math.huge
+    for _,pl in ipairs(enemies) do
+        local char=getChar(pl); if not char then continue end
+        if c.skip_downed and getHP(char)<=1 then continue end
+        local part=char:FindFirstChild(c.bone) or char:FindFirstChild("UpperTorso") or char:FindFirstChild("HumanoidRootPart")
+        if not part then continue end
+        local pos=part.Position
+        if c.prediction then
+            local root=char:FindFirstChild("HumanoidRootPart")
+            if root then pos=pos+root.AssemblyLinearVelocity*(c.pred_scale*0.05) end
+        end
+        local sv,vis=w2s(pos); if not vis then continue end
+        local d=(Vector2.new(cx,cy)-sv).Magnitude
+        if d<c.fov and d<bestD then best,bestD=pl,d end
+    end
+    return best
+end
+
+-- LOCK — kamera przykleja sie do celu (hardlock)
+local _lockTarget=nil
+local function tickLock(enemies)
+    local c=cfg.aimbot
+    if not UserInputService:IsMouseButtonPressed(c.key) then
+        _lockTarget=nil; return
+    end
+    if not _lockTarget or not _lockTarget.Character then
+        _lockTarget=getBestTarget(enemies)
+    end
+    if not _lockTarget then return end
+    local char=getChar(_lockTarget)
+    local part=char and (char:FindFirstChild(c.bone) or char:FindFirstChild("HumanoidRootPart"))
+    if not part then _lockTarget=nil; return end
+    local pos=part.Position
+    if c.prediction then
+        local root=char:FindFirstChild("HumanoidRootPart")
+        if root then pos=pos+root.AssemblyLinearVelocity*(c.pred_scale*0.05) end
+    end
+    Camera.CFrame=CFrame.lookAt(Camera.CFrame.Position,pos)
+end
+
+-- SMOOTH — plynne prowadzenie myszki
+local function tickSmooth(enemies)
+    local c=cfg.aimbot
+    if not UserInputService:IsMouseButtonPressed(c.key) then return end
+    local target=getBestTarget(enemies); if not target then return end
+    local char=getChar(target)
+    local part=char and (char:FindFirstChild(c.bone) or char:FindFirstChild("HumanoidRootPart"))
+    if not part then return end
+    local pos=part.Position
+    if c.prediction then
+        local root=char:FindFirstChild("HumanoidRootPart")
+        if root then pos=pos+root.AssemblyLinearVelocity*(c.pred_scale*0.05) end
+    end
+    local sv,vis=w2s(pos); if not vis then return end
+    local vp=Camera.ViewportSize
+    local dx=sv.X-vp.X/2; local dy=sv.Y-vp.Y/2
+    pcall(mousemoverel,dx/math.max(1,c.smooth),dy/math.max(1,c.smooth))
+end
+
+-- SILENT — nie rusza widocznej myszki, ale strzaly trafiaja w cel (ray redirect)
+local _silentTarget=nil
+local _origFireCF=nil
+
+local function tickSilent(enemies)
+    local c=cfg.aimbot
+    if not UserInputService:IsMouseButtonPressed(c.key) then
+        _silentTarget=nil; return
+    end
+    _silentTarget=getBestTarget(enemies)
+    if not _silentTarget then return end
+    local char=getChar(_silentTarget)
+    local part=char and (char:FindFirstChild(c.bone) or char:FindFirstChild("HumanoidRootPart"))
+    if not part then return end
+    -- Przekieruj CFrame kamery w kierunku celu bez ruszania myszka
+    local pos=part.Position
+    if c.prediction then
+        local root=char:FindFirstChild("HumanoidRootPart")
+        if root then pos=pos+root.AssemblyLinearVelocity*(c.pred_scale*0.05) end
+    end
+    -- silent: obracamy CFrame tylko podczas klatki strzalu
+    local dir=(pos-Camera.CFrame.Position).Unit
+    Camera.CFrame=CFrame.new(Camera.CFrame.Position)*CFrame.lookAt(Vector3.zero,dir)
+end
+
+local function tickAimbot(enemies)
+    local c=cfg.aimbot; if not c.enabled then return end
+    if     c.mode=="lock"   then tickLock(enemies)
+    elseif c.mode=="smooth" then tickSmooth(enemies)
+    elseif c.mode=="silent" then tickSilent(enemies)
+    end
+end
+
+-- ================================================================
+-- TRIGGERBOT
+-- ================================================================
+local _trigLast=0
+local function tickTrigger(enemies)
+    local c=cfg.triggerbot; if not c.enabled then return end
+    local target=getBestTarget(enemies); if not target then return end
+    local vp=Camera.ViewportSize; local cx,cy=vp.X/2,vp.Y/2
+    local char=getChar(target)
+    local part=char and (char:FindFirstChild(cfg.aimbot.bone) or char:FindFirstChild("HumanoidRootPart"))
+    if not part then return end
+    local sv,vis=w2s(part.Position); if not vis then return end
+    if (Vector2.new(cx,cy)-sv).Magnitude>c.fov then return end
+    local now=tick()
+    if now-_trigLast>=c.delay then _trigLast=now; pcall(mouse1click) end
+end
+
+-- ================================================================
+-- NO RECOIL
+-- ================================================================
+local _prevLookY=nil
+local function tickNoRecoil()
+    local c=cfg.no_recoil; if not c.enabled then return end
+    local curCF=Camera.CFrame
+    if _prevLookY then
+        local dy=curCF.LookVector.Y-_prevLookY
+        if dy<-0.002 then
+            Camera.CFrame=curCF*CFrame.Angles(-dy*c.strength,0,0)
+        end
+    end
+    _prevLookY=Camera.CFrame.LookVector.Y
+end
+
+-- ================================================================
+-- RAPID FIRE
+-- ================================================================
+local _rfLast=0; local _rfConn
+local function setRapidFire(v)
+    if _rfConn then _rfConn:Disconnect(); _rfConn=nil end
+    if not v then return end
+    _rfConn=RunService.Heartbeat:Connect(function()
+        if not cfg.rapid_fire.enabled then return end
+        local now=tick(); local iv=1/math.max(1,cfg.rapid_fire.cps)
+        if now-_rfLast>=iv and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+            _rfLast=now; pcall(mouse1press); task.wait(0.01); pcall(mouse1release)
+        end
+    end)
+end
+
+-- ================================================================
+-- SPEED
+-- ================================================================
+local _speedConn
+local function setSpeed(v)
+    if _speedConn then _speedConn:Disconnect(); _speedConn=nil end
+    local char=LocalPlayer.Character
+    local hum=char and char:FindFirstChildOfClass("Humanoid")
+    if not v then if hum then hum.WalkSpeed=cfg.speed.default end; return end
+    if hum then hum.WalkSpeed=cfg.speed.default*cfg.speed.multiplier end
+    _speedConn=LocalPlayer.CharacterAdded:Connect(function(c2)
+        task.wait(0.5)
+        local h=c2:FindFirstChildOfClass("Humanoid")
+        if h then h.WalkSpeed=cfg.speed.default*cfg.speed.multiplier end
+    end)
+end
+
+-- ================================================================
+-- BHOP
+-- ================================================================
+local _bhopConn
+local function setBhop(v)
+    if _bhopConn then _bhopConn:Disconnect(); _bhopConn=nil end
+    if not v then return end
+    _bhopConn=RunService.Heartbeat:Connect(function()
+        local char=LocalPlayer.Character
+        local hum=char and char:FindFirstChildOfClass("Humanoid")
+        if hum and UserInputService:IsKeyDown(Enum.KeyCode.Space)
+           and hum.FloorMaterial~=Enum.Material.Air then
+            hum.Jump=true
+        end
+    end)
+end
+
+-- ================================================================
+-- FULLBRIGHT / FOG / THIRD PERSON
+-- ================================================================
+local _origAmb,_origFogEnd
+local function setFullbright(v)
+    local l=game:GetService("Lighting")
+    if v then _origAmb=l.Ambient; l.Ambient=Color3.fromRGB(255,255,255); l.Brightness=2
+    else l.Ambient=_origAmb or Color3.fromRGB(70,70,70); l.Brightness=1 end
+end
+local function setNoFog(v)
+    local l=game:GetService("Lighting")
+    if v then _origFogEnd=l.FogEnd; l.FogEnd=1e5; l.FogStart=1e5
+    else l.FogEnd=_origFogEnd or 1000; l.FogStart=0 end
+end
+local function setTP(v)
+    if v then
+        RunService:BindToRenderStep("NH_TP",200,function()
+            if not cfg.misc.third_person then RunService:UnbindFromRenderStep("NH_TP"); return end
+        end)
+    else RunService:UnbindFromRenderStep("NH_TP") end
+end
+
+-- ================================================================
+-- OVERLAY (FPS, watermark, crosshair, FOV)
+-- ================================================================
+local _fpsAvg=60
+
+local function drawOverlay(dt)
+    local vp=Camera.ViewportSize; local cx,cy=vp.X/2,vp.Y/2
+
+    if cfg.misc.fps_counter then
+        _fpsAvg=lerp(_fpsAvg,1/math.max(dt,0.001),0.1)
+        local fps=math.floor(_fpsAvg)
+        local r=fps>90 and 34 or fps>50 and 234 or 239
+        local g=fps>90 and 197 or fps>50 and 179 or 68
+        local b=fps>90 and 94  or fps>50 and 8   or 68
+        dText("FPS:"..fps,6,6,r,g,b,220,12)
+    end
+
+    if cfg.misc.watermark then
+        local mode=cfg.aimbot.enabled and (" | "..cfg.aimbot.mode:upper()) or ""
+        dText("⚡ NightHawk"..mode,vp.X-130,6,168,85,247,255,13)
+    end
+
+    if cfg.misc.crosshair then
+        local s=cfg.misc.crosshair_style
+        if s=="cross" then
+            dLine(cx-10,cy,cx-3,cy,255,255,255,220,1); dLine(cx+3,cy,cx+10,cy,255,255,255,220,1)
+            dLine(cx,cy-10,cx,cy-3,255,255,255,220,1); dLine(cx,cy+3,cx,cy+10,255,255,255,220,1)
+        elseif s=="dot" then
+            dCircle(cx,cy,3,255,255,255,220,true)
+        elseif s=="circle" then
+            dCircle(cx,cy,12,255,255,255,180,false,1)
+        end
+    end
+
+    if cfg.aimbot.show_fov and cfg.aimbot.enabled then
+        local col={smooth={168,85,247},lock={239,68,68},silent={34,197,94}}
+        local mc=col[cfg.aimbot.mode] or {168,85,247}
+        dCircle(cx,cy,cfg.aimbot.fov,mc[1],mc[2],mc[3],65,false,1)
+    end
+end
+
+-- ================================================================
+-- GUI MENU
+-- ================================================================
+pcall(function()
+    local old=guiParent:FindFirstChild("NightHawk")
+    if old then old:Destroy() end
+end)
+
+local gui=Instance.new("ScreenGui")
+gui.Name="NightHawk"; gui.ResetOnSpawn=false
+gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+gui.IgnoreGuiInset=true
+pcall(function() gui.DisplayOrder=999 end)
+gui.Parent=guiParent
+
+local menuOpen=false
+
+-- Kolory
+local AC  = Color3.fromRGB(139,92,246)   -- fiolet
+local AC2 = Color3.fromRGB(168,85,247)
+local BG  = Color3.fromRGB(10,10,18)
+local BG2 = Color3.fromRGB(18,18,30)
+local BG3 = Color3.fromRGB(26,26,42)
+local T1  = Color3.fromRGB(230,232,240)
+local T2  = Color3.fromRGB(130,140,160)
+local BOR = Color3.fromRGB(45,45,70)
+
+-- Panel glowny
+local main=Instance.new("Frame")
+main.Name="Main"; main.Size=UDim2.new(0,560,0,480)
+main.Position=UDim2.new(0.5,-280,0.5,-240)
+main.BackgroundColor3=BG; main.BorderSizePixel=0
+main.Visible=false; main.Parent=gui
+Instance.new("UICorner",main).CornerRadius=UDim.new(0,10)
+local mstroke=Instance.new("UIStroke",main)
+mstroke.Color=AC; mstroke.Thickness=1.5
+
+-- Titlebar
+local tbar=Instance.new("Frame",main)
+tbar.Size=UDim2.new(1,0,0,32); tbar.BackgroundColor3=BG2
+tbar.BorderSizePixel=0; tbar.ZIndex=5
+Instance.new("UICorner",tbar).CornerRadius=UDim.new(0,10)
+
+-- Gradient na titlebar
+local tgrad=Instance.new("UIGradient",tbar)
+tgrad.Color=ColorSequence.new{
+    ColorSequenceKeypoint.new(0,Color3.fromRGB(40,20,80)),
+    ColorSequenceKeypoint.new(1,BG2)
+}
+tgrad.Rotation=90
+
+local logo=Instance.new("TextLabel",tbar)
+logo.Size=UDim2.new(1,0,1,0); logo.BackgroundTransparency=1
+logo.Text="  ⚡ NightHawk  –  Da Strike Edition"
+logo.TextColor3=Color3.fromRGB(200,160,255)
+logo.Font=Enum.Font.GothamBold; logo.TextSize=13
+logo.TextXAlignment=Enum.TextXAlignment.Left; logo.ZIndex=6
+
+local hint=Instance.new("TextLabel",tbar)
+hint.Size=UDim2.new(0,160,1,0); hint.Position=UDim2.new(1,-165,0,0)
+hint.BackgroundTransparency=1; hint.Text="RightShift = menu"
+hint.TextColor3=T2; hint.Font=Enum.Font.Code; hint.TextSize=10
+hint.TextXAlignment=Enum.TextXAlignment.Right; hint.ZIndex=6
+
+-- Drag
+do
+    local drag,ds,dp
+    tbar.InputBegan:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseButton1 then
+            drag=true; ds=i.Position; dp=main.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(i)
+        if drag and i.UserInputType==Enum.UserInputType.MouseMovement then
+            local d=i.Position-ds
+            main.Position=UDim2.new(dp.X.Scale,dp.X.Offset+d.X,dp.Y.Scale,dp.Y.Offset+d.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end
+    end)
+end
+
+-- Taby
+local tabBar=Instance.new("Frame",main)
+tabBar.Size=UDim2.new(1,0,0,30); tabBar.Position=UDim2.new(0,0,0,32)
+tabBar.BackgroundColor3=BG3; tabBar.BorderSizePixel=0; tabBar.ZIndex=5
+Instance.new("UIListLayout",tabBar).FillDirection=Enum.FillDirection.Horizontal
+
+local scroll=Instance.new("ScrollingFrame",main)
+scroll.Size=UDim2.new(1,0,1,-64); scroll.Position=UDim2.new(0,0,0,64)
+scroll.BackgroundTransparency=1; scroll.ScrollBarThickness=3
+scroll.ScrollBarImageColor3=AC; scroll.CanvasSize=UDim2.new(0,0,0,0)
+local sl=Instance.new("UIListLayout",scroll); sl.Padding=UDim.new(0,0)
+
+-- Tab list
+local TABS={"ESP","AIMBOT","TRACER","ITEMS","COMBAT","MISC"}
+local activeTab="ESP"; local tabBtns={}; local tabPanels={}
+
+-- ---- UI helpers ----
+
+local function secLabel(parent,text)
+    local f=Instance.new("Frame",parent); f.Size=UDim2.new(1,0,0,24)
+    f.BackgroundColor3=BG3; f.BorderSizePixel=0
+    Instance.new("UIPadding",f).PaddingLeft=UDim.new(0,4)
+    local ln=Instance.new("Frame",f); ln.Size=UDim2.new(1,0,0,1)
+    ln.Position=UDim2.new(0,0,1,-1); ln.BackgroundColor3=BOR
+    local l=Instance.new("TextLabel",f); l.Size=UDim2.new(1,0,1,0)
+    l.Position=UDim2.new(0,8,0,0); l.BackgroundTransparency=1
+    l.Text=text; l.TextColor3=AC2; l.Font=Enum.Font.GothamBold
+    l.TextSize=10; l.TextXAlignment=Enum.TextXAlignment.Left
+    return f
+end
+
+local function togRow(parent,label,getV,setV)
+    local f=Instance.new("Frame",parent); f.Size=UDim2.new(1,0,0,28)
+    f.BackgroundTransparency=1
+    -- hover
+    local hover=Instance.new("Frame",f); hover.Size=UDim2.new(1,0,1,0)
+    hover.BackgroundColor3=BG3; hover.BackgroundTransparency=1; hover.BorderSizePixel=0
+    local l=Instance.new("TextLabel",f); l.Size=UDim2.new(1,-50,1,0)
+    l.Position=UDim2.new(0,14,0,0); l.BackgroundTransparency=1
+    l.Text=label; l.Font=Enum.Font.Code; l.TextSize=12
+    l.TextXAlignment=Enum.TextXAlignment.Left
+    local tog=Instance.new("Frame",f); tog.Size=UDim2.new(0,34,0,17)
+    tog.Position=UDim2.new(1,-46,0.5,-8); tog.BorderSizePixel=0
+    Instance.new("UICorner",tog).CornerRadius=UDim.new(0,9)
+    local dot=Instance.new("Frame",tog); dot.Size=UDim2.new(0,13,0,13)
+    dot.AnchorPoint=Vector2.new(0,0.5); dot.BorderSizePixel=0
+    dot.BackgroundColor3=Color3.fromRGB(255,255,255)
+    Instance.new("UICorner",dot).CornerRadius=UDim.new(0,7)
+    local function upd()
+        local v=getV()
+        tog.BackgroundColor3=v and AC or Color3.fromRGB(45,50,65)
+        TweenService:Create(dot,TweenInfo.new(0.13),{
+            Position=v and UDim2.new(1,-15,0.5,-6) or UDim2.new(0,2,0.5,-6)
+        }):Play()
+        l.TextColor3=v and T1 or T2
+    end
+    upd()
+    local btn=Instance.new("TextButton",f); btn.Size=UDim2.new(1,0,1,0)
+    btn.BackgroundTransparency=1; btn.Text=""; btn.ZIndex=3
+    btn.MouseEnter:Connect(function() TweenService:Create(hover,TweenInfo.new(0.1),{BackgroundTransparency=0.85}):Play() end)
+    btn.MouseLeave:Connect(function() TweenService:Create(hover,TweenInfo.new(0.1),{BackgroundTransparency=1}):Play() end)
+    btn.MouseButton1Click:Connect(function() setV(not getV()); upd() end)
+    return f
+end
+
+local function sldRow(parent,label,minV,maxV,getV,setV,fmt)
+    local f=Instance.new("Frame",parent); f.Size=UDim2.new(1,0,0,46); f.BackgroundTransparency=1
+    local l=Instance.new("TextLabel",f); l.Size=UDim2.new(0.62,0,0,18)
+    l.Position=UDim2.new(0,14,0,3); l.BackgroundTransparency=1
+    l.Text=label; l.TextColor3=T2; l.Font=Enum.Font.Code; l.TextSize=11
+    l.TextXAlignment=Enum.TextXAlignment.Left
+    local vl=Instance.new("TextLabel",f); vl.Size=UDim2.new(0.38,-14,0,18)
+    vl.Position=UDim2.new(0.62,0,0,3); vl.BackgroundTransparency=1
+    vl.TextColor3=T2; vl.Font=Enum.Font.Code; vl.TextSize=11
+    vl.TextXAlignment=Enum.TextXAlignment.Right
+    local function fv() return (fmt or "%d"):format(getV()) end
+    vl.Text=fv()
+    local track=Instance.new("Frame",f); track.Size=UDim2.new(1,-28,0,4)
+    track.Position=UDim2.new(0,14,0,28); track.BackgroundColor3=Color3.fromRGB(35,35,55)
+    track.BorderSizePixel=0; Instance.new("UICorner",track).CornerRadius=UDim.new(0,2)
+    local fill=Instance.new("Frame",track); fill.BackgroundColor3=AC
+    fill.BorderSizePixel=0; Instance.new("UICorner",fill).CornerRadius=UDim.new(0,2)
+    local thumb=Instance.new("Frame",track); thumb.Size=UDim2.new(0,14,0,14)
+    thumb.AnchorPoint=Vector2.new(0.5,0.5); thumb.BackgroundColor3=Color3.fromRGB(255,255,255)
+    thumb.BorderSizePixel=0; Instance.new("UICorner",thumb).CornerRadius=UDim.new(0,7)
+    local function sp(p)
+        p=math.clamp(p,0,1); fill.Size=UDim2.new(p,0,1,0)
+        thumb.Position=UDim2.new(p,0,0.5,0); setV(minV+(maxV-minV)*p); vl.Text=fv()
+    end
+    local ip=maxV~=minV and (getV()-minV)/(maxV-minV) or 0
+    fill.Size=UDim2.new(ip,0,1,0); thumb.Position=UDim2.new(ip,0,0.5,0)
+    local slid=false
+    local function pct(x) local a=track.AbsolutePosition.X; local s=track.AbsoluteSize.X; return s>0 and (x-a)/s or 0 end
+    thumb.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then slid=true end end)
+    track.InputBegan:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseButton1 then slid=true; sp(pct(i.Position.X)) end
+    end)
+    UserInputService.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then slid=false end end)
+    UserInputService.InputChanged:Connect(function(i)
+        if slid and i.UserInputType==Enum.UserInputType.MouseMovement then sp(pct(i.Position.X)) end
+    end)
+    return f
+end
+
+-- Dropdown (do wyboru trybu aimbot i bone)
+local function dropRow(parent,label,options,getV,setV)
+    local f=Instance.new("Frame",parent); f.Size=UDim2.new(1,0,0,48); f.BackgroundTransparency=1
+    local l=Instance.new("TextLabel",f); l.Size=UDim2.new(1,-16,0,18)
+    l.Position=UDim2.new(0,14,0,2); l.BackgroundTransparency=1
+    l.Text=label; l.TextColor3=T2; l.Font=Enum.Font.Code; l.TextSize=11
+    l.TextXAlignment=Enum.TextXAlignment.Left
+    -- Przyciski opcji
+    local btnFrame=Instance.new("Frame",f); btnFrame.Size=UDim2.new(1,-14,0,22)
+    btnFrame.Position=UDim2.new(0,7,0,22); btnFrame.BackgroundTransparency=1
+    local blay=Instance.new("UIListLayout",btnFrame)
+    blay.FillDirection=Enum.FillDirection.Horizontal; blay.Padding=UDim.new(0,4)
+    local btns={}
+    local function refreshBtns()
+        for _,b in ipairs(btns) do
+            local isActive=(b.Name==getV())
+            b.BackgroundColor3=isActive and AC or BG3
+            b.TextColor3=isActive and Color3.fromRGB(255,255,255) or T2
+        end
+    end
+    for _,opt in ipairs(options) do
+        local b=Instance.new("TextButton",btnFrame)
+        b.Name=opt; b.Size=UDim2.new(0,0,1,0); b.AutomaticSize=Enum.AutomaticSize.X
+        b.BackgroundColor3=BG3; b.BorderSizePixel=0
+        b.Text=" "..opt.." "; b.Font=Enum.Font.Code; b.TextSize=11
+        Instance.new("UICorner",b).CornerRadius=UDim.new(0,4)
+        Instance.new("UIPadding",b).PaddingLeft=UDim.new(0,6)
+        table.insert(btns,b)
+        b.MouseButton1Click:Connect(function() setV(opt); refreshBtns() end)
+    end
+    refreshBtns()
+    return f
+end
+
+-- ================================================================
+-- BUDOWANIE PANELI
+-- ================================================================
+local function buildPanel(name)
+    local panel=Instance.new("Frame",scroll)
+    panel.Name=name; panel.Size=UDim2.new(1,0,0,0)
+    panel.AutomaticSize=Enum.AutomaticSize.Y
+    panel.BackgroundTransparency=1; panel.Visible=(name==activeTab)
+    local lay=Instance.new("UIListLayout",panel); lay.Padding=UDim.new(0,0)
+    Instance.new("UIPadding",panel).PaddingTop=UDim.new(0,6)
+
+    if name=="ESP" then
+        local c=cfg.esp
+        secLabel(panel,"ESP")
+        togRow(panel,"Enabled",         function() return c.enabled       end,function(v) c.enabled=v end)
+        togRow(panel,"Bounding Box",    function() return c.box           end,function(v) c.box=v end)
+        togRow(panel,"Display Name",    function() return c.name          end,function(v) c.name=v end)
+        togRow(panel,"Distance",        function() return c.distance      end,function(v) c.distance=v end)
+        togRow(panel,"Health Bar",      function() return c.health_bar    end,function(v) c.health_bar=v end)
+        togRow(panel,"Armor Bar",       function() return c.armor_bar     end,function(v) c.armor_bar=v end)
+        togRow(panel,"Weapon Name",     function() return c.weapon_name   end,function(v) c.weapon_name=v end)
+        togRow(panel,"Snaplines",       function() return c.snaplines     end,function(v) c.snaplines=v end)
+        togRow(panel,"Through Walls",   function() return c.through_walls end,function(v) c.through_walls=v end)
+        togRow(panel,"Skip Team",       function() return c.skip_team     end,function(v) c.skip_team=v end)
+        togRow(panel,"Wallbang Color",  function() return cfg.wallbang.enabled end,function(v) cfg.wallbang.enabled=v end)
+        secLabel(panel,"SETTINGS")
+        sldRow(panel,"Max Distance",50,1200, function() return c.max_dist       end,function(v) c.max_dist=math.floor(v) end)
+        sldRow(panel,"Transparency",0,255,function() return c.alpha         end,function(v) c.alpha=math.floor(v) end)
+        sldRow(panel,"Box Thickness",1,4,   function() return c.box_thickness  end,function(v) c.box_thickness=math.max(1,math.floor(v)) end)
+        dropRow(panel,"Box Style",{"corner","full","circle"},
+            function() return c.box_style end, function(v) c.box_style=v end)
+
+    elseif name=="AIMBOT" then
+        local c=cfg.aimbot; local ct=cfg.triggerbot
+        secLabel(panel,"AIMBOT MODE")
+        dropRow(panel,"Mode",{"smooth","lock","silent"},
+            function() return c.mode end,function(v) c.mode=v end)
+        togRow(panel,"Enabled",         function() return c.enabled    end,function(v) c.enabled=v end)
+        togRow(panel,"Show FOV",       function() return c.show_fov   end,function(v) c.show_fov=v end)
+        togRow(panel,"Prediction",       function() return c.prediction end,function(v) c.prediction=v end)
+        togRow(panel,"Skip Downed",function() return c.skip_downed end,function(v) c.skip_downed=v end)
+        secLabel(panel,"PARAMETERS")
+        sldRow(panel,"Smooth",1,20,    function() return c.smooth     end,function(v) c.smooth=math.floor(v) end)
+        sldRow(panel,"FOV Radius",10,400,function() return c.fov      end,function(v) c.fov=math.floor(v) end)
+        sldRow(panel,"Pred Scale",0,4, function() return c.pred_scale end,function(v) c.pred_scale=v end,"%.1f")
+        dropRow(panel,"Aim At",{"Head","UpperTorso","HumanoidRootPart"},
+            function() return c.bone end,function(v) c.bone=v end)
+        secLabel(panel,"TRIGGERBOT")
+        togRow(panel,"Enabled",        function() return ct.enabled end,function(v) ct.enabled=v end)
+        sldRow(panel,"Delay (s)",0,0.5,function() return ct.delay   end,function(v) ct.delay=v end,"%.2f")
+        sldRow(panel,"Trigger FOV",5,100,function() return ct.fov   end,function(v) ct.fov=math.floor(v) end)
+
+    elseif name=="TRACER" then
+        local c=cfg.tracer
+        secLabel(panel,"TRACER")
+        togRow(panel,"Enabled",      function() return c.enabled   end,function(v) c.enabled=v end)
+        togRow(panel,"Rainbow Mode", function() return c.rainbow   end,function(v) c.rainbow=v end)
+        togRow(panel,"Skip Team",  function() return c.skip_team end,function(v) c.skip_team=v end)
+        secLabel(panel,"PARAMETERS")
+        sldRow(panel,"Thickness",1,5,  function() return c.thickness end,function(v) c.thickness=math.max(1,math.floor(v)) end)
+        sldRow(panel,"Alpha",0,255,  function() return c.alpha     end,function(v) c.alpha=math.floor(v) end)
+        dropRow(panel,"Origin Point",{"bottom","center","top"},
+            function() return c.origin end,function(v) c.origin=v end)
+
+    elseif name=="ITEMS" then
+        local c=cfg.item_esp
+        secLabel(panel,"ITEM ESP")
+        togRow(panel,"Enabled",       function() return c.enabled      end,function(v) c.enabled=v end)
+        togRow(panel,"Weapons",        function() return c.weapons      end,function(v) c.weapons=v end)
+        togRow(panel,"Health Packs",      function() return c.health_packs end,function(v) c.health_packs=v end)
+        togRow(panel,"Ammo",      function() return c.ammo         end,function(v) c.ammo=v end)
+        sldRow(panel,"Max Distance",10,200,function() return c.max_dist end,function(v) c.max_dist=math.floor(v) end)
+        secLabel(panel,"CHAMS")
+        local ch=cfg.chams
+        togRow(panel,"Enabled",       function() return ch.enabled     end,function(v)
+            ch.enabled=v
+            for _,pl in ipairs(Players:GetPlayers()) do
+                if pl~=LocalPlayer then updateChams(pl) end
+            end
+        end)
+        sldRow(panel,"Transparency",0,1,function() return ch.alpha  end,function(v) ch.alpha=v end,"%.2f")
+
+    elseif name=="COMBAT" then
+        secLabel(panel,"NO RECOIL")
+        local nr=cfg.no_recoil
+        togRow(panel,"Enabled",       function() return nr.enabled   end,function(v) nr.enabled=v end)
+        sldRow(panel,"Strength",0,2,      function() return nr.strength  end,function(v) nr.strength=v end,"%.1f")
+        secLabel(panel,"RAPID FIRE")
+        local rf=cfg.rapid_fire
+        togRow(panel,"Enabled",       function() return rf.enabled   end,function(v) rf.enabled=v; setRapidFire(v) end)
+        sldRow(panel,"CPS",1,30,      function() return rf.cps       end,function(v) rf.cps=math.floor(v) end)
+        secLabel(panel,"SPEED HACK")
+        local sp=cfg.speed
+        togRow(panel,"Enabled",       function() return sp.enabled   end,function(v) sp.enabled=v; setSpeed(v) end)
+        sldRow(panel,"Multiplier",1,5,   function() return sp.multiplier end,function(v) sp.multiplier=v end,"%.1f")
+
+    elseif name=="MISC" then
+        local c=cfg.misc
+        secLabel(panel,"MOVEMENT")
+        togRow(panel,"Bhop",          function() return c.bhop         end,function(v) c.bhop=v; setBhop(v) end)
+        togRow(panel,"Third Person",  function() return c.third_person end,function(v) c.third_person=v; setTP(v) end)
+        sldRow(panel,"TP Distance",4,20,function() return c.tp_dist     end,function(v) c.tp_dist=math.floor(v) end)
+        secLabel(panel,"VISUALS")
+        togRow(panel,"Crosshair",     function() return c.crosshair    end,function(v) c.crosshair=v end)
+        togRow(panel,"FPS Counter",   function() return c.fps_counter  end,function(v) c.fps_counter=v end)
+        togRow(panel,"Watermark",     function() return c.watermark    end,function(v) c.watermark=v end)
+        togRow(panel,"Fullbright",    function() return c.fullbright   end,function(v) c.fullbright=v; setFullbright(v) end)
+        togRow(panel,"No Fog",        function() return c.no_fog       end,function(v) c.no_fog=v; setNoFog(v) end)
+        dropRow(panel,"Crosshair Style",{"cross","dot","circle"},
+            function() return c.crosshair_style end,function(v) c.crosshair_style=v end)
+    end
+
+    return panel
+end
+
+-- Create tabs
+for _,name in ipairs(TABS) do
+    local btn=Instance.new("TextButton",tabBar)
+    btn.Size=UDim2.new(1/#TABS,0,1,0); btn.BackgroundTransparency=1
+    btn.Text=name; btn.Font=Enum.Font.GothamBold; btn.TextSize=11; btn.ZIndex=6
+    btn.TextColor3=(name==activeTab) and AC2 or T2
+    tabBtns[name]=btn
+
+    -- active tab underline
+    local underline=Instance.new("Frame",btn)
+    underline.Size=UDim2.new(0.8,0,0,2); underline.Position=UDim2.new(0.1,0,1,-2)
+    underline.BackgroundColor3=AC2; underline.BorderSizePixel=0
+    underline.Visible=(name==activeTab)
+
+    local p=buildPanel(name); tabPanels[name]=p
+
+    btn.MouseButton1Click:Connect(function()
+        tabPanels[activeTab].Visible=false
+        tabBtns[activeTab].TextColor3=T2
+        -- hide previous underline
+        local prev=tabBar:FindFirstChild(activeTab)
+        if prev then for _,c2 in ipairs(prev:GetChildren()) do if c2:IsA("Frame") then c2.Visible=false end end end
+        activeTab=name
+        tabPanels[name].Visible=true; tabBtns[name].TextColor3=AC2
+        underline.Visible=true
+    end)
+end
+
+-- Menu key
+UserInputService.InputBegan:Connect(function(inp,gpe)
+    if gpe then return end
+    if inp.KeyCode==cfg.misc.menu_key then
+        menuOpen=not menuOpen; main.Visible=menuOpen
+        UserInputService.MouseIconEnabled=menuOpen
+    end
+end)
+
+-- ================================================================
+-- PLAYER TRACKING
+-- ================================================================
+Players.PlayerAdded:Connect(function(pl)
+    pl.CharacterAdded:Connect(function() task.wait(1); updateChams(pl) end)
+end)
+Players.PlayerRemoving:Connect(function(pl)
+    if chamsT[pl] then pcall(function() chamsT[pl]:Destroy() end); chamsT[pl]=nil end
+    _itemCache={}
+end)
+for _,pl in ipairs(Players:GetPlayers()) do
+    if pl~=LocalPlayer then task.spawn(function() task.wait(0.5); updateChams(pl) end) end
+end
+
+-- ================================================================
+-- MAIN LOOP
+-- ================================================================
+local _fc=0
+
+RunService.RenderStepped:Connect(function(dt)
+    _fc=_fc+1
+    resetPools()
+
+    local allP=Players:GetPlayers()
+    local enemies={}
+    for _,pl in ipairs(allP) do
+        if pl==LocalPlayer then continue end
+        local char=getChar(pl); if not char then continue end
+        if getHP(char)<=0 then continue end
+        if cfg.esp.skip_team and isTeam(pl) then continue end
+        table.insert(enemies,pl)
+    end
+
+    -- Overlay
+    drawOverlay(dt)
+
+    -- ESP
+    if cfg.esp.enabled then
+        for _,pl in ipairs(enemies) do
+            local b=getBounds(getChar(pl))
+            if b then drawESP(pl,b) end
+        end
+    end
+
+    -- Tracers
+    drawTracers(enemies)
+
+    -- Every 2 frames (CPU saving)
+    if _fc%2==0 then
+        drawItemESP()
+        tickAimbot(enemies)
+        tickTrigger(enemies)
+        tickNoRecoil()
+        tickSpeed()
+    end
+end)
+
+-- ================================================================
+warn("⚡ NightHawk | Da Strike loaded! RIGHT SHIFT = menu")
+-- ================================================================
