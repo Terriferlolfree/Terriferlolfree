@@ -1,0 +1,162 @@
+local _6 = loadstring(game:HttpGet('https://raw.githubusercontent.com/jamkless/lineoria-mob/refs/heads/main/Library.lua'))()
+local _10 = loadstring(game:HttpGet('https://raw.githubusercontent.com/jamkless/lineoria-mob/refs/heads/main/ThemeManager.lua'))()
+local _14 = loadstring(game:HttpGet('https://raw.githubusercontent.com/jamkless/lineoria-mob/refs/heads/main/SaveManager.lua'))()
+local _Name20 = game:GetService('MarketplaceService'):GetProductInfo(game.PlaceId).Name
+local _call25 = _6:CreateWindow({
+    AutoShow = true,
+    Title = 'Blaq Hub | ' .. _Name20,
+    Center = true,
+    Size = UDim2.new(0, 550, 0, 350),
+})
+local _call27 = _call25:AddTab('Main')
+local _call29 = _call25:AddTab('Config')
+local _call31 = _call27:AddLeftGroupbox('Aimbot')
+local _call33 = _call27:AddRightGroupbox('Miscellaneous')
+local _call35 = _call27:AddLeftGroupbox('Magnet')
+local _call37 = Instance.new('ScreenGui')
+
+_call37.Name = 'UIToggle'
+_call37.ResetOnSpawn = false
+_call37.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+_call37.Parent = game.CoreGui
+
+local _call42 = Instance.new('TextButton')
+
+_call42.Size = UDim2.new(0, 70, 0, 50)
+_call42.Position = UDim2.new(1, -110, 0, 10)
+_call42.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+_call42.BackgroundTransparency = 0.2
+_call42.TextColor3 = Color3.fromRGB(255, 255, 255)
+_call42.Text = 'Hide UI'
+_call42.Font = Enum.Font.Code
+_call42.TextSize = 14
+_call42.Parent = _call37
+
+local _call54 = Instance.new('UIStroke')
+
+_call54.Color = Color3.fromRGB(255, 255, 255)
+_call54.Thickness = 1
+_call54.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+_call54.Parent = _call42
+
+local _call60 = Instance.new('UICorner', _call42)
+
+_call60.CornerRadius = UDim.new(0, 10)
+
+_call42.MouseButton1Click:Connect(function(...)
+    local _ = _6.Toggle
+
+    _6:Toggle()
+
+    _call42.Text = 'Show UI'
+end)
+_14:SetLibrary(_6)
+_10:SetLibrary(_6)
+_14:IgnoreThemeSettings()
+_10:SetFolder('8blaqHub/' .. _Name20)
+_14:SetFolder('8blaqHub/' .. _Name20)
+_14:BuildConfigSection(_call29)
+_10:ApplyToTab(_call29)
+
+_6.ToggleKeybind = Enum.KeyCode.RightShift
+
+local _call91 = game:GetService('RunService')
+local _call93 = game:GetService('Workspace')
+
+game:GetService('VirtualInputManager')
+
+local _call97 = game:GetService('ReplicatedStorage')
+local _Character99 = game:GetService('Players').LocalPlayer.Character
+
+_call91.RenderStepped:Connect(function(...)
+    _Character99:FindFirstChild('HumanoidRootPart')
+    _Character99:FindFirstChild('HumanoidRootPart')
+
+    for _112, _112_2 in pairs(_call93:GetDescendants())do
+        coroutine.yield(true, _112, _112_2)
+    end
+
+    _Character99:FindFirstChild('Basketball')
+end)
+_Character99:WaitForChild('Humanoid').Jumping:Connect(function(...)
+    _Character99:FindFirstChild('Basketball')
+    _Character99:FindFirstChild('HumanoidRootPart')
+
+    for _126, _126_2 in pairs(_call93:GetDescendants())do
+        coroutine.yield(true, _126, _126_2)
+    end
+end)
+_call31:AddToggle('EnableAimbot', {
+    Text = 'Enable Aimbot',
+    Default = true,
+    Callback = function(...) end,
+})
+_call31:AddToggle('EnableShotIndicator', {
+    Text = 'Enable Shot Indicator',
+    Default = true,
+    Callback = function(...) end,
+})
+_call31:AddInput('XOffset', {
+    Text = 'X Offset',
+    Default = '42',
+    Callback = function(...) end,
+})
+_call33:AddToggle('EnableDeviceSpoofer', {
+    Text = 'Enable Device Spoofer',
+    Default = false,
+    Callback = function(...)
+        _call97:FindFirstChild('Remotes')
+        _call97.Remotes:FindFirstChild('deviceEvent')
+        _call97.Remotes.deviceEvent:FireServer('PC')
+    end,
+})
+_call33:AddDropdown('SelectDevice', {
+    Default = 'PC',
+    Multi = false,
+    Text = 'Select Device',
+    Callback = function(...)
+        local _151_vararg1 = ...
+
+        _call97:FindFirstChild('Remotes')
+        _call97.Remotes:FindFirstChild('deviceEvent')
+        _call97.Remotes.deviceEvent:FireServer(_151_vararg1)
+    end,
+    Values = {
+        [1] = 'PC',
+        [2] = 'Mobile',
+        [3] = 'Controller',
+    },
+})
+_call35:AddToggle('EnableMagnet', {
+    Text = 'Enable Magnet',
+    Default = false,
+    Callback = function(...)
+        _call91.Heartbeat:Connect(function(...)
+            _Character99:FindFirstChild('HumanoidRootPart')
+
+            for _176, _176_2 in ipairs(_call93:GetPartBoundsInBox(_Character99.HumanoidRootPart.CFrame, Vector3.new(5, 5, 5)))do
+                coroutine.yield(true, _176, _176_2)
+            end
+        end)
+    end,
+})
+_call35:AddSlider('MagnetDistance', {
+    Min = 1,
+    Default = 5,
+    Compact = false,
+    Max = 150,
+    Text = 'Magnet Distance',
+    Callback = function(...)
+        local _180_vararg1 = ...
+
+        _call166:Disconnect()
+        _call91.Heartbeat:Connect(function(...)
+            _Character99:FindFirstChild('HumanoidRootPart')
+
+            for _195, _195_2 in ipairs(_call93:GetPartBoundsInBox(_Character99.HumanoidRootPart.CFrame, Vector3.new(_180_vararg1, _180_vararg1, _180_vararg1)))do
+                coroutine.yield(true, _195, _195_2)
+            end
+        end)
+    end,
+    Rounding = 1,
+})
