@@ -1,0 +1,428 @@
+-- [[ 鑽石PK - 神仙戰術版 (飛行 + 手機視角鎖定 + 完美變速) ]] --
+
+local Player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+
+-- 取得玩家控制器 (支援手機搖桿)
+local Controls = nil
+pcall(function()
+    local PlayerModule = require(Player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule"))
+    Controls = PlayerModule:GetControls()
+end)
+
+-- 1. UI 設置
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "GodMode_Ghost_Mobile"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = Player:WaitForChild("PlayerGui")
+
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 70, 0, 70) 
+ToggleBtn.Position = UDim2.new(0, 20, 0.5, -190)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+ToggleBtn.Text = "CLONE\nOFF"
+ToggleBtn.TextColor3 = Color3.new(0, 0, 0)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 15
+ToggleBtn.Parent = ScreenGui
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0) 
+local btnStroke = Instance.new("UIStroke", ToggleBtn)
+btnStroke.Thickness = 3
+btnStroke.Color = Color3.new(0, 0, 0) 
+
+local TimeBox = Instance.new("TextBox")
+TimeBox.Size = UDim2.new(0, 70, 0, 25)
+TimeBox.Position = UDim2.new(0, 20, 0.5, -105)
+TimeBox.BackgroundColor3 = Color3.fromRGB(220, 220, 225) 
+TimeBox.TextColor3 = Color3.new(0, 0, 0) 
+TimeBox.Font = Enum.Font.GothamSemibold
+TimeBox.TextSize = 13
+TimeBox.Text = "5" 
+TimeBox.PlaceholderText = "Secs"
+TimeBox.Parent = ScreenGui
+Instance.new("UICorner", TimeBox).CornerRadius = UDim.new(0, 4)
+
+local AutoBtn = Instance.new("TextButton")
+AutoBtn.Size = UDim2.new(0, 70, 0, 25)
+AutoBtn.Position = UDim2.new(0, 20, 0.5, -75)
+AutoBtn.BackgroundColor3 = Color3.fromRGB(180, 180, 185) 
+AutoBtn.Text = "AUTO: OFF"
+AutoBtn.TextColor3 = Color3.new(0, 0, 0) 
+AutoBtn.Font = Enum.Font.GothamBold
+AutoBtn.TextSize = 12
+AutoBtn.Parent = ScreenGui
+Instance.new("UICorner", AutoBtn).CornerRadius = UDim.new(0, 4)
+
+local TpBtn = Instance.new("TextButton")
+TpBtn.Size = UDim2.new(0, 70, 0, 25)
+TpBtn.Position = UDim2.new(0, 20, 0.5, -45)
+TpBtn.BackgroundColor3 = Color3.fromRGB(200, 180, 50) 
+TpBtn.Text = "TP: ON"
+TpBtn.TextColor3 = Color3.new(0, 0, 0)
+TpBtn.Font = Enum.Font.GothamBold
+TpBtn.TextSize = 12
+TpBtn.Parent = ScreenGui
+Instance.new("UICorner", TpBtn).CornerRadius = UDim.new(0, 4)
+
+local HideBtn = Instance.new("TextButton")
+HideBtn.Size = UDim2.new(0, 70, 0, 25)
+HideBtn.Position = UDim2.new(0, 20, 0.5, -15)
+HideBtn.BackgroundColor3 = Color3.fromRGB(180, 180, 185) 
+HideBtn.Text = "HIDE: OFF"
+HideBtn.TextColor3 = Color3.new(0, 0, 0)
+HideBtn.Font = Enum.Font.GothamBold
+HideBtn.TextSize = 12
+HideBtn.Parent = ScreenGui
+Instance.new("UICorner", HideBtn).CornerRadius = UDim.new(0, 4)
+
+local NoclipBtn = Instance.new("TextButton")
+NoclipBtn.Size = UDim2.new(0, 70, 0, 25)
+NoclipBtn.Position = UDim2.new(0, 20, 0.5, 15)
+NoclipBtn.BackgroundColor3 = Color3.fromRGB(180, 180, 185) 
+NoclipBtn.Text = "WALL: OFF"
+NoclipBtn.TextColor3 = Color3.new(0, 0, 0)
+NoclipBtn.Font = Enum.Font.GothamBold
+NoclipBtn.TextSize = 12
+NoclipBtn.Parent = ScreenGui
+Instance.new("UICorner", NoclipBtn).CornerRadius = UDim.new(0, 4)
+
+-- 【新增】飛行按鈕
+local FlyBtn = Instance.new("TextButton")
+FlyBtn.Size = UDim2.new(0, 70, 0, 25)
+FlyBtn.Position = UDim2.new(0, 20, 0.5, 45)
+FlyBtn.BackgroundColor3 = Color3.fromRGB(180, 180, 185) 
+FlyBtn.Text = "FLY: OFF"
+FlyBtn.TextColor3 = Color3.new(0, 0, 0)
+FlyBtn.Font = Enum.Font.GothamBold
+FlyBtn.TextSize = 12
+FlyBtn.Parent = ScreenGui
+Instance.new("UICorner", FlyBtn).CornerRadius = UDim.new(0, 4)
+
+-- 【新增】手機視角鎖定按鈕
+local LockBtn = Instance.new("TextButton")
+LockBtn.Size = UDim2.new(0, 70, 0, 25)
+LockBtn.Position = UDim2.new(0, 20, 0.5, 75)
+LockBtn.BackgroundColor3 = Color3.fromRGB(180, 180, 185) 
+LockBtn.Text = "LOCK: OFF"
+LockBtn.TextColor3 = Color3.new(0, 0, 0)
+LockBtn.Font = Enum.Font.GothamBold
+LockBtn.TextSize = 12
+LockBtn.Parent = ScreenGui
+Instance.new("UICorner", LockBtn).CornerRadius = UDim.new(0, 4)
+
+local SpeedBox = Instance.new("TextBox")
+SpeedBox.Size = UDim2.new(0, 33, 0, 25)
+SpeedBox.Position = UDim2.new(0, 20, 0.5, 105)
+SpeedBox.BackgroundColor3 = Color3.fromRGB(220, 220, 225) 
+SpeedBox.TextColor3 = Color3.new(0, 0, 0) 
+SpeedBox.Font = Enum.Font.GothamSemibold
+SpeedBox.TextSize = 12
+SpeedBox.Text = "16" 
+SpeedBox.PlaceholderText = "Spd"
+SpeedBox.Parent = ScreenGui
+Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 4)
+
+local JumpBox = Instance.new("TextBox")
+JumpBox.Size = UDim2.new(0, 33, 0, 25)
+JumpBox.Position = UDim2.new(0, 57, 0.5, 105)
+JumpBox.BackgroundColor3 = Color3.fromRGB(220, 220, 225) 
+JumpBox.TextColor3 = Color3.new(0, 0, 0) 
+JumpBox.Font = Enum.Font.GothamSemibold
+JumpBox.TextSize = 12
+JumpBox.Text = "50" 
+JumpBox.PlaceholderText = "Jmp"
+JumpBox.Parent = ScreenGui
+Instance.new("UICorner", JumpBox).CornerRadius = UDim.new(0, 4)
+
+---------------- 核心變數 ----------------
+
+local isModeOn = false
+local autoActive = false
+local teleportOnClose = true
+local hideRealBody = false
+local noclipActive = false
+local flyActive = false       -- 飛行狀態
+local shiftLockActive = false -- 視角鎖定狀態
+local originalCF = nil 
+
+local RealChar = nil
+local FakeChar = nil
+local Connections = {} 
+local AnimTracks = {} 
+
+local OfficialIDs = {
+    Idle  = "rbxassetid://507766388",
+    Walk  = "rbxassetid://507777826",
+    Run   = "rbxassetid://507767714",
+    Jump  = "rbxassetid://507765000",
+    Fall  = "rbxassetid://507767968",
+    Climb = "rbxassetid://507765644",
+    Swim  = "rbxassetid://507784064"
+}
+
+local function LoadAnim(hum, id)
+    local a = Instance.new("Animation")
+    a.AnimationId = id
+    return hum:LoadAnimation(a)
+end
+
+local function StopAll()
+    for _, track in pairs(AnimTracks) do
+        if track and track.IsPlaying then track:Stop(0.1) end
+    end
+end
+
+local function ToggleMode()
+    if isModeOn then
+        isModeOn = false
+        ToggleBtn.Text = "CLONE\nOFF"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+        for _, conn in pairs(Connections) do conn:Disconnect() end
+        Connections = {}
+        StopAll()
+        
+        if FakeChar then
+            local lastCF = FakeChar:GetPrimaryPartCFrame()
+            FakeChar:Destroy()
+            FakeChar = nil
+            
+            if RealChar and RealChar:FindFirstChild("HumanoidRootPart") then
+                RealChar.HumanoidRootPart.Anchored = false
+                if teleportOnClose then
+                    RealChar.HumanoidRootPart.CFrame = lastCF
+                else
+                    if originalCF then
+                        RealChar.HumanoidRootPart.CFrame = originalCF
+                    end
+                end
+                Player.Character = RealChar
+                Camera.CameraSubject = RealChar.Humanoid
+            end
+        end
+    else
+        RealChar = Player.Character
+        if not RealChar or not RealChar:FindFirstChild("HumanoidRootPart") then return end
+        
+        isModeOn = true
+        ToggleBtn.Text = "CLONE\nON"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+        
+        originalCF = RealChar.HumanoidRootPart.CFrame
+        RealChar.Archivable = true
+        FakeChar = RealChar:Clone()
+        FakeChar.Name = "God_Clone"
+        FakeChar.Parent = workspace
+        
+        if hideRealBody then
+            RealChar.HumanoidRootPart.CFrame = originalCF + Vector3.new(0, 5000, 0)
+        end
+        RealChar.HumanoidRootPart.Anchored = true
+        
+        local fakeHum = FakeChar:FindFirstChild("Humanoid")
+        local fakeRoot = FakeChar:FindFirstChild("HumanoidRootPart")
+        
+        for _, v in pairs(FakeChar:GetDescendants()) do
+            if v:IsA("LocalScript") or v:IsA("Script") then v:Destroy() end
+            if v:IsA("BasePart") then
+                v.Anchored = false
+                v.CanCollide = (v.Name == "HumanoidRootPart")
+                if v.Name == "HumanoidRootPart" then v.Transparency = 1 end
+            end
+        end
+
+        AnimTracks.Idle  = LoadAnim(fakeHum, OfficialIDs.Idle)
+        AnimTracks.Walk  = LoadAnim(fakeHum, OfficialIDs.Walk)
+        AnimTracks.Run   = LoadAnim(fakeHum, OfficialIDs.Run)
+        AnimTracks.Jump  = LoadAnim(fakeHum, OfficialIDs.Jump)
+        AnimTracks.Fall  = LoadAnim(fakeHum, OfficialIDs.Fall)
+
+        Camera.CameraSubject = fakeHum
+        if AnimTracks.Idle then AnimTracks.Idle:Play() end
+
+        table.insert(Connections, fakeHum.StateChanged:Connect(function(oldState, newState)
+            if flyActive then return end -- 飛行時不播放普通落地動畫
+            
+            if newState == Enum.HumanoidStateType.Jumping then
+                StopAll()
+                if AnimTracks.Jump then AnimTracks.Jump:Play() end
+            elseif newState == Enum.HumanoidStateType.Freefall then
+                StopAll()
+                if AnimTracks.Fall then AnimTracks.Fall:Play() end
+            elseif newState == Enum.HumanoidStateType.Landed then
+                StopAll()
+                if AnimTracks.Idle then AnimTracks.Idle:Play() end
+            end
+        end))
+
+        -- 【核心 RenderStepped：包含飛行與視角鎖定】
+        table.insert(Connections, RunService.RenderStepped:Connect(function()
+            if not isModeOn or not fakeHum or not fakeRoot then return end
+            
+            -- 穿牆邏輯
+            if noclipActive then
+                for _, v in pairs(FakeChar:GetDescendants()) do
+                    if v:IsA("BasePart") then v.CanCollide = false end
+                end
+            end
+            
+            -- 【手機視角鎖定】：強制角色面向相機方向
+            if shiftLockActive then
+                local camLook = Camera.CFrame.LookVector
+                -- 保持 Y 軸不變，只轉動水平方向
+                local lookAtPos = fakeRoot.Position + Vector3.new(camLook.X, 0, camLook.Z)
+                fakeRoot.CFrame = CFrame.lookAt(fakeRoot.Position, lookAtPos)
+            end
+            
+            local currentSpeed = tonumber(SpeedBox.Text) or 16
+            fakeHum.WalkSpeed = currentSpeed
+            
+            local inputVector = Vector3.new(0, 0, 0)
+            if Controls then
+                inputVector = Controls:GetMoveVector()
+            else
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then inputVector = inputVector + Vector3.new(0, 0, -1) end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then inputVector = inputVector + Vector3.new(0, 0, 1) end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then inputVector = inputVector + Vector3.new(-1, 0, 0) end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then inputVector = inputVector + Vector3.new(1, 0, 0) end
+            end
+            
+            local camCF = Camera.CFrame
+            
+            -- 【飛行模式邏輯】
+            if flyActive then
+                fakeHum.PlatformStand = true -- 關閉原本的物理走路判定
+                
+                -- 計算 3D 飛行向量 (視角看哪就飛哪)
+                local move3D = (camCF.RightVector * inputVector.X) + (camCF.LookVector * -inputVector.Z)
+                
+                -- 使用 BodyVelocity 來達成完美平滑飛行
+                local bv = fakeRoot:FindFirstChild("FlyVelocity")
+                if not bv then
+                    bv = Instance.new("BodyVelocity")
+                    bv.Name = "FlyVelocity"
+                    bv.MaxForce = Vector3.new(100000, 100000, 100000) -- 無視重力
+                    bv.Parent = fakeRoot
+                end
+                
+                if move3D.Magnitude > 0 then
+                    bv.Velocity = move3D.Unit * currentSpeed
+                    if AnimTracks.Fall and not AnimTracks.Fall.IsPlaying then
+                        StopAll()
+                        AnimTracks.Fall:Play(0.1) -- 飛行時播放下落動畫看起來像超人
+                    end
+                else
+                    bv.Velocity = Vector3.new(0, 0, 0) -- 停在空中
+                    if AnimTracks.Idle and not AnimTracks.Idle.IsPlaying then
+                        StopAll()
+                        AnimTracks.Idle:Play(0.1)
+                    end
+                end
+            else
+                -- 【正常走路模式】
+                fakeHum.PlatformStand = false
+                local bv = fakeRoot:FindFirstChild("FlyVelocity")
+                if bv then bv:Destroy() end
+                
+                local finalDir = (camCF.RightVector * inputVector.X) + (camCF.LookVector * -inputVector.Z)
+                finalDir = Vector3.new(finalDir.X, 0, finalDir.Z)
+                
+                local currentState = fakeHum:GetState()
+                local isGrounded = (currentState == Enum.HumanoidStateType.Running or currentState == Enum.HumanoidStateType.RunningNoPhysics)
+                
+                if finalDir.Magnitude > 0 then
+                    fakeHum:Move(finalDir.Unit, false)
+                    if isGrounded then
+                        if AnimTracks.Run and not AnimTracks.Run.IsPlaying then
+                            StopAll()
+                            AnimTracks.Run:Play(0.1)
+                        end
+                    end
+                else
+                    fakeHum:Move(Vector3.new(0, 0, 0), false)
+                    if isGrounded then
+                        if AnimTracks.Idle and not AnimTracks.Idle.IsPlaying then
+                            StopAll()
+                            AnimTracks.Idle:Play(0.1)
+                        end
+                    end
+                end
+            end
+        end))
+
+        table.insert(Connections, UserInputService.JumpRequest:Connect(function()
+            if isModeOn and fakeHum and not flyActive and fakeHum:GetState() ~= Enum.HumanoidStateType.Freefall then
+                local currentJump = tonumber(JumpBox.Text) or 50
+                fakeHum.UseJumpPower = true
+                fakeHum.JumpPower = currentJump
+                fakeHum.Jump = true
+            end
+        end))
+    end
+end
+
+-- 各按鈕觸發事件
+TpBtn.MouseButton1Click:Connect(function()
+    teleportOnClose = not teleportOnClose
+    TpBtn.Text = teleportOnClose and "TP: ON" or "TP: OFF"
+    TpBtn.BackgroundColor3 = teleportOnClose and Color3.fromRGB(200, 180, 50) or Color3.fromRGB(180, 180, 185)
+end)
+
+HideBtn.MouseButton1Click:Connect(function()
+    hideRealBody = not hideRealBody
+    HideBtn.Text = hideRealBody and "HIDE: ON" or "HIDE: OFF"
+    HideBtn.BackgroundColor3 = hideRealBody and Color3.fromRGB(150, 50, 200) or Color3.fromRGB(180, 180, 185)
+end)
+
+NoclipBtn.MouseButton1Click:Connect(function()
+    noclipActive = not noclipActive
+    NoclipBtn.Text = noclipActive and "WALL: ON" or "WALL: OFF"
+    NoclipBtn.BackgroundColor3 = noclipActive and Color3.fromRGB(50, 200, 200) or Color3.fromRGB(180, 180, 185)
+end)
+
+FlyBtn.MouseButton1Click:Connect(function()
+    flyActive = not flyActive
+    FlyBtn.Text = flyActive and "FLY: ON" or "FLY: OFF"
+    FlyBtn.BackgroundColor3 = flyActive and Color3.fromRGB(255, 100, 100) or Color3.fromRGB(180, 180, 185)
+end)
+
+LockBtn.MouseButton1Click:Connect(function()
+    shiftLockActive = not shiftLockActive
+    LockBtn.Text = shiftLockActive and "LOCK: ON" or "LOCK: OFF"
+    LockBtn.BackgroundColor3 = shiftLockActive and Color3.fromRGB(255, 150, 50) or Color3.fromRGB(180, 180, 185)
+end)
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    if autoActive then
+        autoActive = false
+        AutoBtn.Text = "AUTO: OFF"
+        AutoBtn.BackgroundColor3 = Color3.fromRGB(180, 180, 185)
+    end
+    ToggleMode()
+end)
+
+AutoBtn.MouseButton1Click:Connect(function()
+    autoActive = not autoActive
+    AutoBtn.Text = autoActive and "AUTO: ON" or "AUTO: OFF"
+    AutoBtn.BackgroundColor3 = autoActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(180, 180, 185)
+
+    if autoActive then
+        task.spawn(function()
+            while autoActive do
+                local onTime = tonumber(TimeBox.Text) or 5
+                if not isModeOn then ToggleMode() end
+                
+                local passedTime = 0
+                while passedTime < onTime and autoActive do
+                    task.wait(0.1)
+                    passedTime = passedTime + 0.1
+                end
+                
+                if not autoActive then break end
+                if isModeOn then ToggleMode() end
+                task.wait(0.5)
+            end
+        end)
+    end
+end)
