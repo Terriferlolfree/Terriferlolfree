@@ -1,0 +1,1256 @@
+-- init
+if not game:IsLoaded() then 
+    game.Loaded:Wait()
+end
+
+if not syn or not protectgui then
+    getgenv().protectgui = function() end
+end
+
+local SilentAimSettings = {
+    Enabled = false,
+    
+    ClassName = "Universal Silent Aim - Averiias, Stefanuk12, xaxa",
+    ToggleKey = "RightAlt",
+    
+    TeamCheck = false,
+    VisibleCheck = false, 
+    TargetPart = "HumanoidRootPart",
+    SilentAimMethod = "Raycast",
+    
+    FOVRadius = 130,
+    FOVVisible = false,
+    ShowSilentAimTarget = false, 
+    
+    MouseHitPrediction = false,
+    MouseHitPredictionAmount = 0.165,
+    HitChance = 100
+}
+
+-- variables
+getgenv().SilentAimSettings = SilentAimSettings
+local MainFileName = "UniversalSilentAim"
+local SelectedFile, FileToSave = "", ""
+
+local Camera = workspace.CurrentCamera
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local GuiService = game:GetService("GuiService")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+
+local GetChildren = game.GetChildren
+local GetPlayers = Players.GetPlayers
+local WorldToScreen = Camera.WorldToScreenPoint
+local WorldToViewportPoint = Camera.WorldToViewportPoint
+local GetPartsObscuringTarget = Camera.GetPartsObscuringTarget
+local FindFirstChild = game.FindFirstChild
+local RenderStepped = RunService.RenderStepped
+local GuiInset = GuiService.GetGuiInset
+local GetMouseLocation = UserInputService.GetMouseLocation
+
+local resume = coroutine.resume 
+local create = coroutine.create
+
+local ValidTargetParts = {"Head", "HumanoidRootPart"}
+local PredictionAmount = 0.165
+
+local mouse_box = Drawing.new("Square")
+mouse_box.Visible = true 
+mouse_box.ZIndex = 999 
+mouse_box.Color = Color3.fromRGB(54, 57, 241)
+mouse_box.Thickness = 20 
+mouse_box.Size = Vector2.new(20, 20)
+mouse_box.Filled = true 
+
+local fov_circle = Drawing.new("Circle")
+fov_circle.Thickness = 1
+fov_circle.NumSides = 100
+fov_circle.Radius = 180
+fov_circle.Filled = false
+fov_circle.Visible = false
+fov_circle.ZIndex = 999
+fov_circle.Transparency = 1
+fov_circle.Color = Color3.fromRGB(54, 57, 241)
+
+local ExpectedArguments = {
+    FindPartOnRayWithIgnoreList = {
+        ArgCountRequired = 3,
+        Args = {
+            "Instance", "Ray", "table", "boolean", "boolean"
+        }
+    },
+    FindPartOnRayWithWhitelist = {
+        ArgCountRequired = 3,
+        Args = {
+            "Instance", "Ray", "table", "boolean"
+        }
+    },
+    FindPartOnRay = {
+        ArgCountRequired = 2,
+        Args = {
+            "Instance", "Ray", "Instance", "boolean", "boolean"
+        }
+    },
+    Raycast = {
+        ArgCountRequired = 3,
+        Args = {
+            "Instance", "Vector3", "Vector3", "RaycastParams"
+        }
+    }
+}
+
+function CalculateChance(Percentage)
+    Percentage = math.floor(Percentage)
+    local chance = math.floor(Random.new().NextNumber(Random.new(), 0, 1) * 100) / 100
+    return chance <= Percentage / 100
+end
+
+-- [[file handling]] do 
+    if not isfolder(MainFileName) then 
+        makefolder(MainFileName);
+    end
+    
+    if not isfolder(string.format("%s/%s", MainFileName, tostring(game.PlaceId))) then 
+        makefolder(string.format("%s/%s", MainFileName, tostring(game.PlaceId)))
+    end
+end
+
+local Files = listfiles(string.format("%s/%s", "UniversalSilentAim", tostring(game.PlaceId)))
+-- functions
+local function GetFiles()
+    local out = {}
+    for i = 1, #Files do
+        local file = Files[i]
+        if file:sub(-4) == '.lua' then
+            local pos = file:find('.lua', 1, true)
+            local start = pos
+            local char = file:sub(pos, pos)
+            while char ~= '/' and char ~= '\\' and char ~= '' do
+                pos = pos - 1
+                char = file:sub(pos, pos)
+            end
+            if char == '/' or char == '\\' then
+                table.insert(out, file:sub(pos + 1, start - 1))
+            end
+        end
+    end
+    return out
+end
+
+local function UpdateFile(FileName)
+    assert(FileName or FileName == "string", "oopsies");
+    writefile(string.format("%s/%s/%s.lua", MainFileName, tostring(game.PlaceId), FileName), HttpService:JSONEncode(SilentAimSettings))
+end
+
+local function LoadFile(FileName)
+    assert(FileName or FileName == "string", "oopsies");
+    
+    local File = string.format("%s/%s/%s.lua", MainFileName, tostring(game.PlaceId), FileName)
+    local ConfigData = HttpService:JSONDecode(readfile(File))
+    for Index, Value in next, ConfigData do
+        SilentAimSettings[Index] = Value
+    end
+end
+
+local function getPositionOnScreen(Vector)
+    local Vec3, OnScreen = WorldToScreen(Camera, Vector)
+    return Vector2.new(Vec3.X, Vec3.Y), OnScreen
+end
+
+local function ValidateArguments(Args, RayMethod)
+    local Matches = 0
+    if #Args < RayMethod.ArgCountRequired then
+        return false
+    end
+    for Pos, Argument in next, Args do
+        if typeof(Argument) == RayMethod.Args[Pos] then
+            Matches = Matches + 1
+        end
+    end
+    return Matches >= RayMethod.ArgCountRequired
+end
+
+local function getDirection(Origin, Position)
+    return (Position - Origin).Unit * 1000
+end
+
+local function getMousePosition()
+    return GetMouseLocation(UserInputService)
+end
+
+local function IsPlayerVisible(Player)
+    local PlayerCharacter = Player.Character
+    local LocalPlayerCharacter = LocalPlayer.Character
+    
+    if not (PlayerCharacter or LocalPlayerCharacter) then return end 
+    
+    local PlayerRoot = FindFirstChild(PlayerCharacter, "HumanoidRootPart")
+    
+    if not PlayerRoot then return end 
+    
+    local CastPoints, IgnoreList = {PlayerRoot.Position, LocalPlayerCharacter, PlayerCharacter}, {LocalPlayerCharacter, PlayerCharacter}
+    local ObscuringObjects = #GetPartsObscuringTarget(Camera, CastPoints, IgnoreList)
+    
+    return ((ObscuringObjects == 0 and true) or (ObscuringObjects > 0 and false))
+end
+
+local function getClosestPlayer()
+    if not SilentAimSettings.TargetPart then return end
+    local Closest
+    local DistanceToMouse
+    for _, Player in next, GetPlayers(Players) do
+        if Player == LocalPlayer then continue end
+        if SilentAimSettings.TeamCheck and Player.Team == LocalPlayer.Team then continue end
+
+        local Character = Player.Character
+        if not Character then continue end
+        
+        if SilentAimSettings.VisibleCheck and not IsPlayerVisible(Player) then continue end
+
+        local HumanoidRootPart = FindFirstChild(Character, "HumanoidRootPart")
+        local Humanoid = FindFirstChild(Character, "Humanoid")
+        if not HumanoidRootPart or not Humanoid or Humanoid and Humanoid.Health <= 0 then continue end
+
+        local ScreenPosition, OnScreen = getPositionOnScreen(HumanoidRootPart.Position)
+        if not OnScreen then continue end
+
+        local Distance = (getMousePosition() - ScreenPosition).Magnitude
+        if Distance <= (DistanceToMouse or SilentAimSettings.FOVRadius or 2000) then
+            Closest = ((SilentAimSettings.TargetPart == "Random" and Character[ValidTargetParts[math.random(1, #ValidTargetParts)]]) or Character[SilentAimSettings.TargetPart])
+            DistanceToMouse = Distance
+        end
+    end
+    return Closest
+end
+-- ============================================================
+-- NEW UI LIBRARY (samet style)
+-- ============================================================
+local LoadingTick = os.clock()
+
+if getgenv().Library then 
+    getgenv().Library:Unload()
+end
+
+local Library do
+    local UserInputService = game:GetService("UserInputService")
+    local Players = game:GetService("Players")
+    local Workspace = game:GetService("Workspace")
+    local HttpService = game:GetService("HttpService")
+    local TweenService = game:GetService("TweenService")
+    local RunService = game:GetService("RunService")
+    local CoreGui = cloneref and cloneref(game:GetService("CoreGui")) or game:GetService("CoreGui")
+
+    gethui = gethui or function()
+        return CoreGui
+    end
+
+    local LocalPlayer = Players.LocalPlayer
+    local Camera = Workspace.CurrentCamera
+    local Mouse = LocalPlayer:GetMouse()
+
+    local FromRGB = Color3.fromRGB
+    local FromHSV = Color3.fromHSV
+    local FromHex = Color3.fromHex
+
+    local RGBSequence = ColorSequence.new
+    local RGBSequenceKeypoint = ColorSequenceKeypoint.new
+
+    local NumSequence = NumberSequence.new
+    local NumSequenceKeypoint = NumberSequenceKeypoint.new
+
+    local UDim2New = UDim2.new
+    local UDim2FromOffset = UDim2.fromOffset
+    local UDimNew = UDim.new
+    local Vector2New = Vector2.new
+
+    local InstanceNew = Instance.new
+
+    local MathClamp = math.clamp
+    local MathFloor = math.floor
+
+    local TableInsert = table.insert
+    local TableFind = table.find
+    local TableRemove = table.remove
+    local TableConcat = table.concat
+    local TableUnpack = table.unpack
+
+    local StringFormat = string.format
+    local StringFind = string.find
+    local StringGSub = string.gsub
+
+    local IsMobile = UserInputService.TouchEnabled or false
+
+    Library = {
+        Flags = { },
+        
+        Theme = {
+            ["Background"] = FromHex("#14100f"),
+            ["Inline"] = FromHex("#191614"),
+            ["Page Background"] = FromHex("#28201e"),
+            ["Border"] = FromHex("#120f0e"),
+            ["Outline"] = FromHex("#211c1b"),
+            ["Accent"] = FromHex("#ffb29d"),
+            ["Element"] = FromHex("#242221"),
+            ["Hovered Element"] = FromHex("#322f2f"),
+            ["Text"] = FromHex("#979797"),
+            ["Text Border"] = FromRGB(0, 0, 0)
+        },
+
+        MenuKeybind = Enum.KeyCode.Z, 
+
+        Tween = {
+            Time = 0.3,
+            Style = Enum.EasingStyle.Exponential,
+            Direction = Enum.EasingDirection.Out
+        },
+
+        Folders = {
+            Directory = "UniversalSilentAim",
+            Configs = "UniversalSilentAim/Configs",
+            Assets = "UniversalSilentAim/Assets"
+        },
+
+        Images = {
+            ["Saturation"] = {"Saturation.png", "https://github.com/sametexe001/images/blob/main/saturation.png?raw=true" },
+            ["Value"] = { "Value.png", "https://github.com/sametexe001/images/blob/main/value.png?raw=true" },
+            ["Hue"] = { "Hue.png", "https://github.com/sametexe001/images/blob/main/hue.png?raw=true" },
+            ["Scrollbar"] =  { "Scrollbar.png", "https://github.com/sametexe001/images/blob/main/scrollbar.png?raw=true" },
+            ["Checkers"] = { "Checkers.png", "https://github.com/sametexe001/images/blob/main/checkers.png?raw=true" },
+            ["Resize"] = { "Resize.png", "https://github.com/sametexe001/images/blob/main/resize.png?raw=true" },
+        },
+
+        Pages = { },
+        Sections = { },
+        Connections = { },
+        Threads = { },
+        ThemeMap = { },
+        ThemeItems = { },
+
+        SetFlags = { },
+
+        UnnamedConnections = 0,
+        UnnamedFlags = 0,
+
+        Holder = nil,
+        NotifHolder = nil,
+        Font = nil,
+        KeyList = nil,
+
+        CurrentColorpicker = nil
+    }
+
+    Library.__index = Library
+    Library.Sections = {}
+    Library.Sections.__index = Library.Sections
+-- ============================================================
+    -- Connection Manager
+    -- ============================================================
+    function Library:Connect(Event, Callback, Name)
+        Name = Name or ("Connection_" .. tostring(Library.UnnamedConnections + 1))
+        Library.UnnamedConnections = Library.UnnamedConnections + 1
+        
+        local Connection = Event:Connect(Callback)
+        Library.Connections[Name] = Connection
+        
+        return Connection
+    end
+
+    function Library:Disconnect(Name)
+        if Library.Connections[Name] then
+            Library.Connections[Name]:Disconnect()
+            Library.Connections[Name] = nil
+        end
+    end
+
+    -- ============================================================
+    -- Window Creation
+    -- ============================================================
+    function Library:Window(Data)
+        Data = Data or {}
+        local WindowName = Data.Name or Data.name or "Window"
+        local WindowSize = Data.Size or Data.size or UDim2New(0, 600, 0, 500)
+        
+        local ScreenGui = InstanceNew("ScreenGui")
+        ScreenGui.Name = "UniversalSilentAimUI"
+        ScreenGui.DisplayOrder = 999
+        ScreenGui.IgnoreGuiInset = true
+        ScreenGui.ResetOnSpawn = false
+        ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        ScreenGui.Parent = gethui()
+
+        protectgui and protectgui(ScreenGui)
+
+        local MainFrame = InstanceNew("Frame")
+        MainFrame.Name = "MainFrame"
+        MainFrame.Size = WindowSize
+        MainFrame.Position = UDim2New(0.5, -WindowSize.X.Offset/2, 0.5, -WindowSize.Y.Offset/2)
+        MainFrame.BackgroundColor3 = Library.Theme.Background
+        MainFrame.BorderSizePixel = 0
+        MainFrame.ClipsDescendants = true
+        MainFrame.Parent = ScreenGui
+
+        -- Outline / border
+        local Outline = InstanceNew("Frame")
+        Outline.Name = "Outline"
+        Outline.Size = UDim2New(1, 2, 1, 2)
+        Outline.Position = UDim2New(0, -1, 0, -1)
+        Outline.BackgroundColor3 = Library.Theme.Border
+        Outline.BorderSizePixel = 0
+        Outline.Parent = MainFrame
+
+        -- Top bar
+        local TopBar = InstanceNew("Frame")
+        TopBar.Name = "TopBar"
+        TopBar.Size = UDim2New(1, 0, 0, 35)
+        TopBar.BackgroundColor3 = Library.Theme.Inline
+        TopBar.BorderSizePixel = 0
+        TopBar.Parent = MainFrame
+
+        local TitleLabel = InstanceNew("TextLabel")
+        TitleLabel.Name = "Title"
+        TitleLabel.Size = UDim2New(1, -10, 1, 0)
+        TitleLabel.Position = UDim2New(0, 10, 0, 0)
+        TitleLabel.BackgroundTransparency = 1
+        TitleLabel.Text = WindowName
+        TitleLabel.TextColor3 = Library.Theme.Accent
+        TitleLabel.TextSize = 16
+        TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+        TitleLabel.Font = Enum.Font.GothamSemibold
+        TitleLabel.Parent = TopBar
+
+        -- Close button
+        local CloseButton = InstanceNew("TextButton")
+        CloseButton.Name = "CloseButton"
+        CloseButton.Size = UDim2New(0, 25, 0, 25)
+        CloseButton.Position = UDim2New(1, -30, 0, 5)
+        CloseButton.BackgroundTransparency = 1
+        CloseButton.Text = "X"
+        CloseButton.TextColor3 = Library.Theme.Text
+        CloseButton.TextSize = 16
+        CloseButton.Font = Enum.Font.GothamBold
+        CloseButton.Parent = TopBar
+
+        CloseButton.MouseButton1Click:Connect(function()
+            MainFrame.Visible = not MainFrame.Visible
+        end)
+
+        -- Tab container
+        local TabContainer = InstanceNew("Frame")
+        TabContainer.Name = "TabContainer"
+        TabContainer.Size = UDim2New(1, 0, 0, 35)
+        TabContainer.Position = UDim2New(0, 0, 0, 35)
+        TabContainer.BackgroundColor3 = Library.Theme["Page Background"]
+        TabContainer.BorderSizePixel = 0
+        TabContainer.Parent = MainFrame
+
+        local TabButtonsHolder = InstanceNew("Frame")
+        TabButtonsHolder.Name = "TabButtonsHolder"
+        TabButtonsHolder.Size = UDim2New(1, -20, 1, 0)
+        TabButtonsHolder.Position = UDim2New(0, 10, 0, 0)
+        TabButtonsHolder.BackgroundTransparency = 1
+        TabButtonsHolder.Parent = TabContainer
+
+        local UIListLayout = InstanceNew("UIListLayout")
+        UIListLayout.FillDirection = Enum.FillDirection.Horizontal
+        UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+        UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+        UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        UIListLayout.Padding = UDimNew(0, 5)
+        UIListLayout.Parent = TabButtonsHolder
+
+        -- Main content
+        local ContentFrame = InstanceNew("Frame")
+        ContentFrame.Name = "ContentFrame"
+        ContentFrame.Size = UDim2New(1, 0, 1, -(35 + 35))
+        ContentFrame.Position = UDim2New(0, 0, 0, 70)
+        ContentFrame.BackgroundTransparency = 1
+        ContentFrame.Parent = MainFrame
+
+        -- Dragging
+        local Dragging = false
+        local DragStart, StartPosition
+
+        TopBar.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                Dragging = true
+                DragStart = input.Position
+                StartPosition = MainFrame.Position
+            end
+        end)
+
+        Library:Connect(UserInputService.InputChanged, function(input)
+            if Dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                local Delta = input.Position - DragStart
+                local NewX = MathClamp(StartPosition.X.Offset + Delta.X, 0, Camera.ViewportSize.X - MainFrame.AbsoluteSize.X)
+                local NewY = MathClamp(StartPosition.Y.Offset + Delta.Y, 0, Camera.ViewportSize.Y - MainFrame.AbsoluteSize.Y)
+                MainFrame.Position = UDim2New(0, NewX, 0, NewY)
+            end
+        end)
+
+        Library:Connect(UserInputService.InputEnded, function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                Dragging = false
+            end
+        end)
+
+        -- Menu keybind toggle
+        Library:Connect(UserInputService.InputBegan, function(input, gameProcessed)
+            if gameProcessed then return end
+            if input.KeyCode == Library.MenuKeybind then
+                MainFrame.Visible = not MainFrame.Visible
+            end
+        end)
+
+        -- Store references
+        Library.Holder = ScreenGui
+        Library.MainFrame = MainFrame
+        Library.ContentFrame = ContentFrame
+        Library.TabButtonsHolder = TabButtonsHolder
+        Library.UIListLayout = UIListLayout
+
+        local WindowMeta = {}
+        WindowMeta.Instance = MainFrame
+        WindowMeta.ScreenGui = ScreenGui
+        WindowMeta.Name = WindowName
+function WindowMeta:Page(Data)
+            Data = Data or {}
+            local PageName = Data.Name or Data.name or "Page"
+            local Columns = Data.Columns or Data.columns or 1
+            local SubTabs = Data.SubTabs or Data.subtabs or false
+
+            -- Tab button
+            local TabButton = InstanceNew("TextButton")
+            TabButton.Name = PageName .. "Tab"
+            TabButton.Size = UDim2New(0, 80, 0, 25)
+            TabButton.BackgroundColor3 = Library.Theme.Element
+            TabButton.Text = PageName
+            TabButton.TextColor3 = Library.Theme.Text
+            TabButton.TextSize = 13
+            TabButton.Font = Enum.Font.Gotham
+            TabButton.BorderSizePixel = 0
+            TabButton.Parent = TabButtonsHolder
+
+            -- Page frame
+            local PageFrame = InstanceNew("ScrollingFrame")
+            PageFrame.Name = PageName .. "Page"
+            PageFrame.Size = UDim2New(1, 0, 1, 0)
+            PageFrame.BackgroundTransparency = 1
+            PageFrame.BorderSizePixel = 0
+            PageFrame.ScrollBarThickness = 4
+            PageFrame.CanvasSize = UDim2New(0, 0, 0, 0)
+            PageFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+            PageFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+            PageFrame.Parent = ContentFrame
+            
+            -- Hide initially (first page shown)
+            PageFrame.Visible = #ContentFrame:GetChildren() == 1
+
+            TabButton.MouseButton1Click:Connect(function()
+                for _, child in ContentFrame:GetChildren() do
+                    if child:IsA("ScrollingFrame") then
+                        child.Visible = false
+                    end
+                end
+                for _, child in TabButtonsHolder:GetChildren() do
+                    if child:IsA("TextButton") then
+                        child.BackgroundColor3 = Library.Theme.Element
+                    end
+                end
+                PageFrame.Visible = true
+                TabButton.BackgroundColor3 = Library.Theme.Accent
+                TabButton.TextColor3 = Library.Theme.Background
+            end)
+
+            -- Column layout
+            local function CreateColumnGrid(columnCount)
+                local GridFrame = InstanceNew("Frame")
+                GridFrame.Name = "Grid"
+                GridFrame.Size = UDim2New(1, -20, 0, 0)
+                GridFrame.Position = UDim2New(0, 10, 0, 10)
+                GridFrame.BackgroundTransparency = 1
+                GridFrame.Parent = PageFrame
+
+                local GridLayout = InstanceNew("UIListLayout")
+                GridLayout.FillDirection = Enum.FillDirection.Horizontal
+                GridLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+                GridLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+                GridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                GridLayout.Padding = UDimNew(0, 10)
+                GridLayout.Parent = GridFrame
+
+                local ColumnsList = {}
+                for i = 1, columnCount do
+                    local ColumnFrame = InstanceNew("Frame")
+                    ColumnFrame.Name = "Column" .. i
+                    ColumnFrame.Size = UDim2New(0.5, -5, 0, 0)
+                    ColumnFrame.BackgroundTransparency = 1
+                    ColumnFrame.AutomaticSize = Enum.AutomaticSize.Y
+                    ColumnFrame.Parent = GridFrame
+
+                    local ColumnLayout = InstanceNew("UIListLayout")
+                    ColumnLayout.FillDirection = Enum.FillDirection.Vertical
+                    ColumnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+                    ColumnLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+                    ColumnLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                    ColumnLayout.Padding = UDimNew(0, 8)
+                    ColumnLayout.Parent = ColumnFrame
+
+                    ColumnsList[i] = ColumnFrame
+                end
+
+                return GridFrame, ColumnsList
+            end
+
+            local _, PageColumns = CreateColumnGrid(Columns)
+
+            local PageMeta = {}
+            PageMeta.Instance = PageFrame
+            PageMeta.Columns = PageColumns
+            PageMeta.Sections = {}
+
+            function PageMeta:Section(Data)
+                Data = Data or {}
+                local SectionName = Data.Name or Data.name or "Section"
+                local Side = Data.Side or Data.side or 1
+
+                local Column = PageColumns[Side]
+                if not Column then Column = PageColumns[1] end
+
+                local SectionFrame = InstanceNew("Frame")
+                SectionFrame.Name = SectionName
+                SectionFrame.Size = UDim2New(1, 0, 0, 0)
+                SectionFrame.BackgroundColor3 = Library.Theme.Inline
+                SectionFrame.BorderSizePixel = 0
+                SectionFrame.AutomaticSize = Enum.AutomaticSize.Y
+                SectionFrame.Parent = Column
+
+                -- Section header
+                local SectionHeader = InstanceNew("TextLabel")
+                SectionHeader.Name = "Header"
+                SectionHeader.Size = UDim2New(1, 0, 0, 28)
+                SectionHeader.BackgroundColor3 = Library.Theme.Element
+                SectionHeader.BorderSizePixel = 0
+                SectionHeader.Text = "  " .. SectionName
+                SectionHeader.TextColor3 = Library.Theme.Accent
+                SectionHeader.TextSize = 13
+                SectionHeader.Font = Enum.Font.GothamSemibold
+                SectionHeader.TextXAlignment = Enum.TextXAlignment.Left
+                SectionHeader.Parent = SectionFrame
+
+                -- Section content
+                local SectionContent = InstanceNew("Frame")
+                SectionContent.Name = "Content"
+                SectionContent.Size = UDim2New(1, -10, 0, 0)
+                SectionContent.Position = UDim2New(0, 5, 0, 33)
+                SectionContent.BackgroundTransparency = 1
+                SectionContent.AutomaticSize = Enum.AutomaticSize.Y
+                SectionContent.Parent = SectionFrame
+
+                local ContentLayout = InstanceNew("UIListLayout")
+                ContentLayout.FillDirection = Enum.FillDirection.Vertical
+                ContentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+                ContentLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+                ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                ContentLayout.Padding = UDimNew(0, 6)
+                ContentLayout.Parent = SectionContent
+
+                local SectionMeta = {}
+                SectionMeta.Instance = SectionFrame
+                SectionMeta.Content = SectionContent
+
+                -- Divider
+                function SectionMeta:Divider()
+                    local Divider = InstanceNew("Frame")
+                    Divider.Size = UDim2New(1, 0, 0, 1)
+                    Divider.BackgroundColor3 = Library.Theme.Outline
+                    Divider.BorderSizePixel = 0
+                    Divider.Parent = SectionContent
+                end
+
+                -- Label
+                function SectionMeta:Label(Data)
+                    Data = Data or {}
+                    local LabelName = Data.Name or Data.name or "Label"
+                    local Alignment = Data.Alignment or Data.alignment or "Left"
+
+                    local Label = InstanceNew("TextLabel")
+                    Label.Name = LabelName
+                    Label.Size = UDim2New(1, 0, 0, 20)
+                    Label.BackgroundTransparency = 1
+                    Label.Text = LabelName
+                    Label.TextColor3 = Library.Theme.Text
+                    Label.TextSize = 13
+                    Label.Font = Enum.Font.Gotham
+                    Label.TextXAlignment = (Alignment == "Center" and Enum.TextXAlignment.Center) or (Alignment == "Right" and Enum.TextXAlignment.Right) or Enum.TextXAlignment.Left
+                    Label.Parent = SectionContent
+
+                    return Label
+                end
+
+                -- Toggle
+                function SectionMeta:Toggle(Data)
+                    Data = Data or {}
+                    local ToggleName = Data.Name or Data.name or "Toggle"
+                    local Default = Data.Default or Data.default or false
+                    local Flag = Data.Flag or Data.flag or ("Flag_" .. tostring(Library.UnnamedFlags + 1))
+                    Library.UnnamedFlags = Library.UnnamedFlags + 1
+                    local Callback = Data.Callback or Data.callback or function() end
+
+                    local ToggleFrame = InstanceNew("Frame")
+                    ToggleFrame.Name = ToggleName
+                    ToggleFrame.Size = UDim2New(1, 0, 0, 24)
+                    ToggleFrame.BackgroundTransparency = 1
+                    ToggleFrame.Parent = SectionContent
+
+                    local ToggleButton = InstanceNew("TextButton")
+                    ToggleButton.Name = "ToggleButton"
+                    ToggleButton.Size = UDim2New(0, 16, 0, 16)
+                    ToggleButton.Position = UDim2New(0, 0, 0, 4)
+                    ToggleButton.BackgroundColor3 = Default and Library.Theme.Accent or Library.Theme.Element
+                    ToggleButton.BorderSizePixel = 0
+                    ToggleButton.Text = ""
+                    ToggleButton.Parent = ToggleFrame
+
+                    local ToggleLabel = InstanceNew("TextLabel")
+                    ToggleLabel.Name = "Label"
+                    ToggleLabel.Size = UDim2New(1, -22, 1, 0)
+                    ToggleLabel.Position = UDim2New(0, 22, 0, 0)
+                    ToggleLabel.BackgroundTransparency = 1
+                    ToggleLabel.Text = ToggleName
+                    ToggleLabel.TextColor3 = Library.Theme.Text
+                    ToggleLabel.TextSize = 13
+                    ToggleLabel.Font = Enum.Font.Gotham
+                    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    ToggleLabel.Parent = ToggleFrame
+
+                    local Toggled = Default
+                    Library.Flags[Flag] = Toggled
+
+                    local function UpdateToggle()
+                        ToggleButton.BackgroundColor3 = Toggled and Library.Theme.Accent or Library.Theme.Element
+                        Library.Flags[Flag] = Toggled
+                        Callback(Toggled)
+                    end
+
+                    ToggleButton.MouseButton1Click:Connect(function()
+                        Toggled = not Toggled
+                        UpdateToggle()
+                    end)
+
+                    return ToggleFrame
+                end
+
+                -- Button
+                function SectionMeta:Button(Data)
+                    Data = Data or {}
+                    local ButtonName = Data.Name or Data.name or "Button"
+                    local Callback = Data.Callback or Data.callback or function() end
+
+                    local Button = InstanceNew("TextButton")
+                    Button.Name = ButtonName
+                    Button.Size = UDim2New(1, 0, 0, 28)
+                    Button.BackgroundColor3 = Library.Theme.Element
+                    Button.BorderSizePixel = 0
+                    Button.Text = "  " .. ButtonName
+                    Button.TextColor3 = Library.Theme.Text
+                    Button.TextSize = 13
+                    Button.Font = Enum.Font.Gotham
+                    Button.TextXAlignment = Enum.TextXAlignment.Left
+                    Button.Parent = SectionContent
+
+                    Button.MouseButton1Click:Connect(Callback)
+
+                    Button.MouseEnter:Connect(function()
+                        Button.BackgroundColor3 = Library.Theme["Hovered Element"]
+                    end)
+                    Button.MouseLeave:Connect(function()
+                        Button.BackgroundColor3 = Library.Theme.Element
+                    end)
+
+                    return Button
+                end
+
+                -- Slider
+                function SectionMeta:Slider(Data)
+                    Data = Data or {}
+                    local SliderName = Data.Name or Data.name or "Slider"
+                    local Min = Data.Min or Data.min or 0
+                    local Max = Data.Max or Data.max or 100
+                    local Decimals = Data.Decimals or Data.decimals or 0
+                    local Default = Data.Default or Data.default or Min
+                    local Suffix = Data.Suffix or Data.suffix or ""
+                    local Flag = Data.Flag or Data.flag or ("Flag_" .. tostring(Library.UnnamedFlags + 1))
+                    Library.UnnamedFlags = Library.UnnamedFlags + 1
+                    local Callback = Data.Callback or Data.callback or function() end
+
+                    local SliderFrame = InstanceNew("Frame")
+                    SliderFrame.Name = SliderName
+                    SliderFrame.Size = UDim2New(1, 0, 0, 36)
+                    SliderFrame.BackgroundTransparency = 1
+                    SliderFrame.Parent = SectionContent
+
+                    local SliderLabel = InstanceNew("TextLabel")
+                    SliderLabel.Name = "Label"
+                    SliderLabel.Size = UDim2New(0.7, 0, 0, 18)
+                    SliderLabel.BackgroundTransparency = 1
+                    SliderLabel.Text = SliderName
+                    SliderLabel.TextColor3 = Library.Theme.Text
+                    SliderLabel.TextSize = 13
+                    SliderLabel.Font = Enum.Font.Gotham
+                    SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    SliderLabel.Parent = SliderFrame
+
+                    local ValueLabel = InstanceNew("TextLabel")
+                    ValueLabel.Name = "Value"
+                    ValueLabel.Size = UDim2New(0.3, 0, 0, 18)
+                    ValueLabel.Position = UDim2New(0.7, 0, 0, 0)
+                    ValueLabel.BackgroundTransparency = 1
+                    ValueLabel.Text = tostring(Default) .. Suffix
+                    ValueLabel.TextColor3 = Library.Theme.Accent
+                    ValueLabel.TextSize = 13
+                    ValueLabel.Font = Enum.Font.Gotham
+                    ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
+                    ValueLabel.Parent = SliderFrame
+
+                    local SliderBar = InstanceNew("Frame")
+                    SliderBar.Name = "Bar"
+                    SliderBar.Size = UDim2New(1, 0, 0, 6)
+                    SliderBar.Position = UDim2New(0, 0, 0, 24)
+                    SliderBar.BackgroundColor3 = Library.Theme.Element
+                    SliderBar.BorderSizePixel = 0
+                    SliderBar.Parent = SliderFrame
+
+                    local SliderFill = InstanceNew("Frame")
+                    SliderFill.Name = "Fill"
+                    SliderFill.BackgroundColor3 = Library.Theme.Accent
+                    SliderFill.BorderSizePixel = 0
+                    SliderFill.Size = UDim2New((Default - Min) / (Max - Min), 0, 1, 0)
+                    SliderFill.Parent = SliderBar
+
+                    local SliderButton = InstanceNew("TextButton")
+                    SliderButton.Name = "Drag"
+                    SliderButton.Size = UDim2New(1, 0, 1, 0)
+                    SliderButton.BackgroundTransparency = 1
+                    SliderButton.Text = ""
+                    SliderButton.Parent = SliderBar
+
+                    local Dragging = false
+                    local CurrentValue = Default
+
+                    local function UpdateSlider(input)
+                        local Pos = input.Position.X - SliderBar.AbsolutePosition.X
+                        local Size = SliderBar.AbsoluteSize.X
+                        local Ratio = MathClamp(Pos / Size, 0, 1)
+                        local Val = Min + (Max - Min) * Ratio
+                        if Decimals > 0 then
+                            Val = tonumber(string.format("%." .. Decimals .. "f", Val))
+                        else
+                            Val = MathFloor(Val + 0.5)
+                        end
+                        CurrentValue = Val
+                        SliderFill.Size = UDim2New(Ratio, 0, 1, 0)
+                        ValueLabel.Text = tostring(Val) .. Suffix
+                        Library.Flags[Flag] = Val
+                        Callback(Val)
+                    end
+
+                    SliderButton.MouseButton1Down:Connect(function(input)
+                        Dragging = true
+                        UpdateSlider(input)
+                    end)
+
+                    Library:Connect(UserInputService.InputChanged, function(input)
+                        if Dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                            UpdateSlider(input)
+                        end
+                    end)
+
+                    Library:Connect(UserInputService.InputEnded, function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            Dragging = false
+                        end
+                    end)
+
+                    return SliderFrame
+                end
+
+                -- Textbox
+                function SectionMeta:Textbox(Data)
+                    Data = Data or {}
+                    local TextboxName = Data.Name or Data.name or "Textbox"
+                    local Default = Data.Default or Data.default or ""
+                    local Placeholder = Data.Placeholder or Data.placeholder or ""
+                    local Flag = Data.Flag or Data.flag or ("Flag_" .. tostring(Library.UnnamedFlags + 1))
+                    Library.UnnamedFlags = Library.UnnamedFlags + 1
+                    local Callback = Data.Callback or Data.callback or function() end
+
+                    local TextboxFrame = InstanceNew("Frame")
+                    TextboxFrame.Name = TextboxName
+                    TextboxFrame.Size = UDim2New(1, 0, 0, 28)
+                    TextboxFrame.BackgroundTransparency = 1
+                    TextboxFrame.Parent = SectionContent
+
+                    local TextboxLabel = InstanceNew("TextLabel")
+                    TextboxLabel.Name = "Label"
+                    TextboxLabel.Size = UDim2New(0.4, 0, 1, 0)
+                    TextboxLabel.BackgroundTransparency = 1
+                    TextboxLabel.Text = "  " .. TextboxName
+                    TextboxLabel.TextColor3 = Library.Theme.Text
+                    TextboxLabel.TextSize = 13
+                    TextboxLabel.Font = Enum.Font.Gotham
+                    TextboxLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    TextboxLabel.Parent = TextboxFrame
+
+                    local TextBox = InstanceNew("TextBox")
+                    TextBox.Name = "Input"
+                    TextBox.Size = UDim2New(0.6, -5, 1, -4)
+                    TextBox.Position = UDim2New(0.4, 5, 0, 2)
+                    TextBox.BackgroundColor3 = Library.Theme.Element
+                    TextBox.BorderSizePixel = 0
+                    TextBox.Text = Default
+                    TextBox.PlaceholderText = Placeholder
+                    TextBox.TextColor3 = Library.Theme.Text
+                    TextBox.PlaceholderColor3 = FromRGB(120, 120, 120)
+                    TextBox.TextSize = 13
+                    TextBox.Font = Enum.Font.Gotham
+                    TextBox.Parent = TextboxFrame
+
+                    TextBox.FocusLost:Connect(function(enter)
+                        Library.Flags[Flag] = TextBox.Text
+                        Callback(TextBox.Text, enter)
+                    end)
+
+                    return TextboxFrame
+                end
+
+                -- Dropdown
+                function SectionMeta:Dropdown(Data)
+                    Data = Data or {}
+                    local DropdownName = Data.Name or Data.name or "Dropdown"
+                    local Items = Data.Items or Data.items or {}
+                    local Default = Data.Default or Data.default or (Items[1] or "")
+                    local Flag = Data.Flag or Data.flag or ("Flag_" .. tost
+-- ============================================================
+-- UI Construction with NEW Library
+-- ============================================================
+local Window = Library:Window({
+    Name = "Universal Silent Aim",
+    Size = UDim2.new(0, 580, 0, 450)
+})
+
+-- Main Page
+local MainPage = Window:Page({
+    Name = "Main",
+    Columns = 2
+})
+
+-- Aim Section
+local AimSection = MainPage:Section({
+    Name = "Aim Settings",
+    Side = 1
+})
+
+AimSection:Toggle({
+    Name = "Enabled",
+    Default = false,
+    Flag = "SA_Enabled",
+    Callback = function(v)
+        SilentAimSettings.Enabled = v
+        mouse_box.Visible = v
+    end
+})
+
+AimSection:Toggle({
+    Name = "Team Check",
+    Default = false,
+    Flag = "SA_TeamCheck",
+    Callback = function(v)
+        SilentAimSettings.TeamCheck = v
+    end
+})
+
+AimSection:Toggle({
+    Name = "Visible Check",
+    Default = false,
+    Flag = "SA_VisibleCheck",
+    Callback = function(v)
+        SilentAimSettings.VisibleCheck = v
+    end
+})
+
+AimSection:Dropdown({
+    Name = "Target Part",
+    Items = {"Head", "HumanoidRootPart", "Random"},
+    Default = "HumanoidRootPart",
+    Flag = "SA_TargetPart",
+    Callback = function(v)
+        SilentAimSettings.TargetPart = v
+    end
+})
+
+AimSection:Dropdown({
+    Name = "Silent Aim Method",
+    Items = {"Raycast", "FindPartOnRay", "FindPartOnRayWithWhitelist", "FindPartOnRayWithIgnoreList", "Mouse.Hit/Target"},
+    Default = "Raycast",
+    Flag = "SA_Method",
+    Callback = function(v)
+        SilentAimSettings.SilentAimMethod = v
+    end
+})
+
+AimSection:Slider({
+    Name = "Hit Chance",
+    Min = 0,
+    Max = 100,
+    Default = 100,
+    Suffix = "%",
+    Flag = "SA_HitChance",
+    Callback = function(v)
+        SilentAimSettings.HitChance = v
+    end
+})
+
+-- FOV Section
+local FOVSection = MainPage:Section({
+    Name = "Field of View",
+    Side = 2
+})
+
+FOVSection:Toggle({
+    Name = "Show FOV Circle",
+    Default = false,
+    Flag = "SA_FOVVisible",
+    Callback = function(v)
+        fov_circle.Visible = v
+        SilentAimSettings.FOVVisible = v
+    end
+})
+
+FOVSection:Slider({
+    Name = "FOV Radius",
+    Min = 0,
+    Max = 360,
+    Default = 130,
+    Suffix = "px",
+    Flag = "SA_FOVRadius",
+    Callback = function(v)
+        fov_circle.Radius = v
+        SilentAimSettings.FOVRadius = v
+    end
+})
+
+FOVSection:Toggle({
+    Name = "Show Target Indicator",
+    Default = false,
+    Flag = "SA_ShowTarget",
+    Callback = function(v)
+        mouse_box.Visible = v
+        SilentAimSettings.ShowSilentAimTarget = v
+    end
+})
+
+-- Prediction Section
+local PredictionSection = MainPage:Section({
+    Name = "Prediction",
+    Side = 2
+})
+
+PredictionSection:Toggle({
+    Name = "Mouse.Hit Prediction",
+    Default = false,
+    Flag = "SA_Prediction",
+    Callback = function(v)
+        SilentAimSettings.MouseHitPrediction = v
+    end
+})
+
+PredictionSection:Slider({
+    Name = "Prediction Amount",
+    Min = 0.165,
+    Max = 1,
+    Decimals = 3,
+    Default = 0.165,
+    Suffix = "",
+    Flag = "SA_PredictionAmount",
+    Callback = function(v)
+        PredictionAmount = v
+        SilentAimSettings.MouseHitPredictionAmount = v
+    end
+})
+
+-- Config Page
+local ConfigPage = Window:Page({
+    Name = "Configs",
+    Columns = 2
+})
+
+-- Save Config Section
+local SaveConfigSection = ConfigPage:Section({
+    Name = "Save Configuration",
+    Side = 1
+})
+
+local ConfigFileName = ""
+
+SaveConfigSection:Textbox({
+    Name = "File Name",
+    Default = "",
+    Placeholder = "Enter config name...",
+    Flag = "SA_ConfigName",
+    Callback = function(v)
+        ConfigFileName = v
+    end
+})
+
+SaveConfigSection:Button({
+    Name = "Create Configuration",
+    Callback = function()
+        if ConfigFileName and ConfigFileName ~= "" then
+            UpdateFile(ConfigFileName)
+        end
+    end
+})
+
+-- Load Config Section
+local LoadConfigSection = ConfigPage:Section({
+    Name = "Load Configuration",
+    Side = 2
+})
+
+local ConfigsList = GetFiles()
+
+LoadConfigSection:Dropdown({
+    Name = "Saved Configs",
+    Items = #ConfigsList > 0 and ConfigsList or {"No configs found"},
+    Default = #ConfigsList > 0 and ConfigsList[1] or "No configs found",
+    Flag = "SA_LoadConfig",
+    Callback = function(v)
+        SelectedFile = v
+    end
+})
+
+LoadConfigSection:Button({
+    Name = "Load Configuration",
+    Callback = function()
+        if SelectedFile and SelectedFile ~= "" and SelectedFile ~= "No configs found" then
+            LoadFile(SelectedFile)
+        end
+    end
+})
+
+LoadConfigSection:Button({
+    Name = "Save Current Config",
+    Callback = function()
+        if SelectedFile and SelectedFile ~= "" and SelectedFile ~= "No configs found" then
+            UpdateFile(SelectedFile)
+        end
+    end
+})
+
+-- ============================================================
+-- Render Loop
+-- ============================================================
+resume(create(function()
+    RenderStepped:Connect(function()
+        if SilentAimSettings.ShowSilentAimTarget and SilentAimSettings.Enabled then
+            local closest = getClosestPlayer()
+            if closest then 
+                local Root = closest.Parent.PrimaryPart or closest
+                local RootToViewportPoint, IsOnScreen = WorldToViewportPoint(Camera, Root.Position);
+                
+                mouse_box.Visible = IsOnScreen
+                mouse_box.Position = Vector2.new(RootToViewportPoint.X, RootToViewportPoint.Y)
+            else 
+                mouse_box.Visible = false 
+                mouse_box.Position = Vector2.new()
+            end
+        end
+        
+        if SilentAimSettings.FOVVisible then 
+            fov_circle.Visible = SilentAimSettings.FOVVisible
+            fov_circle.Position = getMousePosition()
+        end
+    end)
+end))
+
+-- ============================================================
+-- Hooks (unchanged)
+-- ============================================================
+local oldNamecall
+oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
+    local Method = getnamecallmethod()
+    local Arguments = {...}
+    local self = Arguments[1]
+    local chance = CalculateChance(SilentAimSettings.HitChance)
+    if SilentAimSettings.Enabled and self == workspace and not checkcaller() and chance == true then
+        if Method == "FindPartOnRayWithIgnoreList" and SilentAimSettings.SilentAimMethod == Method then
+            if ValidateArguments(Arguments, ExpectedArguments.FindPartOnRayWithIgnoreList) then
+                local A_Ray = Arguments[2]
+                local HitPart = getClosestPlayer()
+                if HitPart then
+                    local Origin = A_Ray.Origin
+                    local Direction = getDirection(Origin, HitPart.Position)
+                    Arguments[2] = Ray.new(Origin, Direction)
+                    return oldNamecall(unpack(Arguments))
+                end
+            end
+        elseif Method == "FindPartOnRayWithWhitelist" and SilentAimSettings.SilentAimMethod == Method then
+            if ValidateArguments(Arguments, ExpectedArguments.FindPartOnRayWithWhitelist) then
+                local A_Ray = Arguments[2]
+                local HitPart = getClosestPlayer()
+                if HitPart then
+                    local Origin = A_Ray.Origin
+                    local Direction = getDirection(Origin, HitPart.Position)
+                    Arguments[2] = Ray.new(Origin, Direction)
+                    return oldNamecall(unpack(Arguments))
+                end
+            end
+        elseif (Method == "FindPartOnRay" or Method == "findPartOnRay") and SilentAimSettings.SilentAimMethod:lower() == Method:lower() then
+            if ValidateArguments(Arguments, ExpectedArguments.FindPartOnRay) then
+                local A_Ray = Arguments[2]
+                local HitPart = getClosestPlayer()
+                if HitPart then
+                    local Origin = A_Ray.Origin
+                    local Direction = getDirection(Origin, HitPart.Position)
+                    Arguments[2] = Ray.new(Origin, Direction)
+                    return oldNamecall(unpack(Arguments))
+                end
+            end
+        elseif Method == "Raycast" and SilentAimSettings.SilentAimMethod == Method then
+            if ValidateArguments(Arguments, ExpectedArguments.Raycast) then
+                local A_Origin = Arguments[2]
+                local HitPart = getClosestPlayer()
+                if HitPart then
+                    Arguments[3] = getDirection(A_Origin, HitPart.Position)
+                    return oldNamecall(unpack(Arguments))
+                end
+            end
+        end
+    end
+    return oldNamecall(...)
+end))
+
+local oldIndex = nil 
+oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, Index)
+    if self == Mouse and not checkcaller() and SilentAimSettings.Enabled and SilentAimSettings.SilentAimMethod == "Mouse.Hit/Target" and getClosestPlayer() then
+        local HitPart = getClosestPlayer()
+         
+        if Index == "Target" or Index == "target" then 
+            return HitPart
+        elseif Index == "Hit" or Index == "hit" then 
+            return ((SilentAimSettings.MouseHitPrediction and (HitPart.CFrame + (HitPart.Velocity * PredictionAmount))) or (not SilentAimSettings.MouseHitPrediction and HitPart.CFrame))
+        elseif Index == "X" or Index == "x" then 
+            return self.X 
+        elseif Index == "Y" or Index == "y" then 
+            return self.Y 
+        elseif Index == "UnitRay" then 
+            return Ray.new(self.Origin, (self.Hit - self.Origin).Unit)
+        end
+    end
+
+    return oldIndex(self, Index)
+end))
