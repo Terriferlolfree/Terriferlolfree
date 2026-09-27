@@ -1,0 +1,1519 @@
+-- ============================================================================
+-- ANTI-CHEAT BYPASSES & SERVICES INITIALIZATION
+-- ============================================================================
+
+pcall(function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/dievss/DaHoodACBypass/refs/heads/main/Source.lua'))()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/dievss/AdonisACBypass/refs/heads/main/Source.lua'))()
+end)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
+local CoreGui = game:GetService("CoreGui")
+local Stats = game:GetService("Stats")
+
+local LocalPlayer = Players.LocalPlayer
+local CurrentCamera = workspace.CurrentCamera
+
+pcall(function()
+    setfpscap(1000)
+end)
+
+-- Helper to make any GUI element draggable (Mobile & PC)
+local function MakeDraggable(gui)
+    local dragging, dragStart, startPos
+    gui.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = gui.Position
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end
+
+-- ============================================================================
+-- GLOBAL SETTINGS MATRIX
+-- ============================================================================
+
+getgenv().setting = {
+    AIMBOT = {
+        camlock = false,
+        targetaim = false,
+        aimpart = 'HumanoidRootPart',
+        antigroundshoot = false,
+        smoothenabled = false,
+        smoothvalue = 0.59,
+        resolver = false,
+    },
+    SILENTAIM = {
+        Enabled = false,
+        FOVRadius = 100,
+        TargetPart = 'HumanoidRootPart',
+        FOVCircleColor = Color3.fromRGB(255, 255, 255),
+        Prediction = 0.2,
+        TeamCheck = false,
+        ShowFOV = false,
+    },
+    TARGET = {
+        LookAt = false,
+        ViewTarget = false,
+        Tracer = false,
+        Highlight = false,
+    },
+    PREDICTION = {
+        autopred = false,
+        horizontalPrediction = 0.1767,
+        verticalPrediction = 0.1767,
+        jumpoffset = 0.66,
+        falloffset = 1,
+    },
+    AUTOAIR = {
+        enabled = false,
+        delay = 0.208,
+    },
+    ESP = {
+        Enabled = true,
+        Box_Color = Color3.new(1, 1, 1),
+        BoxEsp = false,
+        NameEsp = false,
+        Name_Color = Color3.new(1, 1, 1),
+        Font = 2,
+        Font_Size = 10,
+        DistanceEsp = false,
+        Distance_Color = Color3.new(1, 1, 1),
+        hpesp = false,
+        toolesp = false,
+        skeletonesp = false,
+    },
+    PLAYER = {
+        cframe = false,
+        cframespeedvalue = 5,
+        fly = false,
+        flyspeed = 50,
+    },
+    ANTIAIM = { AntiLock = false },
+    RAGE = {
+        Strafe = false,
+        Strafespeed = 10,
+        Straferadius = 10,
+        Strafeheight = 10,
+        Forcehit = false,
+        Wallbang = false,
+        BulletTP = false,
+        Rapidfire = false,
+    },
+    MISC = {
+        AutoShootCooldown = 0,
+        Macro = false,
+        AutoShoot = false,
+        AutoReload = false,
+        AutoStomp = false,
+    },
+}
+
+getgenv().crosshair = {
+    enabled = false,
+    refreshrate = 0,
+    mode = 'center',
+    position = Vector2.new(0, 0),
+    width = 1.5,
+    length = 10,
+    radius = 11,
+    color = Color3.new(1, 1, 1),
+    spin = true,
+    spin_speed = 150,
+    spin_max = 340,
+    spin_style = Enum.EasingStyle.Sine,
+    resize = true,
+    resize_speed = 150,
+    resize_min = 5,
+    resize_max = 22,
+}
+
+local Settings = getgenv().setting
+local glow = {}
+glow.currentcolor = Color3.fromRGB(240, 110, 180)
+glow.registry = {}
+
+function glow.register(obj)
+    table.insert(glow.registry, obj)
+end
+
+function glow.setcolor(newcolor)
+    glow.currentcolor = newcolor
+    for i = 1, #glow.registry do
+        local g = glow.registry[i]
+        if g and g:IsA("ImageLabel") then
+            g.ImageColor3 = newcolor
+        end
+    end
+end
+
+function glow.create(target)
+    local glowlayer = Instance.new("ImageLabel")
+    glowlayer.Name = "glowlayer"
+    glowlayer.Parent = target
+    glowlayer.BackgroundTransparency = 1
+    glowlayer.BorderSizePixel = 0
+    glowlayer.Image = "rbxassetid://18245826428"
+    glowlayer.ImageColor3 = glow.currentcolor
+    glowlayer.ImageTransparency = 0.8
+    glowlayer.ScaleType = Enum.ScaleType.Slice
+    glowlayer.SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79))
+    glowlayer.Size = UDim2.new(1, 40, 1, 40)
+    glowlayer.Position = UDim2.new(0, -20, 0, -20)
+    glowlayer.ZIndex = math.max(0, target.ZIndex - 1)
+
+    glow.register(glowlayer)
+    return glowlayer
+end
+
+local blur = Lighting:FindFirstChild("MatchaUIBlur") or Instance.new("BlurEffect")
+blur.Name = "MatchaUIBlur"
+blur.Parent = Lighting
+blur.Size = 15
+blur.Enabled = true
+
+function glow.setblur(value)
+    blur.Size = value
+end
+
+local Matcha = {
+    Flags = {},
+    Glow = glow,
+    Theme = {
+        MainBg = Color3.fromRGB(15, 15, 17),
+        HeaderBg = Color3.fromRGB(20, 20, 24),
+        CardBg = Color3.fromRGB(22, 22, 26),
+        CardBorder = Color3.fromRGB(32, 32, 38),
+        PinkAccent = Color3.fromRGB(240, 110, 180),
+        DarkToggle = Color3.fromRGB(38, 38, 45),
+        Text = Color3.fromRGB(220, 220, 225),
+        TextMuted = Color3.fromRGB(130, 130, 140),
+        InputBg = Color3.fromRGB(30, 30, 36)
+    }
+}
+
+local function Create(class, props)
+    local inst = Instance.new(class)
+    for k, v in pairs(props) do
+        inst[k] = v
+    end
+    return inst
+end
+
+local function Round(parent, r)
+    return Create("UICorner", { CornerRadius = UDim.new(0, r or 6), Parent = parent })
+end
+
+local function Stroke(parent, col)
+    return Create("UIStroke", {
+        Color = col or Matcha.Theme.CardBorder,
+        Thickness = 1,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+        Parent = parent
+    })
+end
+
+local Screen = Create("ScreenGui", {
+    Name = "MatchaCoreUI_AbyssTech",
+    ResetOnSpawn = false
+})
+
+if gethui then
+    Screen.Parent = gethui()
+elseif syn and syn.protect_gui then
+    syn.protect_gui(Screen)
+    Screen.Parent = CoreGui
+else
+    Screen.Parent = CoreGui
+end
+
+function Matcha:CreateWindow(titleText)
+    local Window = {}
+
+    local Frame = Create("Frame", {
+        Name = "MatchaMain",
+        Size = UDim2.new(0, 580, 0, 620),
+        Position = UDim2.new(0.5, -290, 0.5, -310),
+        BackgroundColor3 = Matcha.Theme.MainBg,
+        ClipsDescendants = false,
+        Parent = Screen
+    })
+    Round(Frame, 8)
+    Stroke(Frame, Matcha.Theme.CardBorder)
+    glow.create(Frame)
+    
+    Window.Frame = Frame
+
+    local Header = Create("Frame", {
+        Size = UDim2.new(1, 0, 0, 34),
+        BackgroundColor3 = Matcha.Theme.HeaderBg,
+        Parent = Frame
+    })
+    Round(Header, 8)
+
+    Create("TextLabel", {
+        Text = titleText or "Matcha - AbyssTech",
+        Font = Enum.Font.Code,
+        TextSize = 13,
+        TextColor3 = Matcha.Theme.PinkAccent,
+        Position = UDim2.new(0, 12, 0, 0),
+        Size = UDim2.new(0, 250, 1, 0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+        Parent = Header
+    })
+
+    MakeDraggable(Header)
+
+    local NavContainer = Create("Frame", {
+        Size = UDim2.new(1, -24, 0, 26),
+        Position = UDim2.new(0, 12, 0, 42),
+        BackgroundTransparency = 1,
+        Parent = Frame
+    })
+
+    Create("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        Padding = UDim.new(0, 16),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent = NavContainer
+    })
+
+    local Viewport = Create("Frame", {
+        Size = UDim2.new(1, -24, 1, -80),
+        Position = UDim2.new(0, 12, 0, 74),
+        BackgroundTransparency = 1,
+        Parent = Frame
+    })
+
+    local Tabs = {}
+
+    function Window:CreateTab(tabName)
+        local Tab = {}
+
+        local TabBtn = Create("TextButton", {
+            Text = tabName,
+            Font = Enum.Font.Code,
+            TextSize = 13,
+            TextColor3 = Matcha.Theme.TextMuted,
+            Size = UDim2.new(0, 0, 1, 0),
+            AutomaticSize = Enum.AutomaticSize.X,
+            BackgroundTransparency = 1,
+            Parent = NavContainer
+        })
+
+        local TabPage = Create("Frame", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Visible = false,
+            Parent = Viewport
+        })
+
+        local LeftCol = Create("ScrollingFrame", {
+            Size = UDim2.new(0.485, 0, 1, 0),
+            Position = UDim2.new(0, 0, 0, 0),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            ScrollBarThickness = 2,
+            ScrollBarImageColor3 = Matcha.Theme.PinkAccent,
+            Parent = TabPage
+        })
+
+        local LeftLayout = Create("UIListLayout", {
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            Padding = UDim.new(0, 12),
+            Parent = LeftCol
+        })
+
+        LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            LeftCol.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y + 16)
+        end)
+
+        local RightCol = Create("ScrollingFrame", {
+            Size = UDim2.new(0.485, 0, 1, 0),
+            Position = UDim2.new(0.515, 0, 0, 0),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            ScrollBarThickness = 2,
+            ScrollBarImageColor3 = Matcha.Theme.PinkAccent,
+            Parent = TabPage
+        })
+
+        local RightLayout = Create("UIListLayout", {
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            Padding = UDim.new(0, 12),
+            Parent = RightCol
+        })
+
+        RightLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            RightCol.CanvasSize = UDim2.new(0, 0, 0, RightLayout.AbsoluteContentSize.Y + 16)
+        end)
+
+        local function Activate()
+            for _, t in pairs(Tabs) do
+                t.Page.Visible = false
+                t.Btn.TextColor3 = Matcha.Theme.TextMuted
+            end
+            TabPage.Visible = true
+            TabBtn.TextColor3 = Matcha.Theme.Text
+        end
+
+        TabBtn.MouseButton1Click:Connect(Activate)
+        if #Tabs == 0 then Activate() end
+
+        table.insert(Tabs, { Btn = TabBtn, Page = TabPage })
+
+        local function CreateCard(title, parentCol)
+            local Card = Create("Frame", {
+                Size = UDim2.new(1, -6, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BackgroundColor3 = Matcha.Theme.CardBg,
+                Parent = parentCol
+            })
+            Round(Card, 6)
+            Stroke(Card, Matcha.Theme.CardBorder)
+
+            Create("UIPadding", {
+                PaddingTop = UDim.new(0, 10),
+                PaddingBottom = UDim.new(0, 12),
+                PaddingLeft = UDim.new(0, 10),
+                PaddingRight = UDim.new(0, 10),
+                Parent = Card
+            })
+
+            local CardLayout = Create("UIListLayout", {
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                Padding = UDim.new(0, 10),
+                Parent = Card
+            })
+
+            Create("TextLabel", {
+                Text = title,
+                Font = Enum.Font.Code,
+                TextSize = 13,
+                TextColor3 = Matcha.Theme.Text,
+                Size = UDim2.new(1, 0, 0, 16),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                BackgroundTransparency = 1,
+                LayoutOrder = 0,
+                Parent = Card
+            })
+
+            local itemOrder = 0
+            local Section = {}
+            local itemOrder = 0
+            local Section = {}
+
+            function Section:Toggle(text, flag, default, keybind, callback)
+                itemOrder = itemOrder + 1
+                Matcha.Flags[flag] = default or false
+
+                local ItemHolder = Create("Frame", {
+                    Size = UDim2.new(1, 0, 0, 20),
+                    BackgroundTransparency = 1,
+                    LayoutOrder = itemOrder,
+                    Parent = Card
+                })
+
+                local Circle = Create("Frame", {
+                    Size = UDim2.new(0, 14, 0, 14),
+                    Position = UDim2.new(0, 0, 0.5, -7),
+                    BackgroundColor3 = Matcha.Flags[flag] and Matcha.Theme.PinkAccent or Matcha.Theme.DarkToggle,
+                    Parent = ItemHolder
+                })
+                Round(Circle, 10)
+
+                Create("TextLabel", {
+                    Text = text,
+                    Font = Enum.Font.Code,
+                    TextSize = 11,
+                    TextColor3 = Matcha.Flags[flag] and Matcha.Theme.Text or Matcha.Theme.TextMuted,
+                    Position = UDim2.new(0, 20, 0, 0),
+                    Size = UDim2.new(0.7, 0, 1, 0),
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BackgroundTransparency = 1,
+                    Parent = ItemHolder
+                })
+
+                if keybind then
+                    local Badge = Create("Frame", {
+                        Size = UDim2.new(0, 50, 0, 16),
+                        Position = UDim2.new(1, -50, 0.5, -8),
+                        BackgroundColor3 = Matcha.Theme.InputBg,
+                        Parent = ItemHolder
+                    })
+                    Round(Badge, 4)
+
+                    Create("TextLabel", {
+                        Text = keybind,
+                        Font = Enum.Font.Code,
+                        TextSize = 9,
+                        TextColor3 = Matcha.Theme.Text,
+                        Size = UDim2.new(1, 0, 1, 0),
+                        BackgroundTransparency = 1,
+                        Parent = Badge
+                    })
+                end
+
+                local Clickable = Create("TextButton", {
+                    Size = UDim2.new(1, 0, 1, 0),
+                    BackgroundTransparency = 1,
+                    Text = "",
+                    Parent = ItemHolder
+                })
+
+                Clickable.MouseButton1Click:Connect(function()
+                    Matcha.Flags[flag] = not Matcha.Flags[flag]
+                    local state = Matcha.Flags[flag]
+                    TweenService:Create(Circle, TweenInfo.new(0.12), {
+                        BackgroundColor3 = state and Matcha.Theme.PinkAccent or Matcha.Theme.DarkToggle
+                    }):Play()
+                    if callback then callback(state) end
+                end)
+            end
+
+            function Section:Slider(text, flag, min, max, default, decimals, callback)
+                itemOrder = itemOrder + 1
+                Matcha.Flags[flag] = default or min
+                decimals = decimals or 0
+
+                local ItemHolder = Create("Frame", {
+                    Size = UDim2.new(1, 0, 0, 36),
+                    BackgroundTransparency = 1,
+                    LayoutOrder = itemOrder,
+                    Parent = Card
+                })
+
+                local FormatStr = (decimals > 0) and ("%." .. decimals .. "f/%." .. decimals .. "f") or "%d/%d"
+
+                Create("TextLabel", {
+                    Text = text,
+                    Font = Enum.Font.Code,
+                    TextSize = 11,
+                    TextColor3 = Matcha.Theme.TextMuted,
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Size = UDim2.new(1, 0, 0, 14),
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BackgroundTransparency = 1,
+                    Parent = ItemHolder
+                })
+
+                local Track = Create("Frame", {
+                    Size = UDim2.new(1, 0, 0, 16),
+                    Position = UDim2.new(0, 0, 0, 18),
+                    BackgroundColor3 = Matcha.Theme.InputBg,
+                    Parent = ItemHolder
+                })
+                Round(Track, 8)
+
+                local ValLabel = Create("TextLabel", {
+                    Text = string.format(FormatStr, Matcha.Flags[flag], max),
+                    Font = Enum.Font.Code,
+                    TextSize = 10,
+                    TextColor3 = Matcha.Theme.Text,
+                    Size = UDim2.new(1, 0, 1, 0),
+                    TextXAlignment = Enum.TextXAlignment.Center,
+                    BackgroundTransparency = 1,
+                    ZIndex = 2,
+                    Parent = Track
+                })
+
+                local pct = math.clamp((Matcha.Flags[flag] - min) / (max - min), 0, 1)
+                local Fill = Create("Frame", {
+                    Size = UDim2.new(pct, 0, 1, 0),
+                    BackgroundColor3 = Matcha.Theme.PinkAccent,
+                    Parent = Track
+                })
+                Round(Fill, 8)
+
+                local sliding = false
+                local function Update(input)
+                    local p = math.clamp((input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
+                    local rawVal = min + ((max - min) * p)
+                    local v = (decimals == 0) and math.floor(rawVal) or tonumber(string.format("%." .. decimals .. "f", rawVal))
+
+                    Matcha.Flags[flag] = v
+                    Fill.Size = UDim2.new(p, 0, 1, 0)
+                    ValLabel.Text = string.format(FormatStr, v, max)
+                    if callback then callback(v) end
+                end
+
+                Track.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        sliding = true
+                        Update(input)
+                    end
+                end)
+
+                UserInputService.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        sliding = false
+                    end
+                end)
+
+                UserInputService.InputChanged:Connect(function(input)
+                    if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                        Update(input)
+                    end
+                end)
+            end
+
+            function Section:Dropdown(text, flag, options, default, callback)
+                itemOrder = itemOrder + 1
+                Matcha.Flags[flag] = default or options[1]
+
+                local ItemHolder = Create("Frame", {
+                    Size = UDim2.new(1, 0, 0, 36),
+                    BackgroundTransparency = 1,
+                    LayoutOrder = itemOrder,
+                    Parent = Card
+                })
+
+                Create("TextLabel", {
+                    Text = text,
+                    Font = Enum.Font.Code,
+                    TextSize = 11,
+                    TextColor3 = Matcha.Theme.TextMuted,
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Size = UDim2.new(1, 0, 0, 14),
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BackgroundTransparency = 1,
+                    Parent = ItemHolder
+                })
+
+                local SelectField = Create("TextButton", {
+                    Size = UDim2.new(1, 0, 0, 18),
+                    Position = UDim2.new(0, 0, 0, 18),
+                    BackgroundColor3 = Matcha.Theme.InputBg,
+                    Text = "",
+                    Parent = ItemHolder
+                })
+                Round(SelectField, 4)
+
+                local SelectedLabel = Create("TextLabel", {
+                    Text = tostring(Matcha.Flags[flag]),
+                    Font = Enum.Font.Code,
+                    TextSize = 10,
+                    TextColor3 = Matcha.Theme.Text,
+                    Position = UDim2.new(0, 6, 0, 0),
+                    Size = UDim2.new(1, -12, 1, 0),
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BackgroundTransparency = 1,
+                    Parent = SelectField
+                })
+
+                local idx = table.find(options, Matcha.Flags[flag]) or 1
+                SelectField.MouseButton1Click:Connect(function()
+                    idx = (idx % #options) + 1
+                    local sel = options[idx]
+                    Matcha.Flags[flag] = sel
+                    SelectedLabel.Text = tostring(sel)
+                    if callback then callback(sel) end
+                end)
+            end
+
+            function Section:Button(text, callback)
+                itemOrder = itemOrder + 1
+                local ItemHolder = Create("Frame", {
+                    Size = UDim2.new(1, 0, 0, 24),
+                    BackgroundTransparency = 1,
+                    LayoutOrder = itemOrder,
+                    Parent = Card
+                })
+
+                local Btn = Create("TextButton", {
+                    Size = UDim2.new(1, 0, 1, 0),
+                    BackgroundColor3 = Matcha.Theme.InputBg,
+                    Text = text,
+                    Font = Enum.Font.Code,
+                    TextSize = 11,
+                    TextColor3 = Matcha.Theme.Text,
+                    Parent = ItemHolder
+                })
+                Round(Btn, 4)
+                Stroke(Btn, Matcha.Theme.CardBorder)
+
+                Btn.MouseButton1Click:Connect(function()
+                    if callback then callback() end
+                end)
+            end
+
+            function Section:Textbox(text, flag, default, callback)
+                itemOrder = itemOrder + 1
+                Matcha.Flags[flag] = default or ""
+
+                local ItemHolder = Create("Frame", {
+                    Size = UDim2.new(1, 0, 0, 36),
+                    BackgroundTransparency = 1,
+                    LayoutOrder = itemOrder,
+                    Parent = Card
+                })
+
+                Create("TextLabel", {
+                    Text = text,
+                    Font = Enum.Font.Code,
+                    TextSize = 11,
+                    TextColor3 = Matcha.Theme.TextMuted,
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Size = UDim2.new(1, 0, 0, 14),
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BackgroundTransparency = 1,
+                    Parent = ItemHolder
+                })
+
+                local InputBox = Create("TextBox", {
+                    Size = UDim2.new(1, 0, 0, 18),
+                    Position = UDim2.new(0, 0, 0, 18),
+                    BackgroundColor3 = Matcha.Theme.InputBg,
+                    Text = tostring(Matcha.Flags[flag]),
+                    Font = Enum.Font.Code,
+                    TextSize = 10,
+                    TextColor3 = Matcha.Theme.Text,
+                    ClearTextOnFocus = false,
+                    Parent = ItemHolder
+                })
+                Round(InputBox, 4)
+                Stroke(InputBox, Matcha.Theme.CardBorder)
+
+                InputBox.FocusLost:Connect(function()
+                    Matcha.Flags[flag] = InputBox.Text
+                    if callback then callback(InputBox.Text) end
+                end)
+            end
+
+            return Section
+        end
+
+        function Tab:LeftSection(title)
+            return CreateCard(title, LeftCol)
+        end
+
+        function Tab:RightSection(title)
+            return CreateCard(title, RightCol)
+        end
+
+        return Tab
+    end
+    return Window
+end
+
+local CurrentTarget = nil
+local TargetLockConnection = nil
+
+local function GetClosestTarget()
+    local maxDist = math.huge
+    local center = Vector2.new(CurrentCamera.ViewportSize.X / 2, CurrentCamera.ViewportSize.Y / 2)
+    local closestPlayer = nil
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local root = p.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                local pos = root.Position + Vector3.new(Settings.PREDICTION.horizontalPrediction, Settings.PREDICTION.verticalPrediction, 0)
+                local screenPos, onScreen = CurrentCamera:WorldToViewportPoint(pos)
+                if onScreen then
+                    local dist = (center - Vector2.new(screenPos.X, screenPos.Y)).Magnitude
+                    if dist < maxDist then
+                        closestPlayer = p
+                        maxDist = dist
+                    end
+                end
+            end
+        end
+    end
+    return closestPlayer
+end
+
+-- Sleek Mobile Floating Target Lock Button
+local FloatingLockButton = Create("TextButton", {
+    Name = "MatchaLockButton",
+    Text = "🔓 Lock",
+    Font = Enum.Font.Code,
+    TextSize = 14,
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    BackgroundColor3 = Matcha.Theme.CardBg,
+    Size = UDim2.new(0, 90, 0, 36),
+    Position = UDim2.new(0.85, 0, 0.4, 0),
+    ZIndex = 10,
+    Parent = Screen
+})
+Round(FloatingLockButton, 6)
+Stroke(FloatingLockButton, Matcha.Theme.PinkAccent)
+glow.create(FloatingLockButton)
+MakeDraggable(FloatingLockButton)
+
+local function ToggleTargetLock()
+    Settings.AIMBOT.targetaim = not Settings.AIMBOT.targetaim
+
+    if Settings.AIMBOT.targetaim then
+        CurrentTarget = GetClosestTarget()
+        if CurrentTarget and CurrentTarget.Character then
+            FloatingLockButton.Text = "🔒 Locked"
+            FloatingLockButton.TextColor3 = Color3.fromRGB(240, 110, 180)
+
+            if TargetLockConnection then TargetLockConnection:Disconnect() end
+
+            TargetLockConnection = RunService.Heartbeat:Connect(function()
+                if Settings.AIMBOT.targetaim and CurrentTarget and CurrentTarget.Character and CurrentTarget.Character:FindFirstChild("HumanoidRootPart") then
+                    local char = CurrentTarget.Character
+                    local hum = char:FindFirstChildOfClass("Humanoid")
+                    local aimPosition
+
+                    if hum then
+                        if hum.FloorMaterial ~= Enum.Material.Air then
+                            if hum:GetState() ~= Enum.HumanoidStateType.Freefall and hum:GetState() ~= Enum.HumanoidStateType.Jumping then
+                                aimPosition = char.Head.Position
+                            else
+                                aimPosition = char.Head.Position + Vector3.new(0, Settings.PREDICTION.jumpoffset, 0)
+                            end
+                        else
+                            local part = char:FindFirstChild(Settings.AIMBOT.aimpart)
+                            aimPosition = part and (part.Position + Vector3.new(0, Settings.PREDICTION.jumpoffset, 0)) or (char.Head.Position + Vector3.new(0, Settings.PREDICTION.jumpoffset, 0))
+                        end
+                    end
+
+                    if aimPosition then
+                        local targetCFrame = CFrame.new(CurrentCamera.CFrame.Position, aimPosition + Vector3.new(
+                            char.HumanoidRootPart.Velocity.X * Settings.PREDICTION.horizontalPrediction,
+                            char.HumanoidRootPart.Velocity.Y * Settings.PREDICTION.verticalPrediction,
+                            char.HumanoidRootPart.Velocity.Z * Settings.PREDICTION.horizontalPrediction
+                        ))
+
+                        if targetCFrame.Y < 0 and Settings.AIMBOT.antigroundshoot then
+                            targetCFrame = Vector3.new(targetCFrame.X, 0, targetCFrame.Z)
+                        end
+
+                        if Settings.AIMBOT.camlock then
+                            if Settings.AIMBOT.smoothenabled then
+                                targetCFrame = CurrentCamera.CFrame:Lerp(targetCFrame, Settings.AIMBOT.smoothvalue)
+                            end
+                            CurrentCamera.CFrame = targetCFrame
+                        end
+                    end
+                else
+                    Settings.AIMBOT.targetaim = false
+                    FloatingLockButton.Text = "🔓 Lock"
+                    FloatingLockButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    if TargetLockConnection then
+                        TargetLockConnection:Disconnect()
+                        TargetLockConnection = nil
+                    end
+                end
+            end)
+        else
+            Settings.AIMBOT.targetaim = false
+            FloatingLockButton.Text = "🔓 Lock"
+            FloatingLockButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        end
+    else
+        FloatingLockButton.Text = "🔓 Lock"
+        FloatingLockButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        if TargetLockConnection then
+            TargetLockConnection:Disconnect()
+            TargetLockConnection = nil
+        end
+        CurrentTarget = nil
+    end
+end
+
+FloatingLockButton.MouseButton1Click:Connect(ToggleTargetLock)
+-- LookAt Target Engine
+local bodyGyro = nil
+RunService.Heartbeat:Connect(function()
+    local myChar = LocalPlayer.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+
+    if Settings.TARGET.LookAt and CurrentTarget and CurrentTarget.Character then
+        local targetRoot = CurrentTarget.Character:FindFirstChild("HumanoidRootPart")
+        if myRoot and targetRoot then
+            if not bodyGyro then
+                bodyGyro = Instance.new("BodyGyro")
+                bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+                bodyGyro.D = 10
+                bodyGyro.P = 5000
+                bodyGyro.Parent = myRoot
+            end
+            bodyGyro.CFrame = CFrame.lookAt(myRoot.Position, targetRoot.Position)
+        end
+    elseif bodyGyro then
+        bodyGyro:Destroy()
+        bodyGyro = nil
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if Settings.TARGET.ViewTarget and CurrentTarget and CurrentTarget.Character and CurrentTarget.Character:FindFirstChildOfClass("Humanoid") then
+        CurrentCamera.CameraSubject = CurrentTarget.Character:FindFirstChildOfClass("Humanoid")
+    elseif LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        CurrentCamera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    end
+end)
+
+-- Tracer Target Engine
+local tracerLine = Drawing.new("Line")
+tracerLine.Color = Color3.new(1, 1, 1)
+tracerLine.Thickness = 1
+tracerLine.Transparency = 1
+
+RunService.RenderStepped:Connect(function()
+    if Settings.TARGET.Tracer and CurrentTarget and CurrentTarget.Character and CurrentTarget.Character:FindFirstChild("HumanoidRootPart") then
+        local pos, onScreen = CurrentCamera:WorldToViewportPoint(CurrentTarget.Character.HumanoidRootPart.Position)
+        local mousePos = UserInputService:GetMouseLocation()
+        tracerLine.From = mousePos
+        if onScreen then
+            tracerLine.To = Vector2.new(pos.X, pos.Y)
+        else
+            local unit = (Vector2.new(pos.X, pos.Y) - mousePos).Unit
+            tracerLine.To = Vector2.new(CurrentCamera.ViewportSize.X / 2, CurrentCamera.ViewportSize.Y / 2) + unit * math.max(CurrentCamera.ViewportSize.X, CurrentCamera.ViewportSize.Y)
+        end
+        tracerLine.Visible = true
+    else
+        tracerLine.Visible = false
+    end
+end)
+
+-- Target Highlight Engine
+local currentHighlight = nil
+RunService.Heartbeat:Connect(function()
+    if Settings.TARGET.Highlight and CurrentTarget and CurrentTarget.Character then
+        if not currentHighlight or currentHighlight.Parent ~= CurrentTarget.Character then
+            if currentHighlight then currentHighlight:Destroy() end
+            currentHighlight = Instance.new("Highlight")
+            currentHighlight.FillTransparency = 1
+            currentHighlight.OutlineColor = Matcha.Theme.PinkAccent
+            currentHighlight.OutlineTransparency = 0
+            currentHighlight.Parent = CurrentTarget.Character
+        end
+    elseif currentHighlight then
+        currentHighlight:Destroy()
+        currentHighlight = nil
+    end
+end)
+
+-- Auto Air Engine
+RunService.Heartbeat:Connect(function()
+    if Settings.AUTOAIR.enabled and CurrentTarget and CurrentTarget.Character and CurrentTarget.Character:FindFirstChild("HumanoidRootPart") then
+        local hum = CurrentTarget.Character:FindFirstChildOfClass("Humanoid")
+        if hum and (hum:GetState() == Enum.HumanoidStateType.Jumping or hum:GetState() == Enum.HumanoidStateType.Freefall) then
+            local tool = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
+            if tool then
+                tool:Activate()
+            end
+        end
+    end
+end)
+-- Silent Aim Engine Hook
+local fovCircle = Drawing.new("Circle")
+fovCircle.Transparency = 0.8
+fovCircle.Thickness = 1
+fovCircle.Color = Settings.SILENTAIM.FOVCircleColor
+fovCircle.Filled = false
+fovCircle.Radius = Settings.SILENTAIM.FOVRadius
+
+local function GetSilentTarget()
+    local radius = Settings.SILENTAIM.FOVRadius
+    local center = Vector2.new(CurrentCamera.ViewportSize.X / 2, CurrentCamera.ViewportSize.Y / 2)
+    local target = nil
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild(Settings.SILENTAIM.TargetPart) then
+            if not Settings.SILENTAIM.TeamCheck or p.Team ~= LocalPlayer.Team then
+                local screenPos, onScreen = CurrentCamera:WorldToViewportPoint(p.Character[Settings.SILENTAIM.TargetPart].Position)
+                if onScreen then
+                    local mag = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
+                    if mag < radius then
+                        target = p
+                        radius = mag
+                    end
+                end
+            end
+        end
+    end
+    return target
+end
+
+local rawMeta = getrawmetatable(game)
+local oldIndex = rawMeta.__index
+local oldNamecall = rawMeta.__namecall
+setreadonly(rawMeta, false)
+
+rawMeta.__index = newcclosure(function(self, idx)
+    if idx == "Hit" and Settings.SILENTAIM.Enabled then
+        local st = GetSilentTarget()
+        if st and st.Character and st.Character:FindFirstChild(Settings.SILENTAIM.TargetPart) then
+            local part = st.Character[Settings.SILENTAIM.TargetPart]
+            return part.CFrame + part.Velocity * Settings.SILENTAIM.Prediction
+        end
+    end
+    return oldIndex(self, idx)
+end)
+
+local function RedirectVector(v)
+    if typeof(v) == "Vector3" and CurrentTarget and CurrentTarget.Character and CurrentTarget.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = CurrentTarget.Character.HumanoidRootPart
+        local predicted = hrp.Position + Vector3.new(hrp.Velocity.X * Settings.PREDICTION.horizontalPrediction, hrp.Velocity.Y * Settings.PREDICTION.verticalPrediction, hrp.Velocity.Z * Settings.PREDICTION.horizontalPrediction)
+        if predicted.Y < 0 and Settings.AIMBOT.antigroundshoot then
+            predicted = Vector3.new(predicted.X, 0, predicted.Z)
+        end
+        return predicted
+    end
+    return v
+end
+
+rawMeta.__namecall = newcclosure(function(self, ...)
+    local args = {...}
+    local method = getnamecallmethod()
+    if Settings.AIMBOT.targetaim and CurrentTarget and method == "FireServer" then
+        for i, arg in ipairs(args) do
+            if typeof(arg) == "Vector3" then
+                args[i] = RedirectVector(arg)
+            end
+        end
+    end
+    return oldNamecall(self, unpack(args))
+end)
+
+setreadonly(rawMeta, true)
+
+RunService.RenderStepped:Connect(function()
+    fovCircle.Position = Vector2.new(CurrentCamera.ViewportSize.X / 2, CurrentCamera.ViewportSize.Y / 2)
+    fovCircle.Radius = Settings.SILENTAIM.FOVRadius
+    fovCircle.Visible = Settings.SILENTAIM.Enabled and Settings.SILENTAIM.ShowFOV
+    fovCircle.Color = Settings.SILENTAIM.FOVCircleColor
+end)
+
+-- CFrame Movement Engine
+RunService.Heartbeat:Connect(function()
+    if Settings.PLAYER.cframe and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        local hrp = LocalPlayer.Character.HumanoidRootPart
+        local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        hrp.CFrame = hrp.CFrame + hum.MoveDirection * Settings.PLAYER.cframespeedvalue
+    end
+end)
+
+local flyBodyGyro, flyBodyVel
+local function ToggleFly(state)
+    Settings.PLAYER.fly = state
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local root = char.PrimaryPart or char:FindFirstChild("HumanoidRootPart")
+
+    if Settings.PLAYER.fly and hum and root then
+        hum.PlatformStand = true
+        flyBodyGyro = Instance.new("BodyGyro", root)
+        flyBodyGyro.P = 90000
+        flyBodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        flyBodyGyro.CFrame = CurrentCamera.CFrame
+
+        flyBodyVel = Instance.new("BodyVelocity", root)
+        flyBodyVel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+
+        task.spawn(function()
+            while Settings.PLAYER.fly and char and hum.Parent do
+                flyBodyGyro.CFrame = CurrentCamera.CFrame
+                local moveDir = hum.MoveDirection
+                local vel = moveDir.Magnitude > 0 and (CurrentCamera.CFrame.LookVector * moveDir.Magnitude) or Vector3.new(0, 0, 0)
+                local vertical = 0
+                if UserInputService:IsKeyDown(Enum.KeyCode.Space) then vertical = Settings.PLAYER.flyspeed end
+                if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then vertical = -Settings.PLAYER.flyspeed end
+
+                flyBodyVel.Velocity = vel * Settings.PLAYER.flyspeed + Vector3.new(0, vertical, 0)
+                hum:ChangeState(Enum.HumanoidStateType.Freefall)
+                RunService.RenderStepped:Wait()
+            end
+            if flyBodyGyro then flyBodyGyro:Destroy() end
+            if flyBodyVel then flyBodyVel:Destroy() end
+            if hum then hum.PlatformStand = false end
+        end)
+    else
+        if flyBodyGyro then flyBodyGyro:Destroy() end
+        if flyBodyVel then flyBodyVel:Destroy() end
+        if hum then hum.PlatformStand = false end
+    end
+end
+
+-- Macro / Spin Engine
+RunService.RenderStepped:Connect(function()
+    if Settings.MISC.Macro and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LocalPlayer.Character.HumanoidRootPart
+        local look = CurrentCamera.CFrame.LookVector
+        hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + Vector3.new(look.X, 0, look.Z))
+    end
+end)
+local autoShootEquippedTool = nil
+local function HandleTool(tool)
+    if tool:IsA("Tool") then
+        autoShootEquippedTool = tool
+        while Settings.MISC.AutoShoot and tool.Parent == LocalPlayer.Character do
+            tool:Activate()
+            task.wait(Settings.MISC.AutoShootCooldown)
+        end
+    end
+end
+
+if LocalPlayer.Character then
+    LocalPlayer.Character.ChildAdded:Connect(HandleTool)
+end
+LocalPlayer.CharacterAdded:Connect(function(char)
+    char.ChildAdded:Connect(HandleTool)
+end)
+
+-- Auto Reload & Auto Stomp Coroutines
+task.spawn(function()
+    while task.wait(0.5) do
+        if Settings.MISC.AutoReload and LocalPlayer.Character then
+            local tool = LocalPlayer.Character:FindFirstChildWhichIsA("Tool")
+            if tool and tool:FindFirstChild("Ammo") and tool.Ammo.Value <= 0 then
+                game:GetService("ReplicatedStorage"):FindFirstChild("MainEvent"):FireServer("Reload", tool)
+            end
+        end
+        if Settings.MISC.AutoStomp then
+            game:GetService("ReplicatedStorage"):FindFirstChild("MainEvent"):FireServer("Stomp")
+        end
+    end
+end)
+
+-- Rage Strafe Engine
+RunService.RenderStepped:Connect(function()
+    if Settings.RAGE.Strafe and CurrentTarget and CurrentTarget.Character and CurrentTarget.Character:FindFirstChild("HumanoidRootPart") then
+        local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local targetRoot = CurrentTarget.Character.HumanoidRootPart
+        if myRoot then
+            local t = tick() * Settings.RAGE.Strafespeed
+            local offset = Vector3.new(math.cos(t) * Settings.RAGE.Straferadius, Settings.RAGE.Strafeheight, math.sin(t) * Settings.RAGE.Straferadius)
+            local pos = targetRoot.Position + offset
+            myRoot.CFrame = CFrame.new(pos, Vector3.new(targetRoot.Position.X, pos.Y, targetRoot.Position.Z))
+        end
+    end
+end)
+
+-- Auto Ping Prediction Engine
+RunService.Heartbeat:Connect(function()
+    if Settings.PREDICTION.autopred then
+        local pingStr = Stats.Network.ServerStatsItem['Data Ping']:GetValueString()
+        local pingNum = tonumber(pingStr:match('%d+'))
+        if pingNum then
+            local calc = (pingNum / 1000) + 0.037
+            Settings.PREDICTION.horizontalPrediction = calc
+            Settings.PREDICTION.verticalPrediction = calc
+        end
+    end
+end)
+
+-- ESP Engine
+local function CreateESP(player)
+    if player == LocalPlayer then return end
+    local boxLines = {
+        top = Drawing.new("Line"),
+        bottom = Drawing.new("Line"),
+        left = Drawing.new("Line"),
+        right = Drawing.new("Line")
+    }
+    for _, l in pairs(boxLines) do
+        l.Thickness = 1
+        l.Color = Settings.ESP.Box_Color
+        l.Visible = false
+    end
+
+    local nameText = Drawing.new("Text")
+    nameText.Size = 13
+    nameText.Center = true
+    nameText.Outline = true
+    nameText.Visible = false
+
+    local distText = Drawing.new("Text")
+    distText.Size = 12
+    distText.Center = true
+    distText.Outline = true
+    distText.Visible = false
+
+    local hpText = Drawing.new("Text")
+    hpText.Size = 12
+    hpText.Center = true
+    hpText.Outline = true
+    hpText.Color = Color3.fromRGB(0, 255, 120)
+    hpText.Visible = false
+
+    local conn
+    conn = RunService.RenderStepped:Connect(function()
+        if Settings.ESP.Enabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Head") then
+            local hrp = player.Character.HumanoidRootPart
+            local screenPos, onScreen = CurrentCamera:WorldToViewportPoint(hrp.Position)
+
+            if onScreen then
+                local headPos = CurrentCamera:WorldToViewportPoint(player.Character.Head.Position)
+                local feetPos = CurrentCamera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
+                local height = (headPos - feetPos).Magnitude * 1.5
+                local width = height / 2
+
+                if Settings.ESP.BoxEsp then
+                    boxLines.top.From = Vector2.new(screenPos.X - width / 2, screenPos.Y - height / 2)
+                    boxLines.top.To = Vector2.new(screenPos.X + width / 2, screenPos.Y - height / 2)
+                    boxLines.bottom.From = Vector2.new(screenPos.X - width / 2, screenPos.Y + height / 2)
+                    boxLines.bottom.To = Vector2.new(screenPos.X + width / 2, screenPos.Y + height / 2)
+                    boxLines.left.From = Vector2.new(screenPos.X - width / 2, screenPos.Y - height / 2)
+                    boxLines.left.To = Vector2.new(screenPos.X - width / 2, screenPos.Y + height / 2)
+                    boxLines.right.From = Vector2.new(screenPos.X + width / 2, screenPos.Y - height / 2)
+                    boxLines.right.To = Vector2.new(screenPos.X + width / 2, screenPos.Y + height / 2)
+
+                    for _, l in pairs(boxLines) do
+                        l.Color = Settings.ESP.Box_Color
+                        l.Visible = true
+                    end
+                else
+                    for _, l in pairs(boxLines) do l.Visible = false end
+                end
+
+                if Settings.ESP.NameEsp then
+                    nameText.Position = Vector2.new(screenPos.X, screenPos.Y - height / 2 - 16)
+                    nameText.Text = player.DisplayName .. " (@" .. player.Name .. ")"
+                    nameText.Color = Settings.ESP.Name_Color
+                    nameText.Visible = true
+                else
+                    nameText.Visible = false
+                end
+
+                if Settings.ESP.DistanceEsp then
+                    local dist = (hrp.Position - CurrentCamera.CFrame.Position).Magnitude
+                    distText.Position = Vector2.new(screenPos.X, screenPos.Y + height / 2 + 4)
+                    distText.Text = string.format("%.1f studs", dist)
+                    distText.Color = Settings.ESP.Distance_Color
+                    distText.Visible = true
+                else
+                    distText.Visible = false
+                end
+
+                if Settings.ESP.hpesp and player.Character:FindFirstChildOfClass("Humanoid") then
+                    hpText.Position = Vector2.new(screenPos.X, screenPos.Y - height / 2 - 28)
+                    hpText.Text = string.format("HP: %d", player.Character:FindFirstChildOfClass("Humanoid").Health)
+                    hpText.Visible = true
+                else
+                    hpText.Visible = false
+                end
+            else
+                for _, l in pairs(boxLines) do l.Visible = false end
+                nameText.Visible = false
+                distText.Visible = false
+                hpText.Visible = false
+            end
+        else
+            for _, l in pairs(boxLines) do l.Visible = false end
+            nameText.Visible = false
+            distText.Visible = false
+            hpText.Visible = false
+            if not player.Parent then
+                conn:Disconnect()
+                for _, l in pairs(boxLines) do l:Remove() end
+                nameText:Remove()
+                distText:Remove()
+                hpText:Remove()
+            end
+        end
+    end)
+end
+for _, p in ipairs(Players:GetPlayers()) do CreateESP(p) end
+Players.PlayerAdded:Connect(CreateESP)
+
+local crosshairLines = {}
+for i = 1, 8 do crosshairLines[i] = Drawing.new("Line") end
+local crosshairText = Drawing.new("Text")
+crosshairText.Size = 13
+crosshairText.Font = 2
+crosshairText.Outline = true
+crosshairText.Text = "Matcha"
+crosshairText.Color = Color3.new(1, 1, 1)
+
+local function SolveAngle(angle, radius)
+    return Vector2.new(math.sin(math.rad(angle)) * radius, math.cos(math.rad(angle)) * radius)
+end
+
+RunService.PostSimulation:Connect(function()
+    if getgenv().crosshair.enabled then
+        local center = getgenv().crosshair.mode == 'center' and CurrentCamera.ViewportSize / 2 or UserInputService:GetMouseLocation()
+        crosshairText.Visible = true
+        crosshairText.Position = center + Vector2.new(-crosshairText.TextBounds.X / 2, getgenv().crosshair.radius + getgenv().crosshair.length + 12)
+
+        for i = 1, 4 do
+            local lineInner = crosshairLines[i]
+            local lineOuter = crosshairLines[i + 4]
+            local angle = (i - 1) * 90
+            local len = getgenv().crosshair.length
+
+            if getgenv().crosshair.spin then
+                angle = angle + (tick() * getgenv().crosshair.spin_speed % 360)
+            end
+
+            lineOuter.Visible = true
+            lineOuter.Color = getgenv().crosshair.color
+            lineOuter.From = center + SolveAngle(angle, getgenv().crosshair.radius)
+            lineOuter.To = center + SolveAngle(angle, getgenv().crosshair.radius + len)
+            lineOuter.Thickness = getgenv().crosshair.width
+        end
+    else
+        crosshairText.Visible = false
+        for i = 1, 8 do crosshairLines[i].Visible = false end
+    end
+end)
+
+-- Hitbox Expander Engine
+local HitboxExpanded = false
+local HitboxVisible = false
+local HitboxSize = Vector3.new(15, 15, 15)
+
+task.spawn(function()
+    while task.wait(0.2) do
+        if HitboxExpanded then
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = p.Character.HumanoidRootPart
+                    hrp.CanCollide = false
+                    hrp.Size = HitboxSize
+                    hrp.Transparency = HitboxVisible and 0.5 or 1
+                    hrp.Material = Enum.Material.ForceField
+                    hrp.Color = Matcha.Theme.PinkAccent
+                end
+            end
+        end
+    end
+end)
+
+-- Fling Target Engine
+local function FlingTarget(p)
+    if not p or not p.Character or not LocalPlayer.Character then return end
+    local myRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local tRoot = p.Character:FindFirstChild("HumanoidRootPart")
+    if not myRoot or not tRoot then return end
+
+    local bVel = Instance.new("BodyVelocity")
+    bVel.Velocity = Vector3.new(9e8, 9e8, 9e8)
+    bVel.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    bVel.Parent = myRoot
+
+    local oldPos = myRoot.CFrame
+    for i = 1, 30 do
+        myRoot.CFrame = tRoot.CFrame * CFrame.Angles(math.rad(math.random(0, 360)), 0, 0)
+        task.wait()
+    end
+    bVel:Destroy()
+    myRoot.CFrame = oldPos
+end
+
+local Window = Matcha:CreateWindow("Matcha - AbyssTech")
+-- COMBAT TAB
+local CombatTab = Window:CreateTab("Combat")
+
+local AimCard = CombatTab:LeftSection("Target Lock")
+AimCard:Toggle("Enable Target Lock", "TargetAim", false, nil, function(v)
+    if v ~= Settings.AIMBOT.targetaim then ToggleTargetLock() end
+end)
+AimCard:Toggle("Enable Camlock Camera", "Camlock", false, nil, function(v)
+    Settings.AIMBOT.camlock = v
+end)
+AimCard:Dropdown("Aim Part", "AimPart", {"HumanoidRootPart", "Head", "UpperTorso", "LowerTorso"}, "HumanoidRootPart", function(v)
+    Settings.AIMBOT.aimpart = v
+end)
+AimCard:Toggle("Smoothness Enabled", "CamlockSmooth", false, nil, function(v)
+    Settings.AIMBOT.smoothenabled = v
+end)
+AimCard:Slider("Smoothness Value", "CamlockSmoothVal", 0, 1, 0.59, 2, function(v)
+    Settings.AIMBOT.smoothvalue = v
+end)
+
+local SilentCard = CombatTab:RightSection("Silent Aim")
+SilentCard:Toggle("Enable Silent Aim", "SilentEnabled", false, nil, function(v)
+    Settings.SILENTAIM.Enabled = v
+end)
+SilentCard:Toggle("Show FOV Circle", "SilentFOVVis", false, nil, function(v)
+    Settings.SILENTAIM.ShowFOV = v
+end)
+SilentCard:Slider("FOV Radius", "SilentFOVRad", 50, 800, 100, 0, function(v)
+    Settings.SILENTAIM.FOVRadius = v
+end)
+SilentCard:Dropdown("Target Part", "SilentPart", {"HumanoidRootPart", "Head", "UpperTorso"}, "HumanoidRootPart", function(v)
+    Settings.SILENTAIM.TargetPart = v
+end)
+
+local TargetOptsCard = CombatTab:RightSection("Target Options")
+TargetOptsCard:Toggle("Face Target (LookAt)", "TargetLookAt", false, nil, function(v)
+    Settings.TARGET.LookAt = v
+end)
+TargetOptsCard:Toggle("Spectate Target", "TargetView", false, nil, function(v)
+    Settings.TARGET.ViewTarget = v
+end)
+TargetOptsCard:Toggle("Tracer To Target", "TargetTracer", false, nil, function(v)
+    Settings.TARGET.Tracer = v
+end)
+TargetOptsCard:Toggle("Highlight Target", "TargetHighlight", false, nil, function(v)
+    Settings.TARGET.Highlight = v
+end)
+TargetOptsCard:Button("Teleport To Target", function()
+    if CurrentTarget and CurrentTarget.Character and CurrentTarget.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character then
+        LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame = CurrentTarget.Character.HumanoidRootPart.CFrame
+    end
+end)
+
+-- PREDICTION TAB
+local PredTab = Window:CreateTab("Prediction")
+
+local PredCard = PredTab:LeftSection("Prediction Offsets")
+PredCard:Toggle("Auto Prediction (Ping)", "AutoPred", false, nil, function(v)
+    Settings.PREDICTION.autopred = v
+end)
+PredCard:Slider("Horizontal Prediction", "PredX", 0, 1, 0.17, 3, function(v)
+    Settings.PREDICTION.horizontalPrediction = v
+end)
+PredCard:Slider("Vertical Prediction", "PredY", 0, 1, 0.17, 3, function(v)
+    Settings.PREDICTION.verticalPrediction = v
+end)
+PredCard:Slider("Jump Offset", "PredJump", 0, 5, 0.66, 2, function(v)
+    Settings.PREDICTION.jumpoffset = v
+end)
+PredCard:Slider("Fall Offset", "PredFall", 0, 5, 1.00, 2, function(v)
+    Settings.PREDICTION.falloffset = v
+end)
+
+-- VISUALS TAB
+local VisualsTab = Window:CreateTab("Visuals")
+
+local EspCard = VisualsTab:LeftSection("Player ESP")
+EspCard:Toggle("Enable ESP Engine", "EspEnabled", true, nil, function(v)
+    Settings.ESP.Enabled = v
+end)
+EspCard:Toggle("Box ESP", "BoxEsp", false, nil, function(v)
+    Settings.ESP.BoxEsp = v
+end)
+EspCard:Toggle("Name ESP", "NameEsp", false, nil, function(v)
+    Settings.ESP.NameEsp = v
+end)
+EspCard:Toggle("Health ESP", "HealthEsp", false, nil, function(v)
+    Settings.ESP.hpesp = v
+end)
+EspCard:Toggle("Distance ESP", "DistEsp", false, nil, function(v)
+    Settings.ESP.DistanceEsp = v
+end)
+
+local HitboxCard = VisualsTab:RightSection("Hitbox Expander")
+HitboxCard:Toggle("Expand Hitboxes", "HitboxExp", false, nil, function(v)
+    HitboxExpanded = v
+end)
+HitboxCard:Toggle("Show Hitboxes", "HitboxShow", false, nil, function(v)
+    HitboxVisible = v
+end)
+HitboxCard:Slider("Size X/Y/Z", "HitboxSizeVal", 5, 50, 15, 0, function(v)
+    HitboxSize = Vector3.new(v, v, v)
+end)
+
+local CrosshairCard = VisualsTab:RightSection("Custom Crosshair")
+CrosshairCard:Toggle("Enable Crosshair", "CrosshairEnable", false, nil, function(v)
+    getgenv().crosshair.enabled = v
+end)
+CrosshairCard:Dropdown("Position Mode", "CrosshairMode", {"Center", "Mouse"}, "Center", function(v)
+    getgenv().crosshair.mode = v:lower()
+end)
+
+-- PLAYER TAB
+local PlayerTab = Window:CreateTab("Player")
+
+local MoveCard = PlayerTab:LeftSection("Movement")
+MoveCard:Toggle("CFrame Speed", "CFrameSpeedToggle", false, nil, function(v)
+    Settings.PLAYER.cframe = v
+end)
+MoveCard:Slider("CFrame Speed Multiplier", "CFrameSpeedVal", 1, 20, 5, 1, function(v)
+    Settings.PLAYER.cframespeedvalue = v
+end)
+MoveCard:Toggle("Enable Flight", "FlyToggle", false, nil, function(v)
+    ToggleFly(v)
+end)
+MoveCard:Slider("Flight Speed", "FlySpeedVal", 10, 200, 50, 0, function(v)
+    Settings.PLAYER.flyspeed = v
+end)
+MoveCard:Toggle("Macro / Look Lock", "MacroToggle", false, nil, function(v)
+    Settings.MISC.Macro = v
+end)
+
+local RageCard = PlayerTab:RightSection("Rage & Fling")
+RageCard:Toggle("Rage Strafe", "StrafeToggle", false, nil, function(v)
+    Settings.RAGE.Strafe = v
+end)
+RageCard:Slider("Strafe Speed", "StrafeSpeed", 1, 30, 10, 0, function(v)
+    Settings.RAGE.Strafespeed = v
+end)
+RageCard:Slider("Strafe Radius", "StrafeRadius", 1, 30, 10, 0, function(v)
+    Settings.RAGE.Straferadius = v
+end)
+RageCard:Button("Fling Current Target", function()
+    if CurrentTarget then FlingTarget(CurrentTarget) end
+end)
+
+-- UTILITY TAB
+local UtilTab = Window:CreateTab("Utility")
+
+local AutoCard = UtilTab:LeftSection("Automation")
+AutoCard:Toggle("Auto Air", "AutoAirToggle", false, nil, function(v)
+    Settings.AUTOAIR.enabled = v
+end)
+AutoCard:Toggle("Auto Shoot", "AutoShootToggle", false, nil, function(v)
+    Settings.MISC.AutoShoot = v
+end)
+AutoCard:Slider("Auto Shoot Cooldown", "AutoShootCooldownVal", 0, 1, 0, 2, function(v)
+    Settings.MISC.AutoShootCooldown = v
+end)
+AutoCard:Toggle("Auto Reload", "AutoReloadToggle", false, nil, function(v)
+    Settings.MISC.AutoReload = v
+end)
+AutoCard:Toggle("Auto Stomp", "AutoStompToggle", false, nil, function(v)
+    Settings.MISC.AutoStomp = v
+end)
+
+local MiscCard = UtilTab:RightSection("Combat Misc")
+MiscCard:Toggle("Anti Ground Shots", "AntiGroundShotToggle", false, nil, function(v)
+    Settings.AIMBOT.antigroundshoot = v
+end)
+
+-- ============================================================================
+-- FINALIZE INITIALIZATION
+-- ============================================================================
+
+glow.setcolor(Matcha.Theme.PinkAccent)
+
+local FloatingMenuButton = Create("TextButton", {
+    Name = "MatchaMenuButton",
+    Text = "⚙️ Menu",
+    Font = Enum.Font.Code,
+    TextSize = 13,
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    BackgroundColor3 = Matcha.Theme.CardBg,
+    Size = UDim2.new(0, 85, 0, 34),
+    Position = UDim2.new(0.05, 0, 0.1, 0),
+    ZIndex = 10,
+    Parent = Screen
+})
+Round(FloatingMenuButton, 6)
+Stroke(FloatingMenuButton, Matcha.Theme.PinkAccent)
+glow.create(FloatingMenuButton)
+MakeDraggable(FloatingMenuButton)
+
+FloatingMenuButton.MouseButton1Click:Connect(function()
+    if Window and Window.Frame then
+        Window.Frame.Visible = not Window.Frame.Visible
+    end
+end)
